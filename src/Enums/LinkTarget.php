@@ -16,7 +16,6 @@ enum LinkTarget: string implements HasLabel
 
     case Top = '_top';
 
-
     public function getLabel(): ?string
     {
         return match ($this) {
