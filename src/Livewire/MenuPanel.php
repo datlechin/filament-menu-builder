@@ -39,7 +39,7 @@ class MenuPanel extends Component implements HasForms
         $order = $this->menu->menuItems()->max('order') ?? 0;
 
         $selectedItems = collect($this->items)
-            ->filter(fn($item) => in_array($item['title'], $this->data))
+            ->filter(fn ($item) => in_array($item['title'], $this->data))
             ->map(function ($item) use (&$order) {
                 return [
                     ...$item,
@@ -65,7 +65,7 @@ class MenuPanel extends Component implements HasForms
                     ->hiddenLabel()
                     ->required()
                     ->bulkToggleable()
-                    ->options(collect($this->items)->mapWithKeys(fn($item) => [$item['title'] => $item['title']])),
+                    ->options(collect($this->items)->mapWithKeys(fn ($item) => [$item['title'] => $item['title']])),
             ]);
     }
 

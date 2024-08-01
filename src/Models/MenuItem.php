@@ -53,6 +53,6 @@ class MenuItem extends Model
 
     protected function type(): Attribute
     {
-        return Attribute::get(fn() => $this->linkable ? $this->linkable->title : 'Liên kết tùy chỉnh');
+        return Attribute::get(fn () => $this->linkable ? $this->linkable->title : 'Liên kết tùy chỉnh');
     }
 }

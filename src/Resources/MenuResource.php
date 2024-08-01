@@ -29,7 +29,7 @@ class MenuResource extends Resource
                     ->label('Tên')
                     ->required(),
                 Radio::make('location')
-                    ->visible(fn() => FilamentMenuBuilderPlugin::get()->getLocations())
+                    ->visible(fn () => FilamentMenuBuilderPlugin::get()->getLocations())
                     ->label('Vị trí')
                     ->helperText('Chọn vị trí hiển thị menu.')
                     ->options(FilamentMenuBuilderPlugin::get()->getLocations()),

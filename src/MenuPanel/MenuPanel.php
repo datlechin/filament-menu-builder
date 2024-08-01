@@ -12,7 +12,7 @@ class MenuPanel
 
     public static function make(): static
     {
-        return new static();
+        return new static;
     }
 
     public function heading(string $heading): static
@@ -22,7 +22,7 @@ class MenuPanel
         return $this;
     }
 
-    public function addItem(string $title, \Closure|string $url): static
+    public function addItem(string $title, \Closure | string $url): static
     {
         $this->items[] = [
             'title' => $title,

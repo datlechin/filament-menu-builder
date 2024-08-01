@@ -10,10 +10,10 @@ class StaticMenu
 
     public static function make(): static
     {
-        return new static();
+        return new static;
     }
 
-    public function add(string $title, \Closure|string $url): static
+    public function add(string $title, \Closure | string $url): static
     {
         $this->items[] = [
             'title' => $title,
