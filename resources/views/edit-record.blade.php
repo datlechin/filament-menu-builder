@@ -51,14 +51,14 @@
     <div class="grid grid-cols-12 gap-4">
         <div class="flex flex-col col-span-12 gap-4 sm:col-span-4">
             @foreach(\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->getMenuPanels() as $menuPanel)
-                @livewire(\Datlechin\FilamentMenuBuilder\Livewire\MenuPanel::class, ['menu' => $record, 'menuPanel' => $menuPanel])
+                <livewire:menu-builder-panel :menu="$record" :menuPanel="$menuPanel" />
             @endforeach
 
-            @livewire(\Datlechin\FilamentMenuBuilder\Livewire\CreateCustomLink::class, ['menu' => $record])
+            <livewire:create-custom-link :menu="$record" />
         </div>
         <div class="col-span-12 sm:col-span-8">
             <x-filament::section>
-                @livewire(\Datlechin\FilamentMenuBuilder\Livewire\MenuItems::class, ['menu' => $record])
+                <livewire:menu-builder-items :menu="$record" />
             </x-filament::section>
         </div>
     </div>

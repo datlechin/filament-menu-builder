@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
+use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -77,7 +78,7 @@ class MenuItems extends Component implements HasActions, HasForms
             ->icon('heroicon-m-pencil-square')
             ->fillForm(fn (array $arguments): array => MenuItem::query()
                 ->where('id', $arguments['id'])
-                ->select(['id', 'title', 'url', 'is_external'])
+                ->select(['id', 'title', 'url', 'target'])
                 ->first()
                 ->toArray())
             ->form([
@@ -87,9 +88,10 @@ class MenuItems extends Component implements HasActions, HasForms
                 TextInput::make('url')
                     ->label('URL')
                     ->required(),
-                Checkbox::make('is_external')
-                    ->label('Liên kết bên ngoài')
-                    ->default(false),
+                Select::make('target')
+                    ->label('Mở trong')
+                    ->options(LinkTarget::class)
+                    ->default(LinkTarget::Self),
             ])
             ->action(function (array $data, array $arguments) {
                 MenuItem::query()

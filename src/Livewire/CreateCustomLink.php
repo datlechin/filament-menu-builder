@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
+use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateCustomLink extends Component implements HasForms
@@ -20,20 +22,26 @@ class CreateCustomLink extends Component implements HasForms
 
     public Menu $menu;
 
-    public array $data = [];
+    public string $title = '';
+
+    public string $url = '';
+
+    public string $target = LinkTarget::Self->value;
 
     public function save(): void
     {
         $this->validate([
-            'data.title' => ['required', 'string'],
-            'data.url' => ['required', 'string'],
-            'data.is_external' => ['sometimes', 'bool'],
+            'title' => ['required', 'string'],
+            'url' => ['required', 'string'],
+            'target' => ['required', 'string', Rule::in(LinkTarget::cases())],
         ]);
 
         $this->menu
             ->menuItems()
             ->create([
-                ...$this->data,
+                'title' => $this->title,
+                'url' => $this->url,
+                'target' => $this->target,
                 'order' => $this->menu->menuItems()->max('order') + 1,
             ]);
 
@@ -42,14 +50,13 @@ class CreateCustomLink extends Component implements HasForms
             ->success()
             ->send();
 
-        $this->reset(['data']);
+        $this->reset('title', 'url', 'target');
         $this->dispatch('menu:created');
     }
 
     public function form(Form $form): Form
     {
         return $form
-            ->statePath('data')
             ->schema([
                 TextInput::make('title')
                     ->label('Tiêu đề')
@@ -57,9 +64,10 @@ class CreateCustomLink extends Component implements HasForms
                 TextInput::make('url')
                     ->label('URL')
                     ->required(),
-                Checkbox::make('is_external')
-                    ->default(false)
-                    ->label('Liên kết bên ngoài'),
+                Select::make('target')
+                    ->label('Mở trong')
+                    ->options(LinkTarget::class)
+                    ->default(LinkTarget::Self),
             ]);
     }
 

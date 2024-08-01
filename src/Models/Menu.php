@@ -11,6 +11,11 @@ class Menu extends Model
 {
     protected $guarded = [];
 
+    public function getTable(): string
+    {
+        return config('filament-menu-builder.tables.menus', parent::getTable());
+    }
+
     protected function casts(): array
     {
         return [
@@ -22,7 +27,8 @@ class Menu extends Model
     {
         return $this->hasMany(MenuItem::class)
             ->whereNull('parent_id')
-            ->with('children')
-            ->orderBy('order');
+            ->orderBy('parent_id')
+            ->orderBy('order')
+            ->with('children');
     }
 }

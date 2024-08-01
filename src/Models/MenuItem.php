@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
+use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,11 +15,16 @@ class MenuItem extends Model
 {
     protected $guarded = [];
 
+    public function getTable(): string
+    {
+        return config('filament-menu-builder.tables.menu_items', parent::getTable());
+    }
+
     protected function casts(): array
     {
         return [
             'order' => 'int',
-            'is_external' => 'bool',
+            'target' => LinkTarget::class,
         ];
     }
 
