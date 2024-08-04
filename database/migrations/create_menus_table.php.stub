@@ -40,8 +40,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('menu_locations');
-        Schema::dropIfExists('menu_items');
-        Schema::dropIfExists('menus');
+        Schema::dropIfExists(config('filament-menu-builder.tables.menu_locations'));
+        Schema::dropIfExists(config('filament-menu-builder.tables.menu_items'));
+        Schema::dropIfExists(config('filament-menu-builder.tables.menus'));
     }
 };
