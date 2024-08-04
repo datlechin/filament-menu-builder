@@ -6,10 +6,11 @@ namespace Datlechin\FilamentMenuBuilder\Resources;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -22,18 +23,22 @@ class MenuResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $locations = FilamentMenuBuilderPlugin::get()->getLocations();
+
         return $form
             ->columns(1)
             ->schema([
                 TextInput::make('name')
                     ->label('Tên')
                     ->required(),
-                Radio::make('location')
-                    ->visible(fn () => FilamentMenuBuilderPlugin::get()->getLocations())
+                CheckboxList::make('locations')
+                    ->bulkToggleable()
+                    ->visible(fn(string $context) => $context === 'edit' && $locations)
                     ->label('Vị trí')
+                    ->afterStateHydrated(fn(Menu $menu, Set $set) => $set('locations', $menu->locations->pluck('location')))
                     ->helperText('Chọn vị trí hiển thị menu.')
-                    ->options(FilamentMenuBuilderPlugin::get()->getLocations()),
-                Checkbox::make('is_visible')
+                    ->options($locations),
+                Toggle::make('is_visible')
                     ->label('Hiển thị')
                     ->default(true),
             ]);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder;
 
-use Closure;
+use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -14,7 +14,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     protected array $locations = [];
 
     /**
-     * @var array<MenuPanel>
+     * @var MenuPanel[]
      */
     protected array $menuPanels = [];
 
@@ -48,27 +48,29 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $plugin;
     }
 
-    public function location(string $key, string $label): static
+    public function addLocation(string $key, string $label): static
     {
         $this->locations[$key] = $label;
 
         return $this;
     }
 
-    public function menuPanel(Closure $callback): static
+    public function addMenuPanel(MenuPanel $menuPanel): static
     {
-        $panel = value($callback);
+        if ($menuPanel->getItems()) {
+            $this->menuPanels[] = $menuPanel;
+        }
 
-        if ($panel instanceof StaticMenu) {
-            if (! $panel->getItems()) {
-                return $this;
-            }
+        return $this;
+    }
 
-            $this->menuPanels[] = MenuPanel::make()
-                ->heading('Liên kết cố định')
-                ->addItems($panel->getItems());
-        } else {
-            $this->menuPanels[] = $panel;
+    /**
+     * @param array<MenuPanel> $menuPanels
+     */
+    public function addMenuPanels(array $menuPanels): static
+    {
+        foreach ($menuPanels as $menuPanel) {
+            $this->addMenuPanel($menuPanel);
         }
 
         return $this;
@@ -79,7 +81,9 @@ class FilamentMenuBuilderPlugin implements Plugin
      */
     public function getMenuPanels(): array
     {
-        return $this->menuPanels;
+        return collect($this->menuPanels)
+            ->sortBy(fn(MenuPanel $menuPanel) => $menuPanel->getSort())
+            ->all();
     }
 
     public function getLocations(): array

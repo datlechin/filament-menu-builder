@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
+use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel as ContractsMenuPanel;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -19,17 +20,22 @@ class MenuPanel extends Component implements HasForms
 
     public Menu $menu;
 
-    public string $heading;
+    public string $name;
 
     public array $items = [];
 
     #[Validate('required|array')]
     public array $data = [];
 
-    public function mount(\Datlechin\FilamentMenuBuilder\MenuPanel $menuPanel): void
+    public function mount(ContractsMenuPanel $menuPanel): void
     {
-        $this->heading = $menuPanel->getHeading();
-        $this->items = $menuPanel->getItems();
+        $this->name = $menuPanel->getName();
+        $this->items = collect($menuPanel->getItems())->map(function ($item) {
+            return [
+                'title' => $item['title'],
+                'url' => value($item['url']),
+            ];
+        })->all();
     }
 
     public function add(): void
@@ -39,7 +45,7 @@ class MenuPanel extends Component implements HasForms
         $order = $this->menu->menuItems()->max('order') ?? 0;
 
         $selectedItems = collect($this->items)
-            ->filter(fn ($item) => in_array($item['title'], $this->data))
+            ->filter(fn($item) => in_array($item['title'], $this->data))
             ->map(function ($item) use (&$order) {
                 return [
                     ...$item,
@@ -65,7 +71,7 @@ class MenuPanel extends Component implements HasForms
                     ->hiddenLabel()
                     ->required()
                     ->bulkToggleable()
-                    ->options(collect($this->items)->mapWithKeys(fn ($item) => [$item['title'] => $item['title']])),
+                    ->options(collect($this->items)->mapWithKeys(fn($item) => [$item['title'] => $item['title']])),
             ]);
     }
 

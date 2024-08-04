@@ -29,10 +29,18 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->timestamps();
         });
+
+        Schema::create(config('filament-menu-builder.tables.menu_locations'), function (Blueprint $table) {
+            $table->id();
+            $table->foreignIdFor(Menu::class);
+            $table->string('location', 50);
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('menu_locations');
         Schema::dropIfExists('menu_items');
         Schema::dropIfExists('menus');
     }

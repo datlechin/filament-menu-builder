@@ -6,6 +6,7 @@ namespace Datlechin\FilamentMenuBuilder;
 
 use Datlechin\FilamentMenuBuilder\Livewire\CreateCustomLink;
 use Datlechin\FilamentMenuBuilder\Livewire\MenuItems;
+use Datlechin\FilamentMenuBuilder\Livewire\MenuPanel;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;

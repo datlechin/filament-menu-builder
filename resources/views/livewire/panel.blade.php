@@ -1,10 +1,5 @@
 <form wire:submit="add">
-    <x-filament::section
-        :heading="$heading"
-        :collapsible="true"
-        :persist-collapsed="true"
-        id="menu-panel"
-    >
+    <x-filament::section :heading="$name" :collapsible="true" :persist-collapsed="true" id="menu-panel">
         {{ $this->form }}
 
         <x-slot:footerActions>
