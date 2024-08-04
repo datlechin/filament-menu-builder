@@ -65,7 +65,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     }
 
     /**
-     * @param array<MenuPanel> $menuPanels
+     * @param  array<MenuPanel>  $menuPanels
      */
     public function addMenuPanels(array $menuPanels): static
     {
@@ -82,7 +82,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function getMenuPanels(): array
     {
         return collect($this->menuPanels)
-            ->sortBy(fn(MenuPanel $menuPanel) => $menuPanel->getSort())
+            ->sortBy(fn (MenuPanel $menuPanel) => $menuPanel->getSort())
             ->all();
     }
 
