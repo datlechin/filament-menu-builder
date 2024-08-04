@@ -1,10 +1,15 @@
 <form wire:submit="add">
-    <x-filament::section :heading="$name" :collapsible="true" :persist-collapsed="true" id="menu-panel">
+    <x-filament::section
+        :heading="$name"
+        :collapsible="true"
+        :persist-collapsed="true"
+        id="{{ $id }}-panel"
+    >
         {{ $this->form }}
 
         <x-slot:footerActions>
             <x-filament::button type="submit">
-                Thêm vào menu
+                {{ __('filament-menu-builder::menu-builder.add_to_menu') }}
             </x-filament::button>
         </x-slot:footerActions>
     </x-filament::section>

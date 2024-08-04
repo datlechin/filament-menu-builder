@@ -6,6 +6,8 @@ namespace Datlechin\FilamentMenuBuilder\Contracts;
 
 interface MenuPanel
 {
+    public function getIdentifier(): string;
+
     public function getName(): string;
 
     public function getItems(): array;

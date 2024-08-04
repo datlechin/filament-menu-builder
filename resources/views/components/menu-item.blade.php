@@ -12,7 +12,7 @@
     x-data="{ open: $persist(true).as('menu-item-' + {{ $item->getKey() }}) }"
 >
     <div
-        class="flex justify-between rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 px-3 py-2"
+        class="flex justify-between px-3 py-2 bg-white shadow-sm rounded-xl ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10"
     >
         <div class="flex items-center gap-2">
             {{ $this->reorderAction }}
@@ -23,7 +23,7 @@
                     x-on:click="open = !open"
                     title="Mở rộng"
                     color="gray"
-                    class="transition ease-in-out duration-200"
+                    class="transition duration-200 ease-in-out"
                     x-bind:class="{ 'rotate-90': open }"
                     size="sm"
                 />
@@ -33,7 +33,7 @@
                 {{ $item->title }}
             </div>
 
-            <div class="hidden sm:block text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap text-ellipsis overflow-hidden">
+            <div class="hidden overflow-hidden text-sm text-gray-500 sm:block dark:text-gray-400 whitespace-nowrap text-ellipsis">
                 {{ $item->url }}
             </div>
         </div>
@@ -51,7 +51,7 @@
         x-show="open"
         wire:key="{{ $item->getKey() }}.children"
         x-data="menuBuilder({ parentId: {{ $item->getKey()  }} })"
-        class="ms-4 space-y-2 mt-2"
+        class="mt-2 space-y-2 ms-4"
     >
         @foreach($item->children as $child)
             <x-filament-menu-builder::menu-item :item="$child" />

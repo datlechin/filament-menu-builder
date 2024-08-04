@@ -19,10 +19,10 @@ enum LinkTarget: string implements HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Self => 'Cùng tab',
-            self::Blank => 'Tab mới',
-            self::Parent => 'Tab cha',
-            self::Top => 'Tab trên cùng',
+            self::Self => __('filament-menu-builder::menu-builder.open_in.options.self'),
+            self::Blank => __('filament-menu-builder::menu-builder.open_in.options.blank'),
+            self::Parent => __('filament-menu-builder::menu-builder.open_in.options.parent'),
+            self::Top => __('filament-menu-builder::menu-builder.open_in.options.top'),
         };
     }
 }

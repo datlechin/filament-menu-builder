@@ -33,7 +33,7 @@
         </x-filament-panels::resources.relation-managers>
     @endif
 
-    <div class="grid grid-cols-12 gap-4">
+    <div class="grid grid-cols-12 gap-4" wire:ignore>
         <div class="flex flex-col col-span-12 gap-4 sm:col-span-4">
             @foreach (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->getMenuPanels() as $menuPanel)
                 <livewire:menu-builder-panel :menu="$record" :menuPanel="$menuPanel" />

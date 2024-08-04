@@ -13,9 +13,9 @@ export default ({ parentId }) => ({
             onSort: () => {
                 this.$wire.reorder(
                     this.sortable.toArray(),
-                    this.parentId === 0 ? null : this.parentId
+                    this.parentId === 0 ? null : this.parentId,
                 )
-            }
+            },
         })
     },
 })

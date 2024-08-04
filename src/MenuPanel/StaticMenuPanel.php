@@ -8,21 +8,7 @@ use Closure;
 
 class StaticMenuPanel extends AbstractMenuPanel
 {
-    protected string $name = 'Static Menu';
-
     protected array $items = [];
-
-    public function __construct(?string $name = null)
-    {
-        if ($name) {
-            $this->name = $name;
-        }
-    }
-
-    public static function make(?string $name = null): static
-    {
-        return new static($name);
-    }
 
     public function add(string $title, Closure | string $url): static
     {

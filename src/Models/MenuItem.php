@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
+use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -59,6 +60,11 @@ class MenuItem extends Model
 
     protected function type(): Attribute
     {
-        return Attribute::get(fn() => $this->linkable ? $this->linkable->title : 'Liên kết tùy chỉnh');
+        return Attribute::get(function () {
+            return match (true) {
+                $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelName(),
+                default => __('filament-menu-builder::menu-builder.custom_link'),
+            };
+        });
     }
 }

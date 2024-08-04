@@ -10,6 +10,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -20,6 +21,8 @@ class MenuPanel extends Component implements HasForms
 
     public Menu $menu;
 
+    public string $id;
+
     public string $name;
 
     public array $items = [];
@@ -29,13 +32,15 @@ class MenuPanel extends Component implements HasForms
 
     public function mount(ContractsMenuPanel $menuPanel): void
     {
+        $this->id = $menuPanel->getIdentifier();
         $this->name = $menuPanel->getName();
-        $this->items = collect($menuPanel->getItems())->map(function ($item) {
-            return [
-                'title' => $item['title'],
-                'url' => value($item['url']),
-            ];
-        })->all();
+        $this->items = array_map(function ($item) {
+            if (isset($item['url']) && is_callable($item['url'])) {
+                $item['url'] = $item['url']();
+            }
+
+            return $item;
+        }, $menuPanel->getItems());
     }
 
     public function add(): void
@@ -61,6 +66,11 @@ class MenuPanel extends Component implements HasForms
 
         $this->reset('data');
         $this->dispatch('menu:created');
+
+        Notification::make()
+            ->title(__('filament-menu-builder::menu-builder.notifications.created.title'))
+            ->success()
+            ->send();
     }
 
     public function form(Form $form): Form

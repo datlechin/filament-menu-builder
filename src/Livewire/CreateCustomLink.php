@@ -46,7 +46,7 @@ class CreateCustomLink extends Component implements HasForms
             ]);
 
         Notification::make()
-            ->title('Đã thêm liên kết tùy chỉnh vào menu.')
+            ->title(__('filament-menu-builder::menu-builder.notifications.created.title'))
             ->success()
             ->send();
 
@@ -59,13 +59,13 @@ class CreateCustomLink extends Component implements HasForms
         return $form
             ->schema([
                 TextInput::make('title')
-                    ->label('Tiêu đề')
+                    ->label(__('filament-menu-builder::menu-builder.title'))
                     ->required(),
                 TextInput::make('url')
-                    ->label('URL')
+                    ->label(__('filament-menu-builder::menu-builder.url'))
                     ->required(),
                 Select::make('target')
-                    ->label('Mở trong')
+                    ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                     ->options(LinkTarget::class)
                     ->default(LinkTarget::Self),
             ]);

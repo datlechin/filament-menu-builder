@@ -10,6 +10,7 @@ use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -78,26 +79,33 @@ class MenuItems extends Component implements HasActions, HasForms
             ->icon('heroicon-m-pencil-square')
             ->fillForm(fn(array $arguments): array => MenuItem::query()
                 ->where('id', $arguments['id'])
-                ->select(['id', 'title', 'url', 'target'])
+                ->with('linkable')
                 ->first()
                 ->toArray())
             ->form([
                 TextInput::make('title')
-                    ->label('Tiêu đề')
+                    ->label(__('filament-menu-builder::menu-builder.title'))
                     ->required(),
                 TextInput::make('url')
-                    ->label('URL')
+                    ->hidden(fn(?string $state): bool => empty($state))
+                    ->label(__('filament-menu-builder::menu-builder.url'))
                     ->required(),
+                Placeholder::make('linkable_type')
+                    ->hidden(fn(?string $state): bool => empty($state))
+                    ->content(fn(string $state) => $state),
+                Placeholder::make('linkable_id')
+                    ->hidden(fn(?string $state): bool => empty($state))
+                    ->content(fn(string $state) => $state),
                 Select::make('target')
-                    ->label('Mở trong')
+                    ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                     ->options(LinkTarget::class)
                     ->default(LinkTarget::Self),
             ])
-            ->action(function (array $data, array $arguments) {
-                MenuItem::query()
+            ->action(
+                fn(array $data, array $arguments) => MenuItem::query()
                     ->where('id', $arguments['id'])
-                    ->update($data);
-            })
+                    ->update($data),
+            )
             ->modalWidth(MaxWidth::Medium)
             ->slideOver();
     }
