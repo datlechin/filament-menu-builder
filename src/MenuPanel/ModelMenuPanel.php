@@ -17,11 +17,11 @@ class ModelMenuPanel extends AbstractMenuPanel
     protected Closure $urlUsing;
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model&Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable>  $model
+     * @param  class-string<\Illuminate\Database\Eloquent\Model&\Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable>  $model
      */
     public function model(string $model): static
     {
-        $this->model = new $model;
+        $this->model = new $model();
 
         return $this;
     }
