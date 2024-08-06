@@ -12,6 +12,11 @@ return [
             'label' => 'Add to Menu',
         ],
     ],
+    'items' => [
+        'empty' => [
+            'heading' => 'There are no items in this menu.',
+        ],
+    ],
     'custom_link' => 'Custom Link',
     'open_in' => [
         'label' => 'Open in',

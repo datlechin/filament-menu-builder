@@ -15,7 +15,7 @@
     @else
         <x-filament-tables::empty-state
             icon="heroicon-o-document"
-            heading="Hiện không có mục nào trong menu."
+            :heading="trans('filament-menu-builder::menu-builder.items.empty.heading')"
         />
     @endif
 
