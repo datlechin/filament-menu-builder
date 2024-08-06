@@ -21,7 +21,7 @@ class ModelMenuPanel extends AbstractMenuPanel
      */
     public function model(string $model): static
     {
-        $this->model = new $model();
+        $this->model = new $model;
 
         return $this;
     }
