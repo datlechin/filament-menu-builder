@@ -9,6 +9,8 @@ This [Filament](https://filamentphp.com) package allows you to create and manage
 
 ![Filament Menu Builder](./art/menu-builder.png)
 
+> **Note:** I created this for my personal project, so some features and extensibility are still lacking. Pull requests are welcome.
+
 ## Installation
 
 You can install the package via composer:
