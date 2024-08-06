@@ -84,11 +84,11 @@ class MenuItems extends Component implements HasActions, HasForms
                 ->toArray())
             ->form([
                 TextInput::make('title')
-                    ->label(__('filament-menu-builder::menu-builder.title'))
+                    ->label(__('filament-menu-builder::menu-builder.form.title'))
                     ->required(),
                 TextInput::make('url')
                     ->hidden(fn (?string $state): bool => empty($state))
-                    ->label(__('filament-menu-builder::menu-builder.url'))
+                    ->label(__('filament-menu-builder::menu-builder.form.url'))
                     ->required(),
                 Placeholder::make('linkable_type')
                     ->hidden(fn (?string $state): bool => empty($state))

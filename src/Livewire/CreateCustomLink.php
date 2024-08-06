@@ -59,10 +59,10 @@ class CreateCustomLink extends Component implements HasForms
         return $form
             ->schema([
                 TextInput::make('title')
-                    ->label(__('filament-menu-builder::menu-builder.title'))
+                    ->label(__('filament-menu-builder::menu-builder.form.title'))
                     ->required(),
                 TextInput::make('url')
-                    ->label(__('filament-menu-builder::menu-builder.url'))
+                    ->label(__('filament-menu-builder::menu-builder.form.url'))
                     ->required(),
                 Select::make('target')
                     ->label(__('filament-menu-builder::menu-builder.open_in.label'))
