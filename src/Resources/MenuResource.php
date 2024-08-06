@@ -33,9 +33,9 @@ class MenuResource extends Resource
                     ->required(),
                 CheckboxList::make('locations')
                     ->bulkToggleable()
-                    ->visible(fn (string $context) => $context === 'edit' && $locations)
+                    ->visible(fn(string $context) => $context === 'edit' && $locations)
                     ->label('Vị trí')
-                    ->afterStateHydrated(fn (Menu $menu, Set $set) => $set('locations', $menu->locations->pluck('location')))
+                    ->afterStateHydrated(fn(Menu $menu, Set $set) => $set('locations', $menu->locations->pluck('location')))
                     ->helperText('Chọn vị trí hiển thị menu.')
                     ->options($locations),
                 Toggle::make('is_visible')
