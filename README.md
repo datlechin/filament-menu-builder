@@ -158,6 +158,69 @@ $panel
 
 ![Model Menu Panel](./art/model-menu.png)
 
+### Custom Fields
+
+In some cases, you may want to extend menu and menu items with custom fields. To do this, start by passing an array of form components to the `addMenuFields` and `addMenuItemFields` methods when registering the plugin:
+
+```php
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->addMenuFields([
+                Toggle::make('is_logged_in'),
+            ])
+            ->addMenuItemFields([
+                TextInput::make('classes'),
+            ]),
+    )
+```
+
+Next, create a migration adding the additional columns to the appropriate tables:
+
+```php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table(config('filament-menu-builder.tables.menus'), function (Blueprint $table) {
+            $table->boolean('is_logged_in')->default(false);
+        });
+
+        Schema::table(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
+            $table->string('classes')->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table(config('filament-menu-builder.tables.menus'), function (Blueprint $table) {
+            $table->dropColumn('is_logged_in');
+        });
+
+        Schema::table(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
+            $table->dropColumn('classes');
+        });
+    }
+}
+```
+
+Once done, simply run `php artisan migrate`.
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
