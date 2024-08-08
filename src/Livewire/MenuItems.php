@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -100,6 +102,7 @@ class MenuItems extends Component implements HasActions, HasForms
                     ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                     ->options(LinkTarget::class)
                     ->default(LinkTarget::Self),
+                Group::make()->schema(FilamentMenuBuilderPlugin::get()->getMenuItemFields()),
             ])
             ->action(
                 fn (array $data, array $arguments) => MenuItem::query()

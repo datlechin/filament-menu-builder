@@ -12,6 +12,8 @@ use Filament\Panel;
 class FilamentMenuBuilderPlugin implements Plugin
 {
     protected array $locations = [];
+    protected array $menuFields = [];
+    protected array $menuItemFields = [];
 
     /**
      * @var MenuPanel[]
@@ -76,6 +78,20 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
+    public function addMenuFields(array | Closure $schema): static
+    {
+        $this->menuFields = $schema;
+
+        return $this;
+    }
+
+    public function addMenuItemFields(array | Closure $schema): static
+    {
+        $this->menuItemFields = $schema;
+
+        return $this;
+    }
+
     /**
      * @return MenuPanel[]
      */
@@ -89,5 +105,15 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function getLocations(): array
     {
         return $this->locations;
+    }
+
+    public function getMenuFields(): array
+    {
+        return $this->menuFields;
+    }
+
+    public function getMenuItemFields(): array
+    {
+        return $this->menuItemFields;
     }
 }
