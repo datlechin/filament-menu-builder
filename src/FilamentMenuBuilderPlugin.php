@@ -61,9 +61,7 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     public function addMenuPanel(MenuPanel $menuPanel): static
     {
-        if ($menuPanel->getItems()) {
-            $this->menuPanels[] = $menuPanel;
-        }
+        $this->menuPanels[] = $menuPanel;
 
         return $this;
     }

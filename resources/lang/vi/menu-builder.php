@@ -44,4 +44,10 @@ return [
             'title' => 'Liên kết đã được tạo',
         ],
     ],
+    'panel' => [
+        'empty' => [
+            'heading' => 'Không tìm thấy mục nào',
+            'description' => 'Không có mục nào trong menu này.',
+        ],
+    ],
 ];

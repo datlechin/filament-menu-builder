@@ -7,10 +7,12 @@
     >
         {{ $this->form }}
 
-        <x-slot:footerActions>
-            <x-filament::button type="submit">
-                {{ __('filament-menu-builder::menu-builder.actions.add.label') }}
-            </x-filament::button>
-        </x-slot:footerActions>
+        @if ($this->items)
+            <x-slot:footerActions>
+                <x-filament::button type="submit">
+                    {{ __('filament-menu-builder::menu-builder.actions.add.label') }}
+                </x-filament::button>
+            </x-slot:footerActions>
+        @endif
     </x-filament::section>
 </form>

@@ -6,7 +6,7 @@ namespace Datlechin\FilamentMenuBuilder\Livewire;
 
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel as ContractsMenuPanel;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -75,13 +75,19 @@ class MenuPanel extends Component implements HasForms
 
     public function form(Form $form): Form
     {
+        $items = collect($this->items)->mapWithKeys(fn ($item) => [$item['title'] => $item['title']]);
+
         return $form
             ->schema([
-                CheckboxList::make('data')
+                Components\View::make('filament-menu-builder::components.empty-state')
+                    ->visible($items->isEmpty()),
+
+                Components\CheckboxList::make('data')
                     ->hiddenLabel()
                     ->required()
                     ->bulkToggleable()
-                    ->options(collect($this->items)->mapWithKeys(fn ($item) => [$item['title'] => $item['title']])),
+                    ->visible($items->isNotEmpty())
+                    ->options($items),
             ]);
     }
 
