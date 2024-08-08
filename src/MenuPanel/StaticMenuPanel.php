@@ -20,6 +20,15 @@ class StaticMenuPanel extends AbstractMenuPanel
         return $this;
     }
 
+    public function addMany(array $items): static
+    {
+        foreach ($items as $title => $url) {
+            $this->add($title, $url);
+        }
+
+        return $this;
+    }
+
     public function getItems(): array
     {
         return $this->items;
