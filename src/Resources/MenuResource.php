@@ -60,8 +60,8 @@ class MenuResource extends Resource
                     ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
                 Tables\Columns\TextColumn::make('locations.location')
                     ->default($default = __('filament-menu-builder::menu-builder.resource.locations.empty'))
-                    ->color(fn ($state) => filled($state) && $state !== $default ? 'primary' : 'gray')
-                    ->formatStateUsing(fn ($state) => $locations[$state] ?? $state)
+                    ->color(fn (string $state) => $state !== $default ? 'primary' : 'gray')
+                    ->formatStateUsing(fn (string $state) => $locations[$state] ?? $state)
                     ->limitList(2)
                     ->badge(),
                 Tables\Columns\IconColumn::make('is_visible')
