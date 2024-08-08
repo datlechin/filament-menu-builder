@@ -2,6 +2,19 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.2.0 - 2024-08-08
+
+### What's Changed
+
+* [ImgBot] Optimize images by @imgbot in https://github.com/datlechin/filament-menu-builder/pull/5
+* 🧑‍💻 Add support for custom menu and menu item fields by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/6
+
+### New Contributors
+
+* @imgbot made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/5
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.1.1...v0.2.0
+
 ## v0.1.1 - 2024-08-08
 
 ### What's Changed
