@@ -251,7 +251,7 @@ $panel
     ...
     ->plugin(
         FilamentMenuBuilderPlugin::make()
-            ->using(MenuResource::class)
+            ->usingResource(MenuResource::class)
     )
 ```
 
