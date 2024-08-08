@@ -12,7 +12,9 @@ use Filament\Panel;
 class FilamentMenuBuilderPlugin implements Plugin
 {
     protected array $locations = [];
+
     protected array $menuFields = [];
+
     protected array $menuItemFields = [];
 
     /**
