@@ -7,6 +7,7 @@ namespace Datlechin\FilamentMenuBuilder\Resources;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -42,7 +43,9 @@ class MenuResource extends Resource
                 Toggle::make('is_visible')
                     ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
                     ->default(true),
-                Group::make()->schema(FilamentMenuBuilderPlugin::get()->getMenuFields()),
+                Group::make()
+                    ->visible(fn (Component $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuFields()) !== [])
+                    ->schema(FilamentMenuBuilderPlugin::get()->getMenuFields()),
             ]);
     }
 
