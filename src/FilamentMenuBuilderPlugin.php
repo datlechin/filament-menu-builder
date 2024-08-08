@@ -13,9 +13,9 @@ class FilamentMenuBuilderPlugin implements Plugin
 {
     protected array $locations = [];
 
-    protected array $menuFields = [];
+    protected array | Closure $menuFields = [];
 
-    protected array $menuItemFields = [];
+    protected array | Closure $menuItemFields = [];
 
     /**
      * @var MenuPanel[]
@@ -109,12 +109,12 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->locations;
     }
 
-    public function getMenuFields(): array
+    public function getMenuFields(): array | Closure
     {
         return $this->menuFields;
     }
 
-    public function getMenuItemFields(): array
+    public function getMenuItemFields(): array | Closure
     {
         return $this->menuItemFields;
     }
