@@ -11,6 +11,8 @@ use Filament\Panel;
 
 class FilamentMenuBuilderPlugin implements Plugin
 {
+    protected string $resource = MenuResource::class;
+
     protected array $locations = [];
 
     protected array | Closure $menuFields = [];
@@ -29,9 +31,7 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        $panel->resources([
-            MenuResource::class,
-        ]);
+        $panel->resources([$this->getResource()]);
     }
 
     public function boot(Panel $panel): void
@@ -50,6 +50,13 @@ class FilamentMenuBuilderPlugin implements Plugin
         $plugin = filament(app(static::class)->getId());
 
         return $plugin;
+    }
+
+    public function usingResource(string $resource): static
+    {
+        $this->resource = $resource;
+
+        return $this;
     }
 
     public function addLocation(string $key, string $label): static
@@ -92,6 +99,11 @@ class FilamentMenuBuilderPlugin implements Plugin
         $this->menuItemFields = $schema;
 
         return $this;
+    }
+
+    public function getResource(): string
+    {
+        return $this->resource;
     }
 
     /**

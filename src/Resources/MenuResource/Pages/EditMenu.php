@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages;
 
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Actions;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -15,9 +15,12 @@ use Illuminate\Support\Arr;
 
 class EditMenu extends EditRecord
 {
-    protected static string $resource = MenuResource::class;
-
     protected static string $view = 'filament-menu-builder::edit-record';
+
+    public static function getResource(): string
+    {
+        return FilamentMenuBuilderPlugin::get()->getResource();
+    }
 
     public function form(Form $form): Form
     {
