@@ -51,11 +51,19 @@ class MenuResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $locations = FilamentMenuBuilderPlugin::get()->getLocations();
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
+                Tables\Columns\TextColumn::make('locations.location')
+                    ->default($default = __('filament-menu-builder::menu-builder.resource.locations.empty'))
+                    ->color(fn ($state) => filled($state) && $state !== $default ? 'primary' : 'gray')
+                    ->formatStateUsing(fn ($state) => $locations[$state] ?? $state)
+                    ->limitList(2)
+                    ->badge(),
                 Tables\Columns\IconColumn::make('is_visible')
                     ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
                     ->boolean(),

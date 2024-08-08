@@ -14,6 +14,7 @@ return [
         'locations' => [
             'label' => 'Vị trí',
             'description' => 'Chọn vị trí hiển thị menu.',
+            'empty' => 'Chưa gán',
         ],
         'is_visible' => [
             'label' => 'Hiển thị',
