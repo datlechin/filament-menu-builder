@@ -234,6 +234,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 ## Credits
 
 - [Ngo Quoc Dat](https://github.com/datlechin)
+- [Log1x](https://github.com/Log1x)
 - [All Contributors](../../contributors)
 
 ## License
