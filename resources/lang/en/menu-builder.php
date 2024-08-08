@@ -7,6 +7,18 @@ return [
         'title' => 'Title',
         'url' => 'URL',
     ],
+    'resource' => [
+        'name' => [
+            'label' => 'Name',
+        ],
+        'locations' => [
+            'label' => 'Locations',
+            'description' => 'Choose where to display the menu.',
+        ],
+        'is_visible' => [
+            'label' => 'Visible',
+        ],
+    ],
     'actions' => [
         'add' => [
             'label' => 'Add to Menu',

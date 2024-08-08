@@ -29,17 +29,17 @@ class MenuResource extends Resource
             ->columns(1)
             ->schema([
                 TextInput::make('name')
-                    ->label('Tên')
+                    ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
                     ->required(),
                 CheckboxList::make('locations')
                     ->bulkToggleable()
                     ->visible(fn (string $context) => $context === 'edit' && $locations)
-                    ->label('Vị trí')
+                    ->label(__('filament-menu-builder::menu-builder.resource.locations.label'))
                     ->afterStateHydrated(fn (Menu $menu, Set $set) => $set('locations', $menu->locations->pluck('location')))
-                    ->helperText('Chọn vị trí hiển thị menu.')
+                    ->helperText(__('filament-menu-builder::menu-builder.resource.locations.description'))
                     ->options($locations),
                 Toggle::make('is_visible')
-                    ->label('Hiển thị')
+                    ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
                     ->default(true),
             ]);
     }
@@ -50,9 +50,9 @@ class MenuResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->label('Tên'),
+                    ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
                 Tables\Columns\IconColumn::make('is_visible')
-                    ->label('Hiển thị')
+                    ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
                     ->boolean(),
             ])
             ->actions([

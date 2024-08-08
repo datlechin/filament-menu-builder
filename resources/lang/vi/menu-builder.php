@@ -7,6 +7,18 @@ return [
         'title' => 'Tiêu đề',
         'url' => 'URL',
     ],
+    'resource' => [
+        'name' => [
+            'label' => 'Tên',
+        ],
+        'locations' => [
+            'label' => 'Vị trí',
+            'description' => 'Chọn vị trí hiển thị menu.',
+        ],
+        'is_visible' => [
+            'label' => 'Hiển thị',
+        ],
+    ],
     'actions' => [
         'add' => [
             'label' => 'Thêm vào Menu',
