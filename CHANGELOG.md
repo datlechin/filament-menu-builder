@@ -2,6 +2,18 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.3.0 - 2024-08-09
+
+### What's Changed
+
+* 🧑‍💻 Add support for overriding the menu resource by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/7
+* 💄 Add empty state for menu panels by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/8
+* 🧑‍💻 Add array variants for common methods by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/9
+* 💄 Add locations to the menu table by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/10
+* [js] Update @tailwindcss/typography 0.5.13 → 0.5.14 (minor) by @depfu in https://github.com/datlechin/filament-menu-builder/pull/11
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.2.0...v0.3.0
+
 ## v0.2.0 - 2024-08-08
 
 ### What's Changed
