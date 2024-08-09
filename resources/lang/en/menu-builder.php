@@ -44,4 +44,10 @@ return [
             'title' => 'Link created',
         ],
     ],
+    'panel' => [
+        'empty' => [
+            'heading' => 'No items found',
+            'description' => 'There are no items in this menu.',
+        ],
+    ],
 ];
