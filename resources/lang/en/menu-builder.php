@@ -14,6 +14,7 @@ return [
         'locations' => [
             'label' => 'Locations',
             'description' => 'Choose where to display the menu.',
+            'empty' => 'Unassigned',
         ],
         'is_visible' => [
             'label' => 'Visible',
