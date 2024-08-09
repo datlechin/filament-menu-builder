@@ -66,6 +66,15 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
+    public function addLocations(array $locations): static
+    {
+        foreach ($locations as $key => $label) {
+            $this->addLocation($key, $label);
+        }
+
+        return $this;
+    }
+
     public function addMenuPanel(MenuPanel $menuPanel): static
     {
         $this->menuPanels[] = $menuPanel;

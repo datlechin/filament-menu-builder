@@ -79,6 +79,22 @@ $panel
 
 The first argument is the key of the location, and the second argument is the title of the location.
 
+Alternatively, you may add locations using an array:
+
+```php
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->addLocations([
+                'header' => 'Header',
+                'footer' => 'Footer',
+            ])
+    )
+```
+
 ### Setting up Menu Panels
 
 Menu panels are the panels that contain the menu items which you can add to the menus.
@@ -105,6 +121,26 @@ $panel
                 StaticMenuPanel::make()
                     ->add('Home', url('/'))
                     ->add('Blog', url('/blog')),
+            ])
+    )
+```
+
+Similarily to locations, you may also add static menu items using an array:
+
+```php
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->addMenuPanels([
+                StaticMenuPanel::make()
+                    ->addMany([
+                        'Home' => url('/'),
+                        'Blog' => url('/blog'),
+                    ])
             ])
     )
 ```
