@@ -174,7 +174,7 @@ $panel
             ])
             ->addMenuItemFields([
                 TextInput::make('classes'),
-            ]),
+            ])
     )
 ```
 
@@ -218,6 +218,42 @@ return new class extends Migration
 ```
 
 Once done, simply run `php artisan migrate`.
+
+### Customizing the Resource
+
+Out of the box, a default Menu Resource is registered with Filament when registering the plugin in the admin provider. This resource can be extended and overridden allowing for more fine-grained control.
+
+Start by extending the `Datlechin\FilamentMenuBuilder\Resources\MenuResource` class in your application. Below is an example:
+
+```php
+namespace App\Filament\Plugins\Resources;
+
+use Datlechin\FilamentMenuBuilder\Resources\MenuResource as BaseMenuResource;
+
+class MenuResource extends BaseMenuResource
+{
+    protected static ?string $navigationGroup = 'Navigation';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return number_format(static::getModel()::count());
+    }
+}
+```
+
+Now pass the custom resource to `usingResource` while registering the plugin with the panel:
+
+```php
+use App\Filament\Plugins\Resources\MenuResource;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->usingResource(MenuResource::class)
+    )
+```
 
 ## Changelog
 
