@@ -2,6 +2,15 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.3.1 - 2024-08-14
+
+### What's Changed
+
+* [js] Update tailwindcss 3.4.7 → 3.4.9 (patch) by @depfu in https://github.com/datlechin/filament-menu-builder/pull/12
+* [js] Update prettier-plugin-tailwindcss 0.1.13 → 0.6.6 (major) by @depfu in https://github.com/datlechin/filament-menu-builder/pull/13
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.3.0...v0.3.1
+
 ## v0.3.0 - 2024-08-09
 
 ### What's Changed
