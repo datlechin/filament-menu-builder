@@ -15,6 +15,10 @@ return [
             'label' => 'Locations',
             'description' => 'Choose where to display the menu.',
             'empty' => 'Unassigned',
+            'actions' => [
+                'select_all' => 'Select all',
+                'deselect_all' => 'Deselect all',
+            ],
         ],
         'is_visible' => [
             'label' => 'Visible',
