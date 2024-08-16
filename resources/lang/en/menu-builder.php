@@ -50,5 +50,9 @@ return [
             'heading' => 'No items found',
             'description' => 'There are no items in this menu.',
         ],
+        'pagination' => [
+            'previous' => 'Previous',
+            'next' => 'Next',
+        ],
     ],
 ];
