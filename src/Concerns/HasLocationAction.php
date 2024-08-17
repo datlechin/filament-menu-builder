@@ -21,7 +21,7 @@ trait HasLocationAction
             ->color('gray')
             ->fillForm(fn () => $this->getLocations()->map(fn ($location, $key) => [
                 'location' => $location,
-                'menu' => $this->getModel()::location($key)->id ?? null,
+                'menu' => $this->getLocationMenus()->first(fn ($menu) => in_array($key, $menu->locations))->id ?? null,
             ])->all())
             ->action(function (array $data) {
                 $menus = collect($data)->groupBy(fn ($value, $key) => $value, preserveKeys: true)
