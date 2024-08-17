@@ -50,5 +50,9 @@ return [
             'heading' => 'Không tìm thấy mục nào',
             'description' => 'Không có mục nào trong menu này.',
         ],
+        'pagination' => [
+            'previous' => 'Trước',
+            'next' => 'Tiếp',
+        ],
     ],
 ];

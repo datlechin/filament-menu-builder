@@ -99,7 +99,7 @@ $panel
 
 Menu panels are the panels that contain the menu items which you can add to the menus.
 
-### Custom Menu Panel
+#### Custom Menu Panel
 
 By default, the package provides a **Custom Link** menu panel that allows you to add custom links to the menus.
 
@@ -147,7 +147,7 @@ $panel
 
 ![Static Menu Panel](./art/static-menu.png)
 
-### Model Menu Panel
+#### Model Menu Panel
 
 The model menu panel allows you to add menu items from a model.
 
@@ -191,6 +191,32 @@ $panel
 ```
 
 ![Model Menu Panel](./art/model-menu.png)
+
+#### Additional Menu Panel Options
+
+When registering a menu panel, multiple methods are available allowing you to configure the panel's behavior such as collapse state and pagination.
+
+```php
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->addMenuPanels([
+                StaticMenuPanel::make()
+                    ->addMany([
+                        ...
+                    ])
+                    ->description('Lorem ipsum...')
+                    ->icon('heroicon-m-link')
+                    ->collapsed(true)
+                    ->collapsible(true)
+                    ->paginate(perPage: 5, condition: true)
+            ])
+    )
+```
 
 ### Custom Fields
 

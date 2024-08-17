@@ -25,6 +25,20 @@ class MenuPanel extends Component implements HasForms
 
     public string $name;
 
+    public ?string $description;
+
+    public ?string $icon;
+
+    public bool $collapsible;
+
+    public bool $collapsed;
+
+    public bool $paginated;
+
+    public int $perPage;
+
+    public int $page = 1;
+
     public array $items = [];
 
     #[Validate('required|array')]
@@ -34,6 +48,12 @@ class MenuPanel extends Component implements HasForms
     {
         $this->id = $menuPanel->getIdentifier();
         $this->name = $menuPanel->getName();
+        $this->description = $menuPanel->getDescription();
+        $this->icon = $menuPanel->getIcon();
+        $this->collapsible = $menuPanel->isCollapsible();
+        $this->collapsed = $menuPanel->isCollapsed();
+        $this->paginated = $menuPanel->isPaginated();
+        $this->perPage = $menuPanel->getPerPage();
         $this->items = array_map(function ($item) {
             if (isset($item['url']) && is_callable($item['url'])) {
                 $item['url'] = $item['url']();
@@ -41,6 +61,13 @@ class MenuPanel extends Component implements HasForms
 
             return $item;
         }, $menuPanel->getItems());
+    }
+
+    public function getItems(): array
+    {
+        return $this->paginated
+            ? collect($this->items)->forPage($this->page, $this->perPage)->all()
+            : $this->items;
     }
 
     public function add(): void
@@ -75,7 +102,7 @@ class MenuPanel extends Component implements HasForms
 
     public function form(Form $form): Form
     {
-        $items = collect($this->items)->mapWithKeys(fn ($item) => [$item['title'] => $item['title']]);
+        $items = collect($this->getItems())->mapWithKeys(fn ($item) => [$item['title'] => $item['title']]);
 
         return $form
             ->schema([
@@ -86,9 +113,40 @@ class MenuPanel extends Component implements HasForms
                     ->hiddenLabel()
                     ->required()
                     ->bulkToggleable()
+                    ->live(condition: $this->paginated)
                     ->visible($items->isNotEmpty())
                     ->options($items),
             ]);
+    }
+
+    public function getTotalPages(): int
+    {
+        return (int) ceil(count($this->items) / $this->perPage);
+    }
+
+    public function nextPage(): void
+    {
+        $this->page = min($this->getTotalPages(), $this->page + 1);
+    }
+
+    public function previousPage(): void
+    {
+        $this->page = max(1, $this->page - 1);
+    }
+
+    public function hasNextPage(): bool
+    {
+        return $this->page < $this->getTotalPages();
+    }
+
+    public function hasPreviousPage(): bool
+    {
+        return $this->page > 1;
+    }
+
+    public function hasPages(): bool
+    {
+        return $this->paginated && $this->getTotalPages() > 1;
     }
 
     public function render(): View
