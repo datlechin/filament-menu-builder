@@ -10,6 +10,8 @@ use Illuminate\Support\Collection;
 
 trait HasLocationAction
 {
+    protected ?Collection $locationMenus = null;
+
     public function getLocationAction(): Action
     {
         return Action::make('locations')
@@ -25,35 +27,34 @@ trait HasLocationAction
                 $menus = collect($data)->groupBy(fn ($value, $key) => $value, preserveKeys: true)
                     ->map(fn ($items) => $items->keys()->all());
 
-                $models = $this->getModel()::all();
-
-                foreach ($models as $model) {
+                foreach ($this->getLocationMenus() as $model) {
                     $model->update([
                         'locations' => $menus->get($model->id),
                     ]);
                 }
             })
-            ->form(function () {
-                $menus = $this->getModel()::all();
+            ->form(fn () => $this->getLocations()->map(
+                fn ($location, $key) => Components\Grid::make(2)
+                    ->statePath($key)
+                    ->schema([
+                        Components\TextInput::make('location')
+                            ->label(__('filament-menu-builder::menu-builder.actions.locations.form.location.label'))
+                            ->hiddenLabel($key !== $this->getLocations()->keys()->first())
+                            ->disabled(),
 
-                return $this->getLocations()->map(function ($location, $key) use ($menus) {
-                    return Components\Grid::make(2)
-                        ->statePath($key)
-                        ->schema([
-                            Components\TextInput::make('location')
-                                ->label(__('filament-menu-builder::menu-builder.actions.locations.form.location.label'))
-                                ->hiddenLabel($key !== $this->getLocations()->keys()->first())
-                                ->disabled(),
+                        Components\Select::make('menu')
+                            ->label(__('filament-menu-builder::menu-builder.actions.locations.form.menu.label'))
+                            ->searchable()
+                            ->hiddenLabel($key !== $this->getLocations()->keys()->first())
+                            ->options($this->getLocationMenus()->pluck('name', 'id')->all())
+                            ->required(),
+                    ])
+            )->all());
+    }
 
-                            Components\Select::make('menu')
-                                ->label(__('filament-menu-builder::menu-builder.actions.locations.form.menu.label'))
-                                ->searchable()
-                                ->hiddenLabel($key !== $this->getLocations()->keys()->first())
-                                ->options($menus->pluck('name', 'id')->toArray())
-                                ->required(),
-                        ]);
-                })->all();
-            });
+    protected function getLocationMenus(): Collection
+    {
+        return $this->locationMenus ??= $this->getModel()::all();
     }
 
     protected function getLocations(): Collection
