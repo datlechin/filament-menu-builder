@@ -39,7 +39,11 @@ class EditMenu extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $locations = Arr::pull($data, 'locations') ?: [];
+        $registeredLocations = FilamentMenuBuilderPlugin::get()->getLocations();
+
+        $locations = collect(Arr::pull($data, 'locations') ?: [])
+            ->filter(fn ($location) => array_key_exists($location, $registeredLocations))
+            ->values();
 
         /** @var Menu */
         $record = parent::handleRecordUpdate($record, $data);
