@@ -2,6 +2,15 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.4.0 - 2024-08-17
+
+### What's Changed
+
+* ✨ Add additional configuration for menu panels by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/14
+* 💄 Improve menu location form styling by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/15
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.3.1...v0.4.0
+
 ## v0.3.1 - 2024-08-14
 
 ### What's Changed
