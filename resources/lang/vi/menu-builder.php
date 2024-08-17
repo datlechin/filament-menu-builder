@@ -15,6 +15,10 @@ return [
             'label' => 'Vị trí',
             'description' => 'Chọn vị trí hiển thị menu.',
             'empty' => 'Chưa gán',
+            'actions' => [
+                'select_all' => 'Chọn tất cả',
+                'deselect_all' => 'Bỏ chọn tất cả',
+            ],
         ],
         'is_visible' => [
             'label' => 'Hiển thị',
