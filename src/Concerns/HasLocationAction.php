@@ -46,8 +46,7 @@ trait HasLocationAction
                             ->label(__('filament-menu-builder::menu-builder.actions.locations.form.menu.label'))
                             ->searchable()
                             ->hiddenLabel($key !== $this->getLocations()->keys()->first())
-                            ->options($this->getLocationMenus()->pluck('name', 'id')->all())
-                            ->required(),
+                            ->options($this->getLocationMenus()->pluck('name', 'id')->all()),
                     ])
             )->all());
     }
