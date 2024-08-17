@@ -74,7 +74,7 @@ class MenuPanel extends Component implements HasForms
     {
         $this->validate();
 
-        $order = $this->menu->menuItems()->max('order') ?? 0;
+        $order = $this->menu->items()->max('order') ?? 0;
 
         $selectedItems = collect($this->items)
             ->filter(fn ($item) => in_array($item['title'], $this->data))
@@ -89,7 +89,7 @@ class MenuPanel extends Component implements HasForms
             return;
         }
 
-        $this->menu->menuItems()->createMany($selectedItems);
+        $this->menu->items()->createMany($selectedItems);
 
         $this->reset('data');
         $this->dispatch('menu:created');

@@ -13,14 +13,15 @@ return new class extends Migration
         Schema::create(config('filament-menu-builder.tables.menus'), function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->json('locations')->nullable();
             $table->boolean('is_visible')->default(true);
             $table->timestamps();
         });
 
         Schema::create(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Menu::class);
-            $table->foreignIdFor(Menu::class, 'parent_id')->nullable();
+            $table->foreignIdFor(Menu::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Menu::class, 'parent_id')->nullable()->constrained()->nullOnDelete();
             $table->nullableMorphs('linkable');
             $table->string('title');
             $table->string('url')->nullable();
@@ -28,18 +29,10 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->timestamps();
         });
-
-        Schema::create(config('filament-menu-builder.tables.menu_locations'), function (Blueprint $table) {
-            $table->id();
-            $table->foreignIdFor(Menu::class);
-            $table->string('location', 50);
-            $table->timestamps();
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists(config('filament-menu-builder.tables.menu_locations'));
         Schema::dropIfExists(config('filament-menu-builder.tables.menu_items'));
         Schema::dropIfExists(config('filament-menu-builder.tables.menus'));
     }

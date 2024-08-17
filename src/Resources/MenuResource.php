@@ -6,15 +6,9 @@ namespace Datlechin\FilamentMenuBuilder\Resources;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components;
 use Filament\Forms\Components\Component;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -32,31 +26,29 @@ class MenuResource extends Resource
         return $form
             ->columns(1)
             ->schema([
-                TextInput::make('name')
-                    ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
-                    ->required(),
-                ToggleButtons::make('locations')
-                    ->multiple()
-                    ->inline()
-                    ->reactive()
-                    ->visible(fn (string $context) => $context === 'edit' && $locations)
-                    ->label(__('filament-menu-builder::menu-builder.resource.locations.label'))
-                    ->afterStateHydrated(fn (Menu $menu, Set $set) => $set('locations', $menu->locations->pluck('location')))
-                    ->helperText(__('filament-menu-builder::menu-builder.resource.locations.description'))
-                    ->hintActions([
-                        Action::make(__('filament-menu-builder::menu-builder.resource.locations.actions.select_all'))
-                            ->action(fn (Set $set) => $set('locations', array_keys($locations)))
-                            ->visible(fn (Get $get) => count($get('locations')) !== count($locations)),
+                Components\Grid::make(4)
+                    ->schema([
+                        Components\TextInput::make('name')
+                            ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
+                            ->required()
+                            ->columnSpan(3),
 
-                        Action::make(__('filament-menu-builder::menu-builder.resource.locations.actions.deselect_all'))
-                            ->action(fn (Set $set) => $set('locations', []))
-                            ->visible(fn (Get $get) => count($get('locations')) === count($locations)),
-                    ])
-                    ->options($locations),
-                Toggle::make('is_visible')
-                    ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
-                    ->default(true),
-                Group::make()
+                        Components\ToggleButtons::make('is_visible')
+                            ->grouped()
+                            ->options([
+                                true => __('filament-menu-builder::menu-builder.resource.is_visible.visible'),
+                                false => __('filament-menu-builder::menu-builder.resource.is_visible.hidden'),
+                            ])
+                            ->colors([
+                                true => 'primary',
+                                false => 'danger',
+                            ])
+                            ->required()
+                            ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
+                            ->default(true),
+                    ]),
+
+                Components\Group::make()
                     ->visible(fn (Component $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuFields()) !== [])
                     ->schema(FilamentMenuBuilderPlugin::get()->getMenuFields()),
             ]);
@@ -71,7 +63,7 @@ class MenuResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
-                Tables\Columns\TextColumn::make('locations.location')
+                Tables\Columns\TextColumn::make('locations')
                     ->default($default = __('filament-menu-builder::menu-builder.resource.locations.empty'))
                     ->color(fn (string $state) => $state !== $default ? 'primary' : 'gray')
                     ->formatStateUsing(fn (string $state) => $locations[$state] ?? $state)

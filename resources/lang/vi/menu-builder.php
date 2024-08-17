@@ -12,21 +12,29 @@ return [
             'label' => 'Tên',
         ],
         'locations' => [
-            'label' => 'Vị trí',
-            'description' => 'Chọn vị trí hiển thị menu.',
             'empty' => 'Chưa gán',
-            'actions' => [
-                'select_all' => 'Chọn tất cả',
-                'deselect_all' => 'Bỏ chọn tất cả',
-            ],
         ],
         'is_visible' => [
             'label' => 'Hiển thị',
+            'visible' => 'Hiển thị',
+            'hidden' => 'Ẩn',
         ],
     ],
     'actions' => [
         'add' => [
             'label' => 'Thêm vào Menu',
+        ],
+        'locations' => [
+            'label' => 'Quản lý Vị trí',
+            'description' => 'Chọn menu nào xuất hiện ở mỗi vị trí.',
+            'form' => [
+                'location' => [
+                    'label' => 'Vị trí',
+                ],
+                'menu' => [
+                    'label' => 'Menu đã gán',
+                ],
+            ],
         ],
     ],
     'items' => [

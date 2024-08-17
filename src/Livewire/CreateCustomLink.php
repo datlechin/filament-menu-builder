@@ -37,12 +37,12 @@ class CreateCustomLink extends Component implements HasForms
         ]);
 
         $this->menu
-            ->menuItems()
+            ->items()
             ->create([
                 'title' => $this->title,
                 'url' => $this->url,
                 'target' => $this->target,
-                'order' => $this->menu->menuItems()->max('order') + 1,
+                'order' => $this->menu->items->max('order') + 1,
             ]);
 
         Notification::make()

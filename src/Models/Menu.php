@@ -19,16 +19,17 @@ class Menu extends Model
     protected function casts(): array
     {
         return [
+            'locations' => 'array',
             'is_visible' => 'bool',
         ];
     }
 
-    public function locations(): HasMany
+    public static function location(string $location): ?self
     {
-        return $this->hasMany(MenuLocation::class);
+        return static::query()->whereJsonContains('locations', $location)->first();
     }
 
-    public function menuItems(): HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(MenuItem::class)
             ->whereNull('parent_id')
