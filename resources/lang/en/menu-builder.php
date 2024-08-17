@@ -25,7 +25,8 @@ return [
             'label' => 'Add to Menu',
         ],
         'locations' => [
-            'label' => 'Manage Locations',
+            'label' => 'Locations',
+            'heading' => 'Manage Locations',
             'description' => 'Choose which menu appears at each location.',
             'submit' => 'Update',
             'form' => [

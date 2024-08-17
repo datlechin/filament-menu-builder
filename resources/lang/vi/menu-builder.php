@@ -25,7 +25,8 @@ return [
             'label' => 'Thêm vào Menu',
         ],
         'locations' => [
-            'label' => 'Quản lý Vị trí',
+            'label' => 'Vị trí',
+            'heading' => 'Quản lý vị trí',
             'description' => 'Chọn menu nào xuất hiện ở mỗi vị trí.',
             'submit' => 'Cập nhật',
             'form' => [
