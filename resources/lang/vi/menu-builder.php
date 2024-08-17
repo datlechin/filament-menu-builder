@@ -27,6 +27,7 @@ return [
         'locations' => [
             'label' => 'Quản lý Vị trí',
             'description' => 'Chọn menu nào xuất hiện ở mỗi vị trí.',
+            'submit' => 'Cập nhật',
             'form' => [
                 'location' => [
                     'label' => 'Vị trí',

@@ -16,6 +16,7 @@ trait HasLocationAction
     public function getLocationAction(): Action
     {
         return Action::make('locations')
+            ->modalSubmitActionLabel(__('filament-menu-builder::menu-builder.actions.locations.submit'))
             ->modalWidth(MaxWidth::Large)
             ->label(__('filament-menu-builder::menu-builder.actions.locations.label'))
             ->modalDescription(__('filament-menu-builder::menu-builder.actions.locations.description'))
