@@ -168,7 +168,7 @@ class Category extends Model implements MenuPanelable
 
     public function getMenuPanelUrlUsing(): callable
     {
-        return fn(self $model) => route('categories.show', $model->slug);
+        return fn (self $model) => route('categories.show', $model->slug);
     }
 }
 ```
