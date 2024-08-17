@@ -19,8 +19,8 @@ return new class extends Migration
 
         Schema::create(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Menu::class);
-            $table->foreignIdFor(Menu::class, 'parent_id')->nullable();
+            $table->foreignIdFor(Menu::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Menu::class, 'parent_id')->nullable()->constrained()->nullOnDelete();
             $table->nullableMorphs('linkable');
             $table->string('title');
             $table->string('url')->nullable();
@@ -31,9 +31,11 @@ return new class extends Migration
 
         Schema::create(config('filament-menu-builder.tables.menu_locations'), function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Menu::class);
+            $table->foreignIdFor(Menu::class)->constrained()->cascadeOnDelete();
             $table->string('location', 50);
             $table->timestamps();
+
+            $table->unique(['menu_id', 'location']);
         });
     }
 
