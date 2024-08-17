@@ -56,6 +56,9 @@ return [
         'created' => [
             'title' => 'Link created',
         ],
+        'locations' => [
+            'title' => 'Menu locations updated',
+        ],
     ],
     'panel' => [
         'empty' => [

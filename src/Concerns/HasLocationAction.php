@@ -5,6 +5,7 @@ namespace Datlechin\FilamentMenuBuilder\Concerns;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Filament\Actions\Action;
 use Filament\Forms\Components;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Collection;
 
@@ -32,6 +33,11 @@ trait HasLocationAction
                         'locations' => $menus->get($model->id),
                     ]);
                 }
+
+                Notification::make()
+                    ->title(__('filament-menu-builder::menu-builder.notifications.locations.title'))
+                    ->success()
+                    ->send();
             })
             ->form(fn () => $this->getLocations()->map(
                 fn ($location, $key) => Components\Grid::make(2)

@@ -56,6 +56,9 @@ return [
         'created' => [
             'title' => 'Liên kết đã được tạo',
         ],
+        'locations' => [
+            'title' => 'Cập nhật vị trí menu',
+        ],
     ],
     'panel' => [
         'empty' => [
