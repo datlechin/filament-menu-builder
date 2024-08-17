@@ -21,8 +21,6 @@ class MenuResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $locations = FilamentMenuBuilderPlugin::get()->getLocations();
-
         return $form
             ->columns(1)
             ->schema([
