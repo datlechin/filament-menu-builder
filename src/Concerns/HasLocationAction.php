@@ -30,9 +30,9 @@ trait HasLocationAction
                 $menus = collect($data)->groupBy(fn ($value, $key) => $value, preserveKeys: true)
                     ->map(fn ($items) => $items->keys()->all());
 
-                foreach ($this->getLocationMenus() as $model) {
-                    $model->update([
-                        'locations' => $menus->get($model->id),
+                foreach ($this->getLocationMenus() as $menu) {
+                    $menu->update([
+                        'locations' => $menus->get($menu->id),
                     ]);
                 }
 
