@@ -26,7 +26,10 @@ class Menu extends Model
 
     public static function location(string $location): ?self
     {
-        return static::query()->whereJsonContains('locations', $location)->first();
+        return static::query()
+            ->whereJsonContains('locations', $location)
+            ->where('is_visible', true)
+            ->first();
     }
 
     public function items(): HasMany
