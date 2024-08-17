@@ -58,6 +58,16 @@ class MenuItem extends Model
         return $this->morphTo();
     }
 
+    protected function url(): Attribute
+    {
+        return Attribute::get(function (?string $value) {
+            return match (true) {
+                $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelUrlUsing()($this->linkable),
+                default => $value,
+            };
+        });
+    }
+
     protected function type(): Attribute
     {
         return Attribute::get(function () {
