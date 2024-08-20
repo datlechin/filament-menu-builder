@@ -42,7 +42,7 @@ class Menu extends Model
     public static function location(string $location): ?self
     {
         return FilamentMenuBuilderPlugin::get()
-            ->getMenuLocationModel()::with(['menu' => fn (Builder $query) => $query->where('is_visible', true)])
+            ->getMenuLocationModel()::with(['menu' => fn(Builder $query) => $query->where('is_visible', true)])
             ->where('location', $location)
             ->first()?->menu;
     }

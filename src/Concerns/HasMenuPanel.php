@@ -17,6 +17,6 @@ trait HasMenuPanel
 
     public function getMenuPanelModifyQueryUsing(): callable
     {
-        return fn (Builder $query) => $query;
+        return fn(Builder $query) => $query;
     }
 }

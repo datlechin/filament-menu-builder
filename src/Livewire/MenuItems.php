@@ -53,7 +53,7 @@ class MenuItems extends Component implements HasActions, HasForms
             ->update([
                 'order' => DB::raw(
                     'case ' . collect($order)
-                        ->map(fn ($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote($recordKey) . ' then ' . ($recordIndex + 1))
+                        ->map(fn($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote($recordKey) . ' then ' . ($recordIndex + 1))
                         ->implode(' ') . ' end',
                 ),
                 'parent_id' => $parentId,
@@ -78,9 +78,9 @@ class MenuItems extends Component implements HasActions, HasForms
             ->label(__('filament-actions::edit.single.label'))
             ->iconButton()
             ->size(ActionSize::Small)
-            ->modalHeading(fn (array $arguments): string => __('filament-actions::edit.single.modal.heading', ['label' => $arguments['title']]))
+            ->modalHeading(fn(array $arguments): string => __('filament-actions::edit.single.modal.heading', ['label' => $arguments['title']]))
             ->icon('heroicon-m-pencil-square')
-            ->fillForm(fn (array $arguments): array => FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()
+            ->fillForm(fn(array $arguments): array => FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()
                 ->where('id', $arguments['id'])
                 ->with('linkable')
                 ->first()
@@ -90,27 +90,27 @@ class MenuItems extends Component implements HasActions, HasForms
                     ->label(__('filament-menu-builder::menu-builder.form.title'))
                     ->required(),
                 TextInput::make('url')
-                    ->hidden(fn (?string $state, Get $get): bool => blank($state) || filled($get('linkable_type')))
+                    ->hidden(fn(?string $state, Get $get): bool => blank($state) || filled($get('linkable_type')))
                     ->label(__('filament-menu-builder::menu-builder.form.url'))
                     ->required(),
                 Placeholder::make('linkable_type')
                     ->label(__('filament-menu-builder::menu-builder.form.linkable_type'))
-                    ->hidden(fn (?string $state): bool => blank($state))
-                    ->content(fn (string $state) => $state),
+                    ->hidden(fn(?string $state): bool => blank($state))
+                    ->content(fn(string $state) => $state),
                 Placeholder::make('linkable_id')
                     ->label(__('filament-menu-builder::menu-builder.form.linkable_id'))
-                    ->hidden(fn (?string $state): bool => blank($state))
-                    ->content(fn (string $state) => $state),
+                    ->hidden(fn(?string $state): bool => blank($state))
+                    ->content(fn(string $state) => $state),
                 Select::make('target')
                     ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                     ->options(LinkTarget::class)
                     ->default(LinkTarget::Self),
                 Group::make()
-                    ->visible(fn (FormComponent $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuItemFields()) !== [])
+                    ->visible(fn(FormComponent $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuItemFields()) !== [])
                     ->schema(FilamentMenuBuilderPlugin::get()->getMenuItemFields()),
             ])
             ->action(
-                fn (array $data, array $arguments) => FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()
+                fn(array $data, array $arguments) => FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()
                     ->where('id', $arguments['id'])
                     ->update($data),
             )
@@ -128,7 +128,7 @@ class MenuItems extends Component implements HasActions, HasForms
             ->iconButton()
             ->size(ActionSize::Small)
             ->requiresConfirmation()
-            ->modalHeading(fn (array $arguments): string => __('filament-actions::delete.single.modal.heading', ['label' => $arguments['title']]))
+            ->modalHeading(fn(array $arguments): string => __('filament-actions::delete.single.modal.heading', ['label' => $arguments['title']]))
             ->modalSubmitActionLabel(__('filament-actions::delete.single.modal.actions.delete.label'))
             ->modalIcon(FilamentIcon::resolve('actions::delete-action.modal') ?? 'heroicon-o-trash')
             ->action(function (array $arguments): void {
