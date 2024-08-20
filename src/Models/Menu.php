@@ -19,7 +19,6 @@ class Menu extends Model
     protected function casts(): array
     {
         return [
-            'locations' => 'array',
             'is_visible' => 'bool',
         ];
     }
