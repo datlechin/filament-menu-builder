@@ -21,7 +21,7 @@
                 <x-filament::icon-button
                     icon="heroicon-o-chevron-right"
                     x-on:click="open = !open"
-                    title="Mở rộng"
+                    :tooltip="trans('filament-menu-builder::menu-builder.items.expand')"
                     color="gray"
                     class="transition duration-200 ease-in-out"
                     x-bind:class="{ 'rotate-90': open }"
