@@ -6,6 +6,8 @@ return [
     'form' => [
         'title' => 'Title',
         'url' => 'URL',
+        'linkable_type' => 'Type',
+        'linkable_id' => 'ID',
     ],
     'resource' => [
         'name' => [
@@ -47,6 +49,7 @@ return [
         ],
     ],
     'items' => [
+        'expand' => 'Expand',
         'empty' => [
             'heading' => 'There are no items in this menu.',
         ],

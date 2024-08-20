@@ -6,6 +6,8 @@ return [
     'form' => [
         'title' => 'Tiêu đề',
         'url' => 'URL',
+        'linkable_type' => 'Loại',
+        'linkable_id' => 'ID',
     ],
     'resource' => [
         'name' => [
@@ -47,6 +49,7 @@ return [
         ],
     ],
     'items' => [
+        'expand' => 'Mở rộng',
         'empty' => [
             'heading' => 'Không có mục nào trong menu này.',
         ],
