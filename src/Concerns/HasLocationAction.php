@@ -23,7 +23,7 @@ trait HasLocationAction
             ->modalSubmitActionLabel(__('filament-menu-builder::menu-builder.actions.locations.submit'))
             ->modalWidth(MaxWidth::Large)
             ->color('gray')
-            ->fillForm(fn () => $this->getLocations()->map(fn ($location, $key) => [
+            ->fillForm(fn () => $this->getRegisteredLocations()->map(fn ($location, $key) => [
                 'location' => $location,
                 'menu' => $this->getMenuLocations()->where('location', $key)->first()?->menu_id,
             ])->all())
@@ -34,7 +34,7 @@ trait HasLocationAction
 
                 $this->getMenuLocations()
                     ->pluck('location')
-                    ->diff($this->getLocations()->keys())
+                    ->diff($this->getRegisteredLocations()->keys())
                     ->each(fn ($location) => $this->getMenuLocations()->where('location', $location)->each->delete());
 
                 foreach ($locations as $location => $menu) {
@@ -55,19 +55,19 @@ trait HasLocationAction
                     ->success()
                     ->send();
             })
-            ->form(fn () => $this->getLocations()->map(
+            ->form(fn () => $this->getRegisteredLocations()->map(
                 fn ($location, $key) => Components\Grid::make(2)
                     ->statePath($key)
                     ->schema([
                         Components\TextInput::make('location')
                             ->label(__('filament-menu-builder::menu-builder.actions.locations.form.location.label'))
-                            ->hiddenLabel($key !== $this->getLocations()->keys()->first())
+                            ->hiddenLabel($key !== $this->getRegisteredLocations()->keys()->first())
                             ->disabled(),
 
                         Components\Select::make('menu')
                             ->label(__('filament-menu-builder::menu-builder.actions.locations.form.menu.label'))
                             ->searchable()
-                            ->hiddenLabel($key !== $this->getLocations()->keys()->first())
+                            ->hiddenLabel($key !== $this->getRegisteredLocations()->keys()->first())
                             ->options($this->getModel()::all()->pluck('name', 'id')->all()),
                     ])
             )->all());
@@ -78,8 +78,8 @@ trait HasLocationAction
         return $this->menuLocations ??= MenuLocation::all();
     }
 
-    protected function getLocations(): Collection
+    protected function getRegisteredLocations(): Collection
     {
-        return collect(FilamentMenuBuilderPlugin::get()->getLocations());
+        return collect(FilamentMenuBuilderPlugin::get()->getRegisteredLocations());
     }
 }
