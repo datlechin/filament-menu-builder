@@ -54,7 +54,13 @@ class MenuPanel extends Component implements HasForms
         $this->collapsed = $menuPanel->isCollapsed();
         $this->paginated = $menuPanel->isPaginated();
         $this->perPage = $menuPanel->getPerPage();
-        $this->items = $menuPanel->getItems();
+        $this->items = array_map(function ($item) {
+            if (isset($item['url']) && is_callable($item['url'])) {
+                $item['url'] = $item['url']();
+            }
+
+            return $item;
+        }, $menuPanel->getItems());
     }
 
     public function getItems(): array
