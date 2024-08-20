@@ -37,6 +37,9 @@ return [
                     'label' => 'Assigned Menu',
                 ],
             ],
+            'empty' => [
+                'heading' => 'No locations registered',
+            ],
         ],
     ],
     'items' => [

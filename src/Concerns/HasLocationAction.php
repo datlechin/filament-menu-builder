@@ -21,6 +21,7 @@ trait HasLocationAction
             ->modalDescription(__('filament-menu-builder::menu-builder.actions.locations.description'))
             ->modalSubmitActionLabel(__('filament-menu-builder::menu-builder.actions.locations.submit'))
             ->modalWidth(MaxWidth::Large)
+            ->modalSubmitAction($this->getRegisteredLocations()->isEmpty() ? false : null)
             ->color('gray')
             ->fillForm(fn () => $this->getRegisteredLocations()->map(fn ($location, $key) => [
                 'location' => $location,
@@ -54,7 +55,7 @@ trait HasLocationAction
                     ->success()
                     ->send();
             })
-            ->form(fn () => $this->getRegisteredLocations()->map(
+            ->form($this->getRegisteredLocations()->map(
                 fn ($location, $key) => Components\Grid::make(2)
                     ->statePath($key)
                     ->schema([
@@ -69,7 +70,13 @@ trait HasLocationAction
                             ->hiddenLabel($key !== $this->getRegisteredLocations()->keys()->first())
                             ->options($this->getModel()::all()->pluck('name', 'id')->all()),
                     ])
-            )->all());
+            )->all() ?: [
+                Components\View::make('filament-tables::components.empty-state.index')
+                    ->viewData([
+                        'heading' => __('filament-menu-builder::menu-builder.actions.locations.empty.heading'),
+                        'icon' => 'heroicon-o-x-mark',
+                    ]),
+            ]);
     }
 
     protected function getMenuLocations(): Collection

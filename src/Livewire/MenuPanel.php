@@ -106,7 +106,12 @@ class MenuPanel extends Component implements HasForms
 
         return $form
             ->schema([
-                Components\View::make('filament-menu-builder::components.empty-state')
+                Components\View::make('filament-tables::components.empty-state.index')
+                    ->viewData([
+                        'heading' => __('filament-menu-builder::menu-builder.panel.empty.heading'),
+                        'description' => __('filament-menu-builder::menu-builder.panel.empty.description'),
+                        'icon' => 'heroicon-o-link-slash',
+                    ])
                     ->visible($items->isEmpty()),
 
                 Components\CheckboxList::make('data')
