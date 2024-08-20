@@ -12,21 +12,31 @@ return [
             'label' => 'Name',
         ],
         'locations' => [
-            'label' => 'Locations',
-            'description' => 'Choose where to display the menu.',
             'empty' => 'Unassigned',
-            'actions' => [
-                'select_all' => 'Select all',
-                'deselect_all' => 'Deselect all',
-            ],
         ],
         'is_visible' => [
-            'label' => 'Visible',
+            'label' => 'Visibility',
+            'visible' => 'Visible',
+            'hidden' => 'Hidden',
         ],
     ],
     'actions' => [
         'add' => [
             'label' => 'Add to Menu',
+        ],
+        'locations' => [
+            'label' => 'Locations',
+            'heading' => 'Manage Locations',
+            'description' => 'Choose which menu appears at each location.',
+            'submit' => 'Update',
+            'form' => [
+                'location' => [
+                    'label' => 'Location',
+                ],
+                'menu' => [
+                    'label' => 'Assigned Menu',
+                ],
+            ],
         ],
     ],
     'items' => [
@@ -47,6 +57,9 @@ return [
     'notifications' => [
         'created' => [
             'title' => 'Link created',
+        ],
+        'locations' => [
+            'title' => 'Menu locations updated',
         ],
     ],
     'panel' => [

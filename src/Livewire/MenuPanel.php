@@ -74,7 +74,7 @@ class MenuPanel extends Component implements HasForms
     {
         $this->validate();
 
-        $order = $this->menu->menuItems()->max('order') ?? 0;
+        $order = $this->menu->menuItems->max('order') ?? 0;
 
         $selectedItems = collect($this->items)
             ->filter(fn ($item) => in_array($item['title'], $this->data))

@@ -36,4 +36,11 @@ class Menu extends Model
             ->orderBy('order')
             ->with('children');
     }
+
+    public static function location(string $location): ?self
+    {
+        return MenuLocation::with('menu')
+            ->where('location', $location)
+            ->first()?->menu;
+    }
 }
