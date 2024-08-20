@@ -13,7 +13,6 @@ return new class extends Migration
         Schema::create(config('filament-menu-builder.tables.menus'), function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->json('locations')->nullable();
             $table->boolean('is_visible')->default(true);
             $table->timestamps();
         });
