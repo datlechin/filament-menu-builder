@@ -29,7 +29,7 @@ class Menu extends Model
         return $this->hasMany(MenuLocation::class);
     }
 
-    public function items(): HasMany
+    public function menuItems(): HasMany
     {
         return $this->hasMany(MenuItem::class)
             ->whereNull('parent_id')

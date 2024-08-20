@@ -39,7 +39,7 @@ class MenuItems extends Component implements HasActions, HasForms
     #[On('menu:created')]
     public function menuItems(): Collection
     {
-        return $this->menu->items;
+        return $this->menu->menuItems;
     }
 
     public function reorder(array $order, ?string $parentId = null): void
