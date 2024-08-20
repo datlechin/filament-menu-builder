@@ -12,7 +12,11 @@ return [
             'label' => 'Name',
         ],
         'locations' => [
+            'label' => 'Locations',
             'empty' => 'Unassigned',
+        ],
+        'items' => [
+            'label' => 'Items',
         ],
         'is_visible' => [
             'label' => 'Visibility',
