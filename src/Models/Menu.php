@@ -40,7 +40,7 @@ class Menu extends Model
 
     public static function location(string $location): ?self
     {
-        return MenuLocation::with(['menu', 'menu.items'])
+        return MenuLocation::with('menu')
             ->where('location', $location)
             ->first()?->menu;
     }
