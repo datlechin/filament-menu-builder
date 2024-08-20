@@ -61,9 +61,9 @@ class MenuResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
-                Tables\Columns\TextColumn::make('locations')
+                Tables\Columns\TextColumn::make('locations.location')
                     ->default($default = __('filament-menu-builder::menu-builder.resource.locations.empty'))
-                    ->color(fn (string $state) => $state !== $default ? 'primary' : 'gray')
+                    ->color(fn (string $state) => array_key_exists($state, $locations) ? 'primary' : 'gray')
                     ->formatStateUsing(fn (string $state) => $locations[$state] ?? $state)
                     ->limitList(2)
                     ->badge(),

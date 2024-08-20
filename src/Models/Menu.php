@@ -24,12 +24,9 @@ class Menu extends Model
         ];
     }
 
-    public static function location(string $location): ?self
+    public function locations(): HasMany
     {
-        return static::query()
-            ->whereJsonContains('locations', $location)
-            ->where('is_visible', true)
-            ->first();
+        return $this->hasMany(MenuLocation::class);
     }
 
     public function items(): HasMany
@@ -39,5 +36,12 @@ class Menu extends Model
             ->orderBy('parent_id')
             ->orderBy('order')
             ->with('children');
+    }
+
+    public static function location(string $location): ?self
+    {
+        return MenuLocation::with(['menu', 'menu.items'])
+            ->where('location', $location)
+            ->first()?->menu;
     }
 }
