@@ -2,6 +2,29 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.5.0 - 2024-08-20
+
+### What's Changed
+
+* 🩹 Add missing URL attribute handling for model menu panels by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/16
+* 🐛 Fix persisting foreign ids by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/17
+* 🩹 Delete unregistered locations when updating menus by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/18
+* [js] Update esbuild 0.19.12 → 0.23.1 (major) by @depfu in https://github.com/datlechin/filament-menu-builder/pull/20
+* Bump axios from 1.7.2 to 1.7.4 by @dependabot in https://github.com/datlechin/filament-menu-builder/pull/21
+* ♻ Refactor the menu location implementation by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/19
+* 🧑‍💻 Respect `is_visible` when using `Menu::location` by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/24
+* 💄 Improve menu location empty state by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/22
+* 📝 Add simple menu usage documentation by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/23
+* 🧑‍💻 Add support for overriding the plugin models by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/25
+* 💄 Add item counts to menu table by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/26
+* 🧑‍💻 Ensure model menu item URLs do not get saved to the database by @Log1x in https://github.com/datlechin/filament-menu-builder/pull/27
+
+### New Contributors
+
+* @dependabot made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/21
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.4.0...v0.5.0
+
 ## v0.4.0 - 2024-08-17
 
 ### What's Changed
