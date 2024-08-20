@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Resources;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Filament\Forms\Components;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Form;
@@ -15,9 +14,12 @@ use Filament\Tables\Table;
 
 class MenuResource extends Resource
 {
-    protected static ?string $model = Menu::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-bars-3';
+
+    public static function getModel(): string
+    {
+        return FilamentMenuBuilderPlugin::get()->getMenuModel();
+    }
 
     public static function form(Form $form): Form
     {

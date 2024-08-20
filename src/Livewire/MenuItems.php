@@ -7,7 +7,6 @@ namespace Datlechin\FilamentMenuBuilder\Livewire;
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -48,7 +47,7 @@ class MenuItems extends Component implements HasActions, HasForms
             return;
         }
 
-        MenuItem::query()
+        FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()
             ->whereIn('id', $order)
             ->update([
                 'order' => DB::raw(
@@ -80,7 +79,7 @@ class MenuItems extends Component implements HasActions, HasForms
             ->size(ActionSize::Small)
             ->modalHeading(fn (array $arguments): string => __('filament-actions::edit.single.modal.heading', ['label' => $arguments['title']]))
             ->icon('heroicon-m-pencil-square')
-            ->fillForm(fn (array $arguments): array => MenuItem::query()
+            ->fillForm(fn (array $arguments): array => FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()
                 ->where('id', $arguments['id'])
                 ->with('linkable')
                 ->first()
@@ -108,7 +107,7 @@ class MenuItems extends Component implements HasActions, HasForms
                     ->schema(FilamentMenuBuilderPlugin::get()->getMenuItemFields()),
             ])
             ->action(
-                fn (array $data, array $arguments) => MenuItem::query()
+                fn (array $data, array $arguments) => FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()
                     ->where('id', $arguments['id'])
                     ->update($data),
             )
@@ -130,7 +129,7 @@ class MenuItems extends Component implements HasActions, HasForms
             ->modalSubmitActionLabel(__('filament-actions::delete.single.modal.actions.delete.label'))
             ->modalIcon(FilamentIcon::resolve('actions::delete-action.modal') ?? 'heroicon-o-trash')
             ->action(function (array $arguments): void {
-                $menuItem = MenuItem::query()->where('id', $arguments['id'])->first();
+                $menuItem = FilamentMenuBuilderPlugin::get()->getMenuItemModel()::query()->where('id', $arguments['id'])->first();
 
                 $menuItem?->delete();
             });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,6 +19,6 @@ class MenuLocation extends Model
 
     public function menu(): BelongsTo
     {
-        return $this->belongsTo(Menu::class);
+        return $this->belongsTo(FilamentMenuBuilderPlugin::get()->getMenuModel());
     }
 }

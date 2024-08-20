@@ -317,6 +317,28 @@ $panel
     )
 ```
 
+### Customizing the Models
+
+The default models used by the plugin can be configured and overridden similarly to the plugin resource as seen above.
+
+Simply extend the default models and then pass the classes when registering the plugin in the panel:
+
+```php
+use App\Models\Menu;
+use App\Models\MenuItem;
+use App\Models\MenuLocation;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->usingMenuModel(Menu::class)
+            ->usingMenuItemModel(MenuItem::class)
+            ->usingMenuLocationModel(MenuLocation::class)
+    )
+```
+
 ### Using Menus
 
 Getting the assigned menu for a registered location can be done using the `Menu` model. Below we will call the menu assigned to the `primary` location:
