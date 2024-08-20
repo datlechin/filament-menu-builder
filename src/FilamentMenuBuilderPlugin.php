@@ -164,7 +164,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function getMenuPanels(): array
     {
         return collect($this->menuPanels)
-            ->sortBy(fn(MenuPanel $menuPanel) => $menuPanel->getSort())
+            ->sortBy(fn (MenuPanel $menuPanel) => $menuPanel->getSort())
             ->all();
     }
 

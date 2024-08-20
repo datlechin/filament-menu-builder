@@ -77,7 +77,7 @@ class MenuPanel extends Component implements HasForms
         $order = $this->menu->menuItems->max('order') ?? 0;
 
         $selectedItems = collect($this->items)
-            ->filter(fn($item) => in_array($item['title'], $this->data))
+            ->filter(fn ($item) => in_array($item['title'], $this->data))
             ->map(function ($item) use (&$order) {
                 return [
                     ...$item,
@@ -102,7 +102,7 @@ class MenuPanel extends Component implements HasForms
 
     public function form(Form $form): Form
     {
-        $items = collect($this->getItems())->mapWithKeys(fn($item) => [$item['title'] => $item['title']]);
+        $items = collect($this->getItems())->mapWithKeys(fn ($item) => [$item['title'] => $item['title']]);
 
         return $form
             ->schema([
