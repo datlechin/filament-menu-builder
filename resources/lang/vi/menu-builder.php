@@ -37,6 +37,9 @@ return [
                     'label' => 'Menu đã gán',
                 ],
             ],
+            'empty' => [
+                'heading' => 'Không có vị trí nào được đăng ký',
+            ],
         ],
     ],
     'items' => [
