@@ -38,7 +38,7 @@ return [
                 ],
             ],
             'empty' => [
-                'heading' => 'Không có địa điểm nào được đăng ký',
+                'heading' => 'Không có vị trí nào được đăng ký',
             ],
         ],
     ],
