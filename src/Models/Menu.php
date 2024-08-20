@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -39,7 +40,7 @@ class Menu extends Model
 
     public static function location(string $location): ?self
     {
-        return MenuLocation::with('menu')
+        return MenuLocation::with(['menu' => fn (Builder $query) => $query->where('is_visible', true)])
             ->where('location', $location)
             ->first()?->menu;
     }
