@@ -6,6 +6,7 @@ namespace Datlechin\FilamentMenuBuilder\Models;
 
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,7 +39,7 @@ class MenuItem extends Model
 
     public function menu(): BelongsTo
     {
-        return $this->belongsTo(Menu::class);
+        return $this->belongsTo(FilamentMenuBuilderPlugin::get()->getMenuModel());
     }
 
     public function parent(): BelongsTo

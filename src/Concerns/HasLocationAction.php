@@ -3,7 +3,6 @@
 namespace Datlechin\FilamentMenuBuilder\Concerns;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Filament\Actions\Action;
 use Filament\Forms\Components;
 use Filament\Notifications\Notification;
@@ -44,7 +43,7 @@ trait HasLocationAction
                         continue;
                     }
 
-                    MenuLocation::updateOrCreate(
+                    FilamentMenuBuilderPlugin::get()->getMenuLocationModel()::updateOrCreate(
                         ['location' => $location],
                         ['menu_id' => $menu]
                     );
@@ -75,7 +74,7 @@ trait HasLocationAction
 
     protected function getMenuLocations(): Collection
     {
-        return $this->menuLocations ??= MenuLocation::all();
+        return $this->menuLocations ??= FilamentMenuBuilderPlugin::get()->getMenuLocationModel()::all();
     }
 
     protected function getRegisteredLocations(): Collection

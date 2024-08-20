@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder;
 
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel;
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Models\MenuItem;
+use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -12,6 +15,12 @@ use Filament\Panel;
 class FilamentMenuBuilderPlugin implements Plugin
 {
     protected string $resource = MenuResource::class;
+
+    protected string $menuModel = Menu::class;
+
+    protected string $menuItemModel = MenuItem::class;
+
+    protected string $menuLocationModel = MenuLocation::class;
 
     protected array $locations = [];
 
@@ -55,6 +64,27 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function usingResource(string $resource): static
     {
         $this->resource = $resource;
+
+        return $this;
+    }
+
+    public function usingMenuModel(string $model): static
+    {
+        $this->menuModel = $model;
+
+        return $this;
+    }
+
+    public function usingMenuItemModel(string $model): static
+    {
+        $this->menuItemModel = $model;
+
+        return $this;
+    }
+
+    public function usingMenuLocationModel(string $model): static
+    {
+        $this->menuLocationModel = $model;
 
         return $this;
     }
@@ -111,6 +141,21 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function getResource(): string
     {
         return $this->resource;
+    }
+
+    public function getMenuModel(): string
+    {
+        return $this->menuModel;
+    }
+
+    public function getMenuItemModel(): string
+    {
+        return $this->menuItemModel;
+    }
+
+    public function getMenuLocationModel(): string
+    {
+        return $this->menuLocationModel;
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -25,12 +26,12 @@ class Menu extends Model
 
     public function locations(): HasMany
     {
-        return $this->hasMany(MenuLocation::class);
+        return $this->hasMany(FilamentMenuBuilderPlugin::get()->getMenuLocationModel());
     }
 
     public function menuItems(): HasMany
     {
-        return $this->hasMany(MenuItem::class)
+        return $this->hasMany(FilamentMenuBuilderPlugin::get()->getMenuItemModel())
             ->whereNull('parent_id')
             ->orderBy('parent_id')
             ->orderBy('order')
@@ -39,7 +40,8 @@ class Menu extends Model
 
     public static function location(string $location): ?self
     {
-        return MenuLocation::with('menu')
+        return FilamentMenuBuilderPlugin::get()
+            ->getMenuLocationModel()::with('menu')
             ->where('location', $location)
             ->first()?->menu;
     }
