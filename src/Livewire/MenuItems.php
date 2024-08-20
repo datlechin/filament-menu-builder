@@ -18,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Get;
 use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\Facades\FilamentIcon;
@@ -90,14 +91,16 @@ class MenuItems extends Component implements HasActions, HasForms
                     ->label(__('filament-menu-builder::menu-builder.form.title'))
                     ->required(),
                 TextInput::make('url')
-                    ->hidden(fn (?string $state): bool => empty($state))
+                    ->hidden(fn (?string $state, Get $get): bool => blank($state) || filled($get('linkable_type')))
                     ->label(__('filament-menu-builder::menu-builder.form.url'))
                     ->required(),
                 Placeholder::make('linkable_type')
-                    ->hidden(fn (?string $state): bool => empty($state))
+                    ->label(__('filament-menu-builder::menu-builder.form.linkable_type'))
+                    ->hidden(fn (?string $state): bool => blank($state))
                     ->content(fn (string $state) => $state),
                 Placeholder::make('linkable_id')
-                    ->hidden(fn (?string $state): bool => empty($state))
+                    ->label(__('filament-menu-builder::menu-builder.form.linkable_id'))
+                    ->hidden(fn (?string $state): bool => blank($state))
                     ->content(fn (string $state) => $state),
                 Select::make('target')
                     ->label(__('filament-menu-builder::menu-builder.open_in.label'))
