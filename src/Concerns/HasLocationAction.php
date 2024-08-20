@@ -80,6 +80,6 @@ trait HasLocationAction
 
     protected function getRegisteredLocations(): Collection
     {
-        return collect(FilamentMenuBuilderPlugin::get()->getRegisteredLocations());
+        return collect(FilamentMenuBuilderPlugin::get()->getLocations());
     }
 }
