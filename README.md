@@ -317,6 +317,38 @@ $panel
     )
 ```
 
+### Using Menus
+
+Getting the assigned menu for a registered location can be done using the `Menu` model. Below we will call the menu assigned to the `primary` location:
+
+```php
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+
+$menu = Menu::location('primary');
+```
+
+Menu items can be iterated from the `menuItems` relationship:
+
+```php
+@foreach ($menu->menuItems as $item)
+    <a href="{{ $item->url }}">{{ $item->title }}</a>
+@endforeach
+```
+
+When a menu item is a parent, a collection of the child menu items will be available on the `children` property:
+
+```php
+@foreach ($menu->menuItems as $item)
+    <a href="{{ $item->url }}">{{ $item->title }}</a>
+
+    @if ($item->children)
+        @foreach ($item->children as $child)
+            <a href="{{ $child->url }}">{{ $child->title }}</a>
+        @endforeach
+    @endif
+@endforeach
+```
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
