@@ -12,7 +12,11 @@ return [
             'label' => 'Tên',
         ],
         'locations' => [
+            'label' => 'Vị trí',
             'empty' => 'Chưa gán',
+        ],
+        'items' => [
+            'label' => 'Mục',
         ],
         'is_visible' => [
             'label' => 'Hiển thị',

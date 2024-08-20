@@ -57,18 +57,29 @@ class MenuResource extends Resource
         $locations = FilamentMenuBuilderPlugin::get()->getLocations();
 
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->withCount('menuItems'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
+                    ->sortable()
                     ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
                 Tables\Columns\TextColumn::make('locations.location')
+                    ->label(__('filament-menu-builder::menu-builder.resource.locations.label'))
                     ->default($default = __('filament-menu-builder::menu-builder.resource.locations.empty'))
                     ->color(fn (string $state) => array_key_exists($state, $locations) ? 'primary' : 'gray')
                     ->formatStateUsing(fn (string $state) => $locations[$state] ?? $state)
                     ->limitList(2)
+                    ->sortable()
                     ->badge(),
+                Tables\Columns\TextColumn::make('menu_items_count')
+                    ->label(__('filament-menu-builder::menu-builder.resource.items.label'))
+                    ->icon('heroicon-o-link')
+                    ->numeric()
+                    ->default(0)
+                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_visible')
                     ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
+                    ->sortable()
                     ->boolean(),
             ])
             ->actions([
