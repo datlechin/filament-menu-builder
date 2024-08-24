@@ -13,6 +13,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property int $id
+ * @property int $menu_id
+ * @property int|null $parent_id
+ * @property string $title
+ * @property string|null $url
+ * @property string|null $type
+ * @property string|null $target
+ * @property int $order
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|MenuItem[] $children
+ * @property-read int|null $children_count
+ * @property-read \Illuminate\Database\Eloquent\Model|MenuPanelable|null $linkable
+ * @property-read \Datlechin\FilamentMenuBuilder\Models\Menu $menu
+ * @property-read \Datlechin\FilamentMenuBuilder\Models\MenuItem|null $parent
+ */
 class MenuItem extends Model
 {
     protected $guarded = [];
