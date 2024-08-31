@@ -5,7 +5,7 @@
 
 This [Filament](https://filamentphp.com) package allows you to create and manage menus in your Filament application.
 
-![Filament Menu Builder](./art/menu-builder.jpg)
+![Filament Menu Builder](https://github.com/datlechin/filament-menu-builder/raw/main/art/menu-builder.jpg)
 
 > [!NOTE]
 > I created this for my personal project, so some features and extensibility are still lacking. Pull requests are welcome.
