@@ -2,6 +2,10 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.5.2 - 2024-09-01
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.5.1...v0.5.2
+
 ## v0.5.1 - 2024-08-24
 
 **Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.5.0...v0.5.1
