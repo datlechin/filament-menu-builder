@@ -12,6 +12,7 @@ trait HasMenuPanel
     {
         return str($this->getTable())
             ->title()
+            ->replace('_', ' ')
             ->toString();
     }
 
