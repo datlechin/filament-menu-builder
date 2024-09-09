@@ -10,6 +10,8 @@ interface MenuPanelable
 
     public function getMenuPanelTitleColumn(): string;
 
+    public function getMenuPanelKeyColumn(): string;
+
     public function getMenuPanelUrlUsing(): callable;
 
     public function getMenuPanelModifyQueryUsing(): callable;

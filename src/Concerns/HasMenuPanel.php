@@ -16,6 +16,11 @@ trait HasMenuPanel
             ->toString();
     }
 
+    public function getMenuPanelKeyColumn(): string
+    {
+        return $this->getMenuPanelTitleColumn();
+    }
+
     public function getMenuPanelModifyQueryUsing(): callable
     {
         return fn (Builder $query) => $query;
