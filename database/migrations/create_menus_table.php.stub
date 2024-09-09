@@ -23,11 +23,14 @@ return new class extends Migration
             $table->foreignIdFor(Menu::class, 'parent_id')->nullable()->constrained()->nullOnDelete();
             $table->nullableMorphs('linkable');
             $table->string('title');
-            $table->string('key')->unique();
             $table->string('url')->nullable();
             $table->string('target', 10)->default(LinkTarget::Self);
             $table->integer('order')->default(0);
             $table->timestamps();
+        });
+
+        Schema::table(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
+            $table->string('key')->unique();
         });
 
         Schema::create(config('filament-menu-builder.tables.menu_locations'), function (Blueprint $table) {
