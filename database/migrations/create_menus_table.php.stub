@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 
 return new class extends Migration
 {
@@ -20,7 +21,7 @@ return new class extends Migration
         Schema::create(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Menu::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Menu::class, 'parent_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(MenuItem::class, 'parent_id')->nullable()->constrained($table->getTable())->nullOnDelete();
             $table->nullableMorphs('linkable');
             $table->string('title');
             $table->string('url')->nullable();
