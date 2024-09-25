@@ -30,7 +30,7 @@ return new class extends Migration
         });
 
         Schema::table(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
-            $table->string('key')->unique();
+            $table->string('key');
         });
 
         Schema::create(config('filament-menu-builder.tables.menu_locations'), function (Blueprint $table) {

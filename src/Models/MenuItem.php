@@ -95,16 +95,4 @@ class MenuItem extends Model
             };
         });
     }
-
-    public function key(): Attribute
-    {
-        return Attribute::make(
-            get: function ($value) {
-                return str_replace('-'.$this->menu_id, '', $value);
-            },
-            set: function ($value) {
-                return $value.'-'.$this->menu_id;
-            }
-        );
-    }
 }
