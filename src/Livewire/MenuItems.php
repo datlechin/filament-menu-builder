@@ -105,6 +105,9 @@ class MenuItems extends Component implements HasActions, HasForms
                     ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                     ->options(LinkTarget::class)
                     ->default(LinkTarget::Self),
+                TextInput::make('badge')
+                    ->label(__('filament-menu-builder::menu-builder.form.badge'))
+                    ->nullable(),
                 Group::make()
                     ->visible(fn (FormComponent $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuItemFields()) !== [])
                     ->schema(FilamentMenuBuilderPlugin::get()->getMenuItemFields()),

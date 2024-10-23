@@ -8,6 +8,7 @@ return [
         'url' => 'URL',
         'linkable_type' => 'Loại',
         'linkable_id' => 'ID',
+        'badge' => 'Huy hiệu',
     ],
     'resource' => [
         'name' => [

@@ -8,6 +8,7 @@ return [
         'url' => 'URL',
         'linkable_type' => 'Type',
         'linkable_id' => 'ID',
+        'badge' => 'Badge',
     ],
     'resource' => [
         'name' => [

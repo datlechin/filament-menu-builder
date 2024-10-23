@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int $menu_id
  * @property int|null $parent_id
  * @property string $title
+ * @property string|null $badge
  * @property string|null $url
  * @property string|null $type
  * @property string|null $target
