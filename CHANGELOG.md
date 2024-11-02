@@ -2,6 +2,18 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.5.4 - 2024-11-02
+
+### What's Changed
+
+* feat: Add french lang for the translation. by @StevyMarlino in https://github.com/datlechin/filament-menu-builder/pull/40
+
+### New Contributors
+
+* @StevyMarlino made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/40
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.5.3...v0.5.4
+
 ## v0.5.3 - 2024-09-15
 
 ### What's Changed
