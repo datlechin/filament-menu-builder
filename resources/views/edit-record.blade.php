@@ -42,6 +42,10 @@
             @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isShowCustomLink())
                 <livewire:create-custom-link :menu="$record" />
             @endif
+
+            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isShowCustomText())
+                <livewire:create-custom-text :menu="$record" />
+            @endif
         </div>
         <div class="col-span-12 sm:col-span-8">
             <x-filament::section>

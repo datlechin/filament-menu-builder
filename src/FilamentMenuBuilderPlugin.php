@@ -35,6 +35,8 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected bool $showCustomLink = true;
 
+    protected bool $showCustomText = true;
+
     public function getId(): string
     {
         return 'menu-builder';
@@ -133,6 +135,13 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
+    public function showCustomText(bool $show = true): static
+    {
+        $this->showCustomText = $show;
+
+        return $this;
+    }
+
     public function addMenuFields(array | Closure $schema): static
     {
         $this->menuFields = $schema;
@@ -180,6 +189,11 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function isShowCustomLink(): bool
     {
         return $this->showCustomLink;
+    }
+
+    public function isShowCustomText(): bool
+    {
+        return $this->showCustomText;
     }
 
     public function getLocations(): array
