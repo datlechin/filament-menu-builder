@@ -35,7 +35,7 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected bool $showCustomLink = true;
 
-    protected bool $showCustomText = true;
+    protected bool $showCustomText = false;
 
     public function getId(): string
     {
