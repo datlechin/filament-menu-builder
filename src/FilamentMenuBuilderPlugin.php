@@ -177,7 +177,7 @@ class FilamentMenuBuilderPlugin implements Plugin
             ->all();
     }
 
-    public function getShowCustomLink(): bool
+    public function isShowCustomLink(): bool
     {
         return $this->showCustomLink;
     }

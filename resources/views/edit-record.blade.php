@@ -39,7 +39,7 @@
                 <livewire:menu-builder-panel :menu="$record" :menuPanel="$menuPanel" />
             @endforeach
 
-            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->getShowCustomLink())
+            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isShowCustomLink())
                 <livewire:create-custom-link :menu="$record" />
             @endif
         </div>
