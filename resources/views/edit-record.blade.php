@@ -39,7 +39,9 @@
                 <livewire:menu-builder-panel :menu="$record" :menuPanel="$menuPanel" />
             @endforeach
 
-            <livewire:create-custom-link :menu="$record" />
+            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isShowCustomLink())
+                <livewire:create-custom-link :menu="$record" />
+            @endif
         </div>
         <div class="col-span-12 sm:col-span-8">
             <x-filament::section>
