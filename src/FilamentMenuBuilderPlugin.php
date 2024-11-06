@@ -33,9 +33,9 @@ class FilamentMenuBuilderPlugin implements Plugin
      */
     protected array $menuPanels = [];
 
-    protected bool $showCustomLink = true;
+    protected bool $showCustomLinkPanel = true;
 
-    protected bool $showCustomText = false;
+    protected bool $showCustomTextPanel = false;
 
     public function getId(): string
     {
@@ -128,16 +128,16 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function showCustomLink(bool $show = true): static
+    public function showCustomLinkPanel(bool $show = true): static
     {
-        $this->showCustomLink = $show;
+        $this->showCustomLinkPanel = $show;
 
         return $this;
     }
 
-    public function showCustomText(bool $show = true): static
+    public function showCustomTextPanel(bool $show = true): static
     {
-        $this->showCustomText = $show;
+        $this->showCustomTextPanel = $show;
 
         return $this;
     }
@@ -186,14 +186,14 @@ class FilamentMenuBuilderPlugin implements Plugin
             ->all();
     }
 
-    public function isShowCustomLink(): bool
+    public function isShowCustomLinkPanel(): bool
     {
-        return $this->showCustomLink;
+        return $this->showCustomLinkPanel;
     }
 
-    public function isShowCustomText(): bool
+    public function isShowCustomTextPanel(): bool
     {
-        return $this->showCustomText;
+        return $this->showCustomTextPanel;
     }
 
     public function getLocations(): array
