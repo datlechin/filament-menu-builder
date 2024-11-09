@@ -50,6 +50,7 @@ return [
     ],
     'items' => [
         'expand' => 'Uitklappen',
+        'collapse' => 'Inklappen',
         'empty' => [
             'heading' => 'Dit menu heeft geen items.',
         ],

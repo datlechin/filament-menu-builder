@@ -50,6 +50,7 @@ return [
     ],
     'items' => [
         'expand' => 'Expand',
+        'collapse' => 'Collapse',
         'empty' => [
             'heading' => 'There are no items in this menu.',
         ],
