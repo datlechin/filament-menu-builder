@@ -50,6 +50,7 @@ return [
     ],
     'items' => [
         'expand' => 'Mở rộng',
+        'collapse' => 'Thu gọn',
         'empty' => [
             'heading' => 'Không có mục nào trong menu này.',
         ],

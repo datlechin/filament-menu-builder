@@ -50,6 +50,7 @@ return [
     ],
     'items' => [
         'expand' => 'Développer',
+        'collapse' => 'Réduire',
         'empty' => [
             'heading' => 'Il n’y a aucun élément dans ce menu.',
         ],
