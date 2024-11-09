@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder;
 
+use Closure;
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
@@ -24,9 +25,9 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected array $locations = [];
 
-    protected array | Closure $menuFields = [];
+    protected array|Closure $menuFields = [];
 
-    protected array | Closure $menuItemFields = [];
+    protected array|Closure $menuItemFields = [];
 
     /**
      * @var MenuPanel[]
@@ -142,14 +143,14 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function addMenuFields(array | Closure $schema): static
+    public function addMenuFields(array|Closure $schema): static
     {
         $this->menuFields = $schema;
 
         return $this;
     }
 
-    public function addMenuItemFields(array | Closure $schema): static
+    public function addMenuItemFields(array|Closure $schema): static
     {
         $this->menuItemFields = $schema;
 
@@ -201,12 +202,12 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->locations;
     }
 
-    public function getMenuFields(): array | Closure
+    public function getMenuFields(): array|Closure
     {
         return $this->menuFields;
     }
 
-    public function getMenuItemFields(): array | Closure
+    public function getMenuItemFields(): array|Closure
     {
         return $this->menuItemFields;
     }
