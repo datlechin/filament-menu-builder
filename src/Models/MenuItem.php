@@ -91,6 +91,7 @@ class MenuItem extends Model
         return Attribute::get(function () {
             return match (true) {
                 $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelName(),
+                is_null($this->linkable) && is_null($this->url) => __('filament-menu-builder::menu-builder.custom_text'),
                 default => __('filament-menu-builder::menu-builder.custom_link'),
             };
         });

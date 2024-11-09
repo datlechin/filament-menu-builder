@@ -39,8 +39,12 @@
                 <livewire:menu-builder-panel :menu="$record" :menuPanel="$menuPanel" />
             @endforeach
 
-            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isShowCustomLink())
+            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isShowCustomLinkPanel())
                 <livewire:create-custom-link :menu="$record" />
+            @endif
+
+            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isShowCustomTextPanel())
+                <livewire:create-custom-text :menu="$record" />
             @endif
         </div>
         <div class="col-span-12 sm:col-span-8">

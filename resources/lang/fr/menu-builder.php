@@ -55,6 +55,7 @@ return [
         ],
     ],
     'custom_link' => 'Lien personnalisé',
+    'custom_text' => 'Custom Text',
     'open_in' => [
         'label' => 'Ouvrir dans',
         'options' => [

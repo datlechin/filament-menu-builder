@@ -99,11 +99,43 @@ $panel
 
 Menu panels are the panels that contain the menu items which you can add to the menus.
 
-#### Custom Menu Panel
+#### Custom Link Menu Panel
 
 By default, the package provides a **Custom Link** menu panel that allows you to add custom links to the menus.
 
 ![Custom Link Menu Panel](https://github.com/datlechin/filament-menu-builder/raw/main/art/custom-link.png)
+
+The panel can be disabled by using the following when configuring the plugin, should you not need this functionality.
+
+```php
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->showCustomLinkPanel(false)
+    )
+```
+
+#### Custom Text Menu Panel
+
+This package provides a **Custom Text** menu panel that allows you to add custom text items to the menus.
+
+It is identical to the **Custom Link** menu panel except for the fact that you only set a title without a URL or target. This can be useful to add headers to mega-style menus.
+
+The panel is disabled by default to prevent visual clutter. To enable the Custom Text menu panel, you can use the following when configuring the plugin.
+
+```php
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->showCustomTextPanel()
+    )
+```
 
 #### Static Menu Panel
 

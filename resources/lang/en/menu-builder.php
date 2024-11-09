@@ -55,6 +55,7 @@ return [
         ],
     ],
     'custom_link' => 'Custom Link',
+    'custom_text' => 'Custom Text',
     'open_in' => [
         'label' => 'Open in',
         'options' => [

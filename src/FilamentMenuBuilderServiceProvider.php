@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder;
 
 use Datlechin\FilamentMenuBuilder\Livewire\CreateCustomLink;
+use Datlechin\FilamentMenuBuilder\Livewire\CreateCustomText;
 use Datlechin\FilamentMenuBuilder\Livewire\MenuItems;
 use Datlechin\FilamentMenuBuilder\Livewire\MenuPanel;
 use Filament\Support\Assets\AlpineComponent;
@@ -63,6 +64,7 @@ class FilamentMenuBuilderServiceProvider extends PackageServiceProvider
         Livewire::component('menu-builder-items', MenuItems::class);
         Livewire::component('menu-builder-panel', MenuPanel::class);
         Livewire::component('create-custom-link', CreateCustomLink::class);
+        Livewire::component('create-custom-text', CreateCustomText::class);
     }
 
     protected function getAssetPackageName(): ?string
