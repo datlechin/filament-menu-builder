@@ -185,14 +185,17 @@ The model menu panel allows you to add menu items from a model.
 
 To create a model menu panel, your model must implement the `\Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable` interface and `\Datlechin\FilamentMenuBuilder\Concerns\HasMenuPanel` trait.
 
-Then you will need to implement the following methods:
+Then you must also implement the `getMenuPanelTitleColumn` and `getMenuPanelUrlUsing` methods. A complete example of this implementation is as follows:
 
 ```php
-use Illuminate\Database\Eloquent\Model;
+use Datlechin\FilamentMenuBuilder\Concerns\HasMenuPanel;
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
+use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model implements MenuPanelable
 {
+    use HasMenuPanel;
+
     public function getMenuPanelTitleColumn(): string
     {
         return 'name';
