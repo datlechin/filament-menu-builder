@@ -2,6 +2,24 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.6.0 - 2024-11-10
+
+### What's Changed
+
+* Add Dutch translation. by @Senexis in https://github.com/datlechin/filament-menu-builder/pull/46
+* Add option to disable the create custom link panel. by @Senexis in https://github.com/datlechin/filament-menu-builder/pull/48
+* Add ability to add text only items. (#47) by @Senexis in https://github.com/datlechin/filament-menu-builder/pull/49
+* chore: add collapse label for menu item by @datlechin in https://github.com/datlechin/filament-menu-builder/pull/50
+* Update the Model Menu Panel example to include the trait by @Senexis in https://github.com/datlechin/filament-menu-builder/pull/52
+* Prevent LazyLoadingViolationException  when using strict mode by @Senexis in https://github.com/datlechin/filament-menu-builder/pull/51
+
+### New Contributors
+
+* @Senexis made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/46
+* @datlechin made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/50
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.5.4...v0.6.0
+
 ## v0.5.4 - 2024-11-02
 
 ### What's Changed
