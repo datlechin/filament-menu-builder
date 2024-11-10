@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class MenuItem extends Model
 {
     protected $guarded = [];
+
     protected $with = ['linkable'];
 
     public function getTable(): string
