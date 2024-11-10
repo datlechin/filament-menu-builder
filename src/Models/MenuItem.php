@@ -34,6 +34,8 @@ class MenuItem extends Model
 {
     protected $guarded = [];
 
+    protected $with = ['linkable'];
+
     public function getTable(): string
     {
         return config('filament-menu-builder.tables.menu_items', parent::getTable());
