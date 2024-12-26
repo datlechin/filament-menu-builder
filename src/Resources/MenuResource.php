@@ -11,14 +11,38 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class MenuResource extends Resource
 {
-    protected static ?string $navigationIcon = 'heroicon-o-bars-3';
-
     public static function getModel(): string
     {
         return FilamentMenuBuilderPlugin::get()->getMenuModel();
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return FilamentMenuBuilderPlugin::get()->getNavigationLabel() ?? Str::title(static::getPluralModelLabel()) ?? Str::title(static::getModelLabel());
+    }
+
+    public static function getNavigationIcon(): string
+    {
+        return FilamentMenuBuilderPlugin::get()->getNavigationIcon();
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return FilamentMenuBuilderPlugin::get()->getNavigationSort();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return FilamentMenuBuilderPlugin::get()->getNavigationGroup();
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return FilamentMenuBuilderPlugin::get()->getNavigationCountBadge() ? number_format(static::getModel()::count()) : null;
     }
 
     public static function form(Form $form): Form
@@ -97,8 +121,8 @@ class MenuResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\ListMenus::route('/'),
-            'edit' => \Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\EditMenu::route('/{record}/edit'),
+            'index' => MenuResource\Pages\ListMenus::route('/'),
+            'edit' => MenuResource\Pages\EditMenu::route('/{record}/edit'),
         ];
     }
 }
