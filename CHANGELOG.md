@@ -2,6 +2,18 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.6.1 - 2024-12-26
+
+### What's Changed
+
+* Add methods to configure navigation label, group, icon, sort and count by @iRaziul in https://github.com/datlechin/filament-menu-builder/pull/62
+
+### New Contributors
+
+* @iRaziul made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/62
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.6.0...v0.6.1
+
 ## v0.6.0 - 2024-11-10
 
 ### What's Changed
