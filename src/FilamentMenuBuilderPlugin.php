@@ -195,7 +195,7 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function navigationCountBadge(bool $show): static
+    public function navigationCountBadge(bool $show = true): static
     {
         $this->navigationCountBadge = $show;
 
