@@ -13,6 +13,8 @@ use Illuminate\Support\Collection;
 
 trait HasLocationAction
 {
+    protected ?Collection $menus = null;
+
     protected ?Collection $menuLocations = null;
 
     public function getLocationAction(): Action
@@ -70,7 +72,7 @@ trait HasLocationAction
                             ->label(__('filament-menu-builder::menu-builder.actions.locations.form.menu.label'))
                             ->searchable()
                             ->hiddenLabel($key !== $this->getRegisteredLocations()->keys()->first())
-                            ->options($this->getModel()::all()->pluck('name', 'id')->all()),
+                            ->options($this->getMenus()->pluck('name', 'id')->all()),
                     ]),
             )->all() ?: [
                 Components\View::make('filament-tables::components.empty-state.index')
@@ -79,6 +81,11 @@ trait HasLocationAction
                         'icon' => 'heroicon-o-x-mark',
                     ]),
             ]);
+    }
+
+    protected function getMenus(): Collection
+    {
+        return $this->menus ??= FilamentMenuBuilderPlugin::get()->getMenuModel()::all();
     }
 
     protected function getMenuLocations(): Collection
