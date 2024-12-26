@@ -28,17 +28,17 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected array $locations = [];
 
-    protected array|Closure $menuFields = [];
+    protected array | Closure $menuFields = [];
 
-    protected array|Closure $menuItemFields = [];
+    protected array | Closure $menuItemFields = [];
 
-    protected string|Closure|null $navigationLabel = null;
+    protected string | Closure | null $navigationLabel = null;
 
-    protected string|Closure|null $navigationGroup = null;
+    protected string | Closure | null $navigationGroup = null;
 
-    protected string|Closure|null $navigationIcon = 'heroicon-o-bars-3';
+    protected string | Closure | null $navigationIcon = 'heroicon-o-bars-3';
 
-    protected int|Closure|null $navigationSort = null;
+    protected int | Closure | null $navigationSort = null;
 
     protected bool $navigationCountBadge = false;
 
@@ -153,42 +153,42 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function addMenuFields(array|Closure $schema): static
+    public function addMenuFields(array | Closure $schema): static
     {
         $this->menuFields = $schema;
 
         return $this;
     }
 
-    public function addMenuItemFields(array|Closure $schema): static
+    public function addMenuItemFields(array | Closure $schema): static
     {
         $this->menuItemFields = $schema;
 
         return $this;
     }
 
-    public function navigationLabel(string|Closure $label = null): static
+    public function navigationLabel(string | Closure | null $label = null): static
     {
         $this->navigationLabel = $label;
 
         return $this;
     }
 
-    public function navigationGroup(string|Closure $group = null): static
+    public function navigationGroup(string | Closure | null $group = null): static
     {
         $this->navigationGroup = $group;
 
         return $this;
     }
 
-    public function navigationIcon(string|Closure $icon): static
+    public function navigationIcon(string | Closure $icon): static
     {
         $this->navigationIcon = $icon;
 
         return $this;
     }
 
-    public function navigationSort(int|Closure $order): static
+    public function navigationSort(int | Closure $order): static
     {
         $this->navigationSort = $order;
 
@@ -247,12 +247,12 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->locations;
     }
 
-    public function getMenuFields(): array|Closure
+    public function getMenuFields(): array | Closure
     {
         return $this->menuFields;
     }
 
-    public function getMenuItemFields(): array|Closure
+    public function getMenuItemFields(): array | Closure
     {
         return $this->menuItemFields;
     }
