@@ -12,9 +12,12 @@ use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Filament\Support\Concerns\EvaluatesClosures;
 
 class FilamentMenuBuilderPlugin implements Plugin
 {
+    use EvaluatesClosures;
+
     protected string $resource = MenuResource::class;
 
     protected string $menuModel = Menu::class;
@@ -25,9 +28,19 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected array $locations = [];
 
-    protected array | Closure $menuFields = [];
+    protected array|Closure $menuFields = [];
 
-    protected array | Closure $menuItemFields = [];
+    protected array|Closure $menuItemFields = [];
+
+    protected string|Closure|null $navigationLabel = null;
+
+    protected string|Closure|null $navigationGroup = null;
+
+    protected string|Closure|null $navigationIcon = 'heroicon-o-bars-3';
+
+    protected int|Closure|null $navigationSort = null;
+
+    protected bool $navigationCountBadge = false;
 
     /**
      * @var MenuPanel[]
@@ -60,10 +73,7 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     public static function get(): static
     {
-        /** @var static $plugin */
-        $plugin = filament(app(static::class)->getId());
-
-        return $plugin;
+        return filament(app(static::class)->getId());
     }
 
     public function usingResource(string $resource): static
@@ -143,16 +153,51 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function addMenuFields(array | Closure $schema): static
+    public function addMenuFields(array|Closure $schema): static
     {
         $this->menuFields = $schema;
 
         return $this;
     }
 
-    public function addMenuItemFields(array | Closure $schema): static
+    public function addMenuItemFields(array|Closure $schema): static
     {
         $this->menuItemFields = $schema;
+
+        return $this;
+    }
+
+    public function navigationLabel(string|Closure $label = null): static
+    {
+        $this->navigationLabel = $label;
+
+        return $this;
+    }
+
+    public function navigationGroup(string|Closure $group = null): static
+    {
+        $this->navigationGroup = $group;
+
+        return $this;
+    }
+
+    public function navigationIcon(string|Closure $icon): static
+    {
+        $this->navigationIcon = $icon;
+
+        return $this;
+    }
+
+    public function navigationSort(int|Closure $order): static
+    {
+        $this->navigationSort = $order;
+
+        return $this;
+    }
+
+    public function navigationCountBadge(bool $show): static
+    {
+        $this->navigationCountBadge = $show;
 
         return $this;
     }
@@ -202,13 +247,38 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->locations;
     }
 
-    public function getMenuFields(): array | Closure
+    public function getMenuFields(): array|Closure
     {
         return $this->menuFields;
     }
 
-    public function getMenuItemFields(): array | Closure
+    public function getMenuItemFields(): array|Closure
     {
         return $this->menuItemFields;
+    }
+
+    public function getNavigationGroup(): ?string
+    {
+        return $this->evaluate($this->navigationGroup);
+    }
+
+    public function getNavigationLabel(): ?string
+    {
+        return $this->evaluate($this->navigationLabel);
+    }
+
+    public function getNavigationIcon(): ?string
+    {
+        return $this->evaluate($this->navigationIcon);
+    }
+
+    public function getNavigationSort(): ?int
+    {
+        return $this->evaluate($this->navigationSort);
+    }
+
+    public function getNavigationCountBadge(): bool
+    {
+        return $this->navigationCountBadge;
     }
 }
