@@ -2,6 +2,14 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.6.2 - 2024-12-27
+
+### What's Changed
+
+* Optimize and reduce db queries by @iRaziul in https://github.com/datlechin/filament-menu-builder/pull/63
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.6.1...v0.6.2
+
 ## v0.6.1 - 2024-12-26
 
 ### What's Changed
