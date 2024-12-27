@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Models;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
