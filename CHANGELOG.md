@@ -2,6 +2,15 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.6.3 - 2025-01-14
+
+### What's Changed
+
+* [js] Update @tailwindcss/typography 0.5.14 → 0.5.16 (minor) by @depfu in https://github.com/datlechin/filament-menu-builder/pull/66
+* Fix duplicate model titles causing multiple items being added by @Senexis in https://github.com/datlechin/filament-menu-builder/pull/67
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.6.2...v0.6.3
+
 ## v0.6.2 - 2024-12-27
 
 ### What's Changed
