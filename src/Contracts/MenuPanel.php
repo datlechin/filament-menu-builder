@@ -13,4 +13,16 @@ interface MenuPanel
     public function getItems(): array;
 
     public function getSort(): int;
+
+    public function getDescription(): ?string;
+
+    public function getIcon(): ?string;
+
+    public function isCollapsible(): bool;
+
+    public function isCollapsed(): bool;
+
+    public function isPaginated(): bool;
+
+    public function getPerPage(): int;
 }
