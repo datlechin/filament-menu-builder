@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class MenuLocation extends Model
 {
+
     protected $guarded = [];
 
     public function getTable(): string

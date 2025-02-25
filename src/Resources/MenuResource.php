@@ -12,9 +12,12 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Filament\Resources\Concerns\Translatable;
 
 class MenuResource extends Resource
 {
+
+    use Translatable;
     public static function getModel(): string
     {
         return FilamentMenuBuilderPlugin::get()->getMenuModel();

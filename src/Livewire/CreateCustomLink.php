@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 
 class CreateCustomLink extends Component implements HasForms
 {
@@ -22,7 +23,7 @@ class CreateCustomLink extends Component implements HasForms
 
     public Menu $menu;
 
-    public string $title = '';
+    public array|string $title;
 
     public string $url = '';
 
@@ -31,7 +32,7 @@ class CreateCustomLink extends Component implements HasForms
     public function save(): void
     {
         $this->validate([
-            'title' => ['required', 'string'],
+            'title' => ['required'],
             'url' => ['required', 'string'],
             'target' => ['required', 'string', Rule::in(LinkTarget::cases())],
         ]);
@@ -56,11 +57,17 @@ class CreateCustomLink extends Component implements HasForms
 
     public function form(Form $form): Form
     {
+
+
         return $form
             ->schema([
-                TextInput::make('title')
-                    ->label(__('filament-menu-builder::menu-builder.form.title'))
-                    ->required(),
+                config('filament-menu-builder.translation')?
+                    Translate::make()
+                        ->locales(config('filament-menu-builder.locales'))
+                        ->schema([
+                            TextInput::make("title")->required(),
+                        ]) : TextInput::make("title")->required()
+                ,
                 TextInput::make('url')
                     ->label(__('filament-menu-builder::menu-builder.form.url'))
                     ->required(),

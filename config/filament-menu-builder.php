@@ -8,4 +8,6 @@ return [
         'menu_items' => 'menu_items',
         'menu_locations' => 'menu_locations',
     ],
+    'translation'=>false,
+    'locales'=>['en'],
 ];

@@ -12,6 +12,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListMenus extends ListRecords
 {
     use HasLocationAction;
+    use ListRecords\Concerns\Translatable;
 
     public static function getResource(): string
     {
@@ -21,6 +22,7 @@ class ListMenus extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\LocaleSwitcher::make(),
             Actions\CreateAction::make(),
             $this->getLocationAction(),
         ];

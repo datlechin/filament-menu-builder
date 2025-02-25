@@ -37,10 +37,12 @@
                 {{ $item->url }}
             </div>
         </div>
+
         <div class="flex items-center gap-2">
             <x-filament::badge :color="$item->type === 'internal' ? 'primary' : 'gray'" class="hidden sm:block">
                 {{ $item->type }}
             </x-filament::badge>
+
             {{ ($this->editAction)(['id' => $item->getKey(), 'title' => $item->title]) }}
             {{ ($this->deleteAction)(['id' => $item->getKey(), 'title' => $item->title]) }}
         </div>

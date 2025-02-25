@@ -14,6 +14,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditMenu extends EditRecord
 {
     use HasLocationAction;
+    use EditRecord\Concerns\Translatable;
 
     protected static string $view = 'filament-menu-builder::edit-record';
 
@@ -33,6 +34,7 @@ class EditMenu extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\LocaleSwitcher::make(),
             Actions\DeleteAction::make(),
             $this->getLocationAction(),
         ];
