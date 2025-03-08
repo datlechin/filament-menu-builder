@@ -2,6 +2,18 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.6.4 - 2025-03-08
+
+### What's Changed
+
+* Patch fix UI by @mckenziearts in https://github.com/datlechin/filament-menu-builder/pull/89
+
+### New Contributors
+
+* @mckenziearts made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/89
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.6.3...v0.6.4
+
 ## v0.6.3 - 2025-01-14
 
 ### What's Changed
