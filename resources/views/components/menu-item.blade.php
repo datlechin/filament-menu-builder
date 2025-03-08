@@ -1,4 +1,6 @@
-@props(['item'])
+@props([
+    'item',
+])
 
 @php
     /** @var \Datlechin\FilamentMenuBuilder\Models\MenuItem $item */
@@ -14,10 +16,10 @@
     <div
         class="flex justify-between px-3 py-2 bg-white shadow-sm rounded-xl ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10"
     >
-        <div class="flex items-center gap-2">
+        <div class="flex flex-1 items-center gap-2 truncate">
             {{ $this->reorderAction }}
 
-            @if($hasChildren)
+            @if ($hasChildren)
                 <x-filament::icon-button
                     icon="heroicon-o-chevron-right"
                     x-on:click="open = !open"
@@ -53,7 +55,7 @@
         x-data="menuBuilder({ parentId: {{ $item->getKey()  }} })"
         class="mt-2 space-y-2 ms-4"
     >
-        @foreach($item->children as $child)
+        @foreach ($item->children as $child)
             <x-filament-menu-builder::menu-item :item="$child" />
         @endforeach
     </ul>
