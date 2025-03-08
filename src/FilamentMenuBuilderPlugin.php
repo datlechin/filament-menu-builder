@@ -13,6 +13,7 @@ use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
+use Illuminate\Database\Eloquent\Model;
 
 class FilamentMenuBuilderPlugin implements Plugin
 {
@@ -207,16 +208,31 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->resource;
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @return class-string<TModel>
+     */
     public function getMenuModel(): string
     {
         return $this->menuModel;
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @return class-string<TModel>
+     */
     public function getMenuItemModel(): string
     {
         return $this->menuItemModel;
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @return class-string<TModel>
+     */
     public function getMenuLocationModel(): string
     {
         return $this->menuLocationModel;
