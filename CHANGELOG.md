@@ -2,6 +2,18 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## 0.6.5 - 2025-03-25
+
+### What's Changed
+
+* Searchable to checkboxlist by @Cannonb4ll in https://github.com/datlechin/filament-menu-builder/pull/97
+
+### New Contributors
+
+* @Cannonb4ll made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/97
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.6.4...0.6.5
+
 ## v0.6.4 - 2025-03-08
 
 ### What's Changed
