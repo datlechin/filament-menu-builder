@@ -118,6 +118,7 @@ class MenuPanel extends Component implements HasForms
                     ->hiddenLabel()
                     ->required()
                     ->bulkToggleable()
+                    ->searchable()
                     ->live(condition: $this->paginated)
                     ->visible($items->isNotEmpty())
                     ->options($items),
