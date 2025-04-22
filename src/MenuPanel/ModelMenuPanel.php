@@ -37,7 +37,7 @@ class ModelMenuPanel extends AbstractMenuPanel
             ->get()
             ->map(fn (Model $model) => [
                 'title' => $model->{$this->model->getMenuPanelTitleColumn()},
-                'linkable_type' => $model::class,
+                'linkable_type' => $model->getMorphClass(),
                 'linkable_id' => $model->getKey(),
             ])
             ->all();
