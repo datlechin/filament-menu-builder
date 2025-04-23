@@ -2,6 +2,18 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.6.6 - 2025-04-23
+
+### What's Changed
+
+* fix: get linkable_type through getMorphClass method by @AndreyTodorov in https://github.com/datlechin/filament-menu-builder/pull/104
+
+### New Contributors
+
+* @AndreyTodorov made their first contribution in https://github.com/datlechin/filament-menu-builder/pull/104
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.6.5...v0.6.6
+
 ## 0.6.5 - 2025-03-25
 
 ### What's Changed
