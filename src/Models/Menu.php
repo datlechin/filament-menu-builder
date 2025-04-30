@@ -7,10 +7,11 @@ namespace Datlechin\FilamentMenuBuilder\Models;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @property int $id
- * @property string $name
+ * @property string|json $name
  * @property bool $is_visible
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Menu extends Model
 {
+    use HasTranslations;
+    public $translatable = ['name'];
     protected $guarded = [];
 
     public function getTable(): string
