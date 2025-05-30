@@ -406,6 +406,21 @@ When a menu item is a parent, a collection of the child menu items will be avail
 @endforeach
 ```
 
+### Configuring Indent/Unindent Actions
+
+The package includes indent and unindent buttons that provide an alternative to drag-and-drop for organizing menu hierarchy. This feature is enabled by default but can be configured:
+
+```php
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+
+$panel
+    ...
+    ->plugin(
+        FilamentMenuBuilderPlugin::make()
+            ->enableIndentActions(false) // Disable
+    )
+```
+
 ## Changelog
 
 Please see [CHANGELOG](https://github.com/datlechin/filament-menu-builder/raw/main/CHANGELOG.md) for more information on what has changed recently.

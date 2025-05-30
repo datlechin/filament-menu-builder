@@ -30,6 +30,8 @@ return [
         'add' => [
             'label' => 'Ajouter au menu',
         ],
+        'indent' => 'Indenté',
+        'unindent' => 'Désindenté',
         'locations' => [
             'label' => 'Emplacements',
             'heading' => 'Gérer les emplacements',

@@ -52,6 +52,8 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected bool $showCustomTextPanel = false;
 
+    protected bool $enableIndentActions = true;
+
     public function getId(): string
     {
         return 'menu-builder';
@@ -154,6 +156,13 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
+    public function enableIndentActions(bool $enable = true): static
+    {
+        $this->enableIndentActions = $enable;
+
+        return $this;
+    }
+
     public function addMenuFields(array | Closure $schema): static
     {
         $this->menuFields = $schema;
@@ -244,7 +253,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function getMenuPanels(): array
     {
         return collect($this->menuPanels)
-            ->sortBy(fn (MenuPanel $menuPanel) => $menuPanel->getSort())
+            ->sortBy(fn(MenuPanel $menuPanel) => $menuPanel->getSort())
             ->all();
     }
 
@@ -256,6 +265,11 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function isShowCustomTextPanel(): bool
     {
         return $this->showCustomTextPanel;
+    }
+
+    public function isIndentActionsEnabled(): bool
+    {
+        return $this->enableIndentActions;
     }
 
     public function getLocations(): array
