@@ -2,6 +2,14 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v0.7.0 - 2025-05-30
+
+### What's Changed
+
+* feat: add indent/unindent buttons for menu hierarchy management by @datlechin in https://github.com/datlechin/filament-menu-builder/pull/112
+
+**Full Changelog**: https://github.com/datlechin/filament-menu-builder/compare/v0.6.6...v0.7.0
+
 ## v0.6.6 - 2025-04-23
 
 ### What's Changed
