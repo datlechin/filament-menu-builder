@@ -30,6 +30,8 @@ return [
         'add' => [
             'label' => 'Toevoegen aan menu',
         ],
+        'indent' => 'Inspringen',
+        'unindent' => 'Uitspringen',
         'locations' => [
             'label' => 'Locaties',
             'heading' => 'Locaties beheren',

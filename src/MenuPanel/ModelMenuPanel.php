@@ -21,7 +21,7 @@ class ModelMenuPanel extends AbstractMenuPanel
      */
     public function model(string $model): static
     {
-        $this->model = new $model;
+        $this->model = new $model();
 
         return $this;
     }
@@ -35,7 +35,7 @@ class ModelMenuPanel extends AbstractMenuPanel
     {
         return ($this->model->getMenuPanelModifyQueryUsing())($this->model->newQuery())
             ->get()
-            ->map(fn (Model $model) => [
+            ->map(fn(Model $model) => [
                 'title' => $model->{$this->model->getMenuPanelTitleColumn()},
                 'linkable_type' => $model->getMorphClass(),
                 'linkable_id' => $model->getKey(),

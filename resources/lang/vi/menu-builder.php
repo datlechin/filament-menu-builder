@@ -30,6 +30,8 @@ return [
         'add' => [
             'label' => 'Thêm vào Menu',
         ],
+        'indent' => 'Thụt lề',
+        'unindent' => 'Thụt lề ngược',
         'locations' => [
             'label' => 'Vị trí',
             'heading' => 'Quản lý vị trí',
