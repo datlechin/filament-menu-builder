@@ -73,7 +73,7 @@ class MenuResource extends Resource
                     ]),
 
                 Components\Group::make()
-                    ->visible(fn(Component $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuFields()) !== [])
+                    ->visible(fn (Component $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuFields()) !== [])
                     ->schema(FilamentMenuBuilderPlugin::get()->getMenuFields()),
             ]);
     }
@@ -83,7 +83,7 @@ class MenuResource extends Resource
         $locations = FilamentMenuBuilderPlugin::get()->getLocations();
 
         return $table
-            ->modifyQueryUsing(fn($query) => $query->withCount('menuItems'))
+            ->modifyQueryUsing(fn ($query) => $query->withCount('menuItems'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
@@ -92,8 +92,8 @@ class MenuResource extends Resource
                 Tables\Columns\TextColumn::make('locations.location')
                     ->label(__('filament-menu-builder::menu-builder.resource.locations.label'))
                     ->default(__('filament-menu-builder::menu-builder.resource.locations.empty'))
-                    ->color(fn(string $state) => array_key_exists($state, $locations) ? 'primary' : 'gray')
-                    ->formatStateUsing(fn(string $state) => $locations[$state] ?? $state)
+                    ->color(fn (string $state) => array_key_exists($state, $locations) ? 'primary' : 'gray')
+                    ->formatStateUsing(fn (string $state) => $locations[$state] ?? $state)
                     ->limitList(2)
                     ->sortable()
                     ->badge(),

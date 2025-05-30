@@ -41,8 +41,8 @@ trait ManagesMenuItemHierarchy
             ->color('gray')
             ->iconButton()
             ->size(ActionSize::Small)
-            ->action(fn(array $arguments) => $this->indent($arguments['id']))
-            ->visible(fn(array $arguments): bool => $this->isIndentActionVisible($arguments['id']));
+            ->action(fn (array $arguments) => $this->indent($arguments['id']))
+            ->visible(fn (array $arguments): bool => $this->isIndentActionVisible($arguments['id']));
     }
 
     public function unindentAction(): Action
@@ -53,8 +53,8 @@ trait ManagesMenuItemHierarchy
             ->color('gray')
             ->iconButton()
             ->size(ActionSize::Small)
-            ->action(fn(array $arguments) => $this->unindent($arguments['id']))
-            ->visible(fn(array $arguments): bool => $this->isUnindentActionVisible($arguments['id']));
+            ->action(fn (array $arguments) => $this->unindent($arguments['id']))
+            ->visible(fn (array $arguments): bool => $this->isUnindentActionVisible($arguments['id']));
     }
 
     protected function isIndentActionVisible(int $itemId): bool
@@ -72,7 +72,7 @@ trait ManagesMenuItemHierarchy
     protected function getMenuItemService(): MenuItemService
     {
         if ($this->menuItemService === null) {
-            $this->menuItemService = new MenuItemService();
+            $this->menuItemService = new MenuItemService;
         }
 
         return $this->menuItemService;

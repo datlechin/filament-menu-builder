@@ -27,19 +27,19 @@ trait HasLocationAction
             ->modalWidth(MaxWidth::Large)
             ->modalSubmitAction($this->getRegisteredLocations()->isEmpty() ? false : null)
             ->color('gray')
-            ->fillForm(fn() => $this->getRegisteredLocations()->map(fn($location, $key) => [
+            ->fillForm(fn () => $this->getRegisteredLocations()->map(fn ($location, $key) => [
                 'location' => $location,
                 'menu' => $this->getMenuLocations()->where('location', $key)->first()?->menu_id,
             ])->all())
             ->action(function (array $data) {
                 $locations = collect($data)
-                    ->map(fn($item) => $item['menu'] ?? null)
+                    ->map(fn ($item) => $item['menu'] ?? null)
                     ->all();
 
                 $this->getMenuLocations()
                     ->pluck('location')
                     ->diff($this->getRegisteredLocations()->keys())
-                    ->each(fn($location) => $this->getMenuLocations()->where('location', $location)->each->delete());
+                    ->each(fn ($location) => $this->getMenuLocations()->where('location', $location)->each->delete());
 
                 foreach ($locations as $location => $menu) {
                     if (! $menu) {
@@ -60,7 +60,7 @@ trait HasLocationAction
                     ->send();
             })
             ->form($this->getRegisteredLocations()->map(
-                fn($location, $key) => Components\Grid::make(2)
+                fn ($location, $key) => Components\Grid::make(2)
                     ->statePath($key)
                     ->schema([
                         Components\TextInput::make('location')

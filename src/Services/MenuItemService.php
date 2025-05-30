@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class MenuItemService
 {
     public function __construct(
-        protected FilamentMenuBuilderPlugin $plugin = new FilamentMenuBuilderPlugin(),
+        protected FilamentMenuBuilderPlugin $plugin = new FilamentMenuBuilderPlugin,
     ) {
         $this->plugin = FilamentMenuBuilderPlugin::get();
     }
@@ -42,8 +42,7 @@ class MenuItemService
                 'order' => DB::raw(
                     'case ' . collect($order)
                         ->map(
-                            fn($recordKey, int $recordIndex): string =>
-                            'when id = ' . DB::getPdo()->quote($recordKey) . ' then ' . ($recordIndex + 1),
+                            fn ($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote($recordKey) . ' then ' . ($recordIndex + 1),
                         )
                         ->implode(' ') . ' end',
                 ),
@@ -93,13 +92,13 @@ class MenuItemService
     {
         $item = $this->findById($itemId);
 
-        if (!$item) {
+        if (! $item) {
             return false;
         }
 
         $previousSibling = $this->getPreviousSibling($item);
 
-        if (!$previousSibling) {
+        if (! $previousSibling) {
             return false;
         }
 
@@ -120,12 +119,12 @@ class MenuItemService
     {
         $item = $this->findById($itemId);
 
-        if (!$item || !$item->parent_id) {
+        if (! $item || ! $item->parent_id) {
             return false;
         }
 
         $parent = $item->parent;
-        if (!$parent) {
+        if (! $parent) {
             return false;
         }
 
@@ -146,7 +145,7 @@ class MenuItemService
     {
         $item = $this->findById($itemId);
 
-        if (!$item) {
+        if (! $item) {
             return false;
         }
 
@@ -164,7 +163,7 @@ class MenuItemService
     {
         $item = $this->findById($itemId);
 
-        if (!$item) {
+        if (! $item) {
             return false;
         }
 
