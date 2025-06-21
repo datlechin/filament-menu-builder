@@ -20,7 +20,7 @@
         "postcss": "^8.5.5",
         "postcss-import": "^15.1.0",
         "prettier": "^3.5.2",
-        "prettier-plugin-tailwindcss": "^0.6.12",
+        "prettier-plugin-tailwindcss": "^0.6.13",
         "tailwindcss": "^4.1.10"
     }
 }
