@@ -9,7 +9,7 @@ use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
-use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
+use Datlechin\FilamentMenuBuilder\Resources\Menus\MenuResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;

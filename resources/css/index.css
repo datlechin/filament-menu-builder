@@ -1,1 +1,3 @@
-@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import "tailwindcss" source(none);
+
+@source "../views/**/*.blade.php"
