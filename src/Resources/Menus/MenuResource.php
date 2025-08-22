@@ -2,13 +2,13 @@
 
 namespace Datlechin\FilamentMenuBuilder\Resources\Menus;
 
+use BackedEnum;
+use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Resources\Menus\Pages\CreateMenu;
 use Datlechin\FilamentMenuBuilder\Resources\Menus\Pages\EditMenu;
 use Datlechin\FilamentMenuBuilder\Resources\Menus\Pages\ListMenus;
 use Datlechin\FilamentMenuBuilder\Resources\Menus\Schemas\MenuForm;
 use Datlechin\FilamentMenuBuilder\Resources\Menus\Tables\MenusTable;
-use Datlechin\FilamentMenuBuilder\Models\Menu;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -18,7 +18,7 @@ class MenuResource extends Resource
 {
     protected static ?string $model = Menu::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema
     {
