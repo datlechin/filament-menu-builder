@@ -172,16 +172,34 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
+    public function addMenuField(\Filament\Schemas\Components\Component $field): static
+    {
+        return $this->addMenuFields([$field]);
+    }
+
     public function addMenuFields(array | Closure $schema): static
     {
-        $this->menuFields = $schema;
+        if (is_array($schema) && is_array($this->menuFields)) {
+            $this->menuFields = array_merge($this->menuFields, $schema);
+        } else {
+            $this->menuFields = $schema;
+        }
 
         return $this;
     }
 
+    public function addMenuItemField(\Filament\Schemas\Components\Component $field): static
+    {
+        return $this->addMenuItemFields([$field]);
+    }
+
     public function addMenuItemFields(array | Closure $schema): static
     {
-        $this->menuItemFields = $schema;
+        if (is_array($schema) && is_array($this->menuItemFields)) {
+            $this->menuItemFields = array_merge($this->menuItemFields, $schema);
+        } else {
+            $this->menuItemFields = $schema;
+        }
 
         return $this;
     }

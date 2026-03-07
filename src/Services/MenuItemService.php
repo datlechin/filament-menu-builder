@@ -11,9 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class MenuItemService
 {
-    public function __construct(
-        protected FilamentMenuBuilderPlugin $plugin = new FilamentMenuBuilderPlugin,
-    ) {
+    protected FilamentMenuBuilderPlugin $plugin;
+
+    public function __construct()
+    {
         $this->plugin = FilamentMenuBuilderPlugin::get();
     }
 

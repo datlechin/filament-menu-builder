@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
+use Datlechin\FilamentMenuBuilder\Concerns\ResolvesLocale;
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
@@ -12,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Cache;
  * @property string|null $type
  * @property string|null $icon
  * @property string|null $classes
+ * @property string|null $rel
  * @property string|null $target
  * @property int $order
  * @property \Illuminate\Support\Carbon $created_at
@@ -36,6 +37,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class MenuItem extends Model
 {
+    use ResolvesLocale;
+
     protected $guarded = [];
 
     protected $with = ['linkable'];
@@ -67,28 +70,23 @@ class MenuItem extends Model
         return $casts;
     }
 
-    public function resolveLocale(mixed $value): string
-    {
-        if (is_array($value)) {
-            return $value[app()->getLocale()] ?? $value[array_key_first($value)] ?? '';
-        }
-
-        return (string) ($value ?? '');
-    }
-
     protected static function booted(): void
     {
-        static::saved(fn () => Cache::forget('filament-menu-builder'));
+        static::saved(fn () => Menu::clearLocationCache());
         static::deleted(function (self $menuItem) {
-            Cache::forget('filament-menu-builder');
-            $menuItem->children->each->delete();
+            Menu::clearLocationCache();
+            $menuItem->children()->each(fn (self $child) => $child->delete());
         });
     }
 
     public function isActive(?string $currentUrl = null): bool
     {
+        if (is_null($this->url)) {
+            return false;
+        }
+
         $currentUrl ??= request()->url();
-        $itemUrl = url($this->url ?? '');
+        $itemUrl = url($this->url);
 
         return rtrim($currentUrl, '/') === rtrim($itemUrl, '/');
     }

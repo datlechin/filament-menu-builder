@@ -23,6 +23,27 @@ All notable changes to `filament-menu-builder` will be documented in this file.
 - Updated to use Filament v5 Schema API
 - Updated build tooling to use esbuild and Tailwind CSS v4
 - `MenuItemService::update()` now uses Eloquent model save instead of query builder
+- `addMenuFields()` and `addMenuItemFields()` now merge arrays instead of replacing
+- Renamed Livewire event `menu:created` to `menu:changed` for clarity
+- Cache now uses per-location keys instead of a single shared key
+- `StaticMenuPanel::add()` accepts optional `target`, `icon`, `classes` parameters
+- `TranslatableFieldWrapper::wrap()` accepts optional `$primaryLocale` parameter
+- Redirect to edit page after menu creation
 
 ### Fixed
 - Fixed wire:click Alpine expression error and bound record to edit action
+- Fixed `isActive()` false positive for text-only menu items (null URL)
+- Fixed double query on edit action (`findByIdWithRelations` called twice)
+- Fixed children not deleted when parent's children relation was stale
+- Fixed cache race condition with concurrent `Menu::location()` calls
+- Fixed order collision on concurrent menu item additions (atomic `lockForUpdate`)
+- Translated Edit/Delete action labels
+
+### Architecture
+- Extracted `ResolvesLocale` trait from duplicated code in `Menu` and `MenuItem`
+- `ManagesMenuItemHierarchy` now resolves `MenuItemService` via IoC container
+- Cleaned up `MenuItemService` constructor (removed dead code)
+- `HasLocationAction::getMenus()` now selects only `id` and `name` columns
+- `max('order')` queries now use DB aggregates instead of loading all items
+- Added `addMenuField()` and `addMenuItemField()` singular API methods
+- Added `rel` attribute support (migration, form field, model property)

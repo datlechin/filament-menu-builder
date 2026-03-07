@@ -23,7 +23,7 @@ it('can create a custom text item', function () {
     livewire(CreateCustomText::class, ['menu' => $this->menu])
         ->set('data.title', 'Section Header')
         ->call('save')
-        ->assertDispatched('menu:created');
+        ->assertDispatched('menu:changed');
 
     expect(MenuItem::where('title', 'Section Header')->exists())->toBeTrue();
 

@@ -25,7 +25,7 @@ it('can create a custom link', function () {
         ->set('data.url', 'https://google.com')
         ->set('data.target', '_blank')
         ->call('save')
-        ->assertDispatched('menu:created');
+        ->assertDispatched('menu:changed');
 
     expect(MenuItem::where('title', 'Google')->exists())->toBeTrue();
 

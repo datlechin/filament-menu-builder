@@ -85,7 +85,7 @@ trait HasLocationAction
 
     protected function getMenus(): Collection
     {
-        return $this->menus ??= FilamentMenuBuilderPlugin::get()->getMenuModel()::all();
+        return $this->menus ??= FilamentMenuBuilderPlugin::get()->getMenuModel()::query()->select(['id', 'name'])->get();
     }
 
     protected function getMenuLocations(): Collection

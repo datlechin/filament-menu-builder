@@ -8,6 +8,7 @@ use Datlechin\FilamentMenuBuilder\Concerns\HasLocationAction;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Model;
 
 class ListMenus extends ListRecords
 {
@@ -21,7 +22,8 @@ class ListMenus extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->successRedirectUrl(fn (Model $record): string => static::getResource()::getUrl('edit', ['record' => $record])),
             $this->getLocationAction(),
         ];
     }

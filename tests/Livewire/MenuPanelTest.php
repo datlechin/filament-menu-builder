@@ -43,7 +43,7 @@ it('can add selected items to menu', function () {
     livewire(MenuPanel::class, ['menu' => $this->menu, 'menuPanel' => $panel])
         ->set('data', ['Home', 'About'])
         ->call('add')
-        ->assertDispatched('menu:created');
+        ->assertDispatched('menu:changed');
 
     expect(MenuItem::where('menu_id', $this->menu->id)->count())->toBe(2);
 });

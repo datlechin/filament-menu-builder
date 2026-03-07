@@ -147,8 +147,8 @@ it('caches menu location lookup', function () {
     $found = Menu::location('header');
     expect($found->name)->toBe('Cached Menu');
 
-    // Cache should now exist
-    expect(Cache::has('filament-menu-builder'))->toBeTrue();
+    // Cache should now exist with per-location key
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
 
     // Second call should return from cache
     $cached = Menu::location('header');
@@ -164,10 +164,10 @@ it('busts cache when menu is saved', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder'))->toBeTrue();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
 
     $menu->update(['name' => 'Updated']);
-    expect(Cache::has('filament-menu-builder'))->toBeFalse();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
 });
 
 it('busts cache when menu is deleted', function () {
@@ -179,10 +179,10 @@ it('busts cache when menu is deleted', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder'))->toBeTrue();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
 
     $menu->delete();
-    expect(Cache::has('filament-menu-builder'))->toBeFalse();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
 });
 
 it('busts cache when menu item is saved', function () {
@@ -194,7 +194,7 @@ it('busts cache when menu item is saved', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder'))->toBeTrue();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
 
     MenuItem::create([
         'menu_id' => $menu->id,
@@ -203,7 +203,7 @@ it('busts cache when menu item is saved', function () {
         'order' => 1,
     ]);
 
-    expect(Cache::has('filament-menu-builder'))->toBeFalse();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
 });
 
 it('busts cache when menu location is changed', function () {
@@ -215,8 +215,8 @@ it('busts cache when menu location is changed', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder'))->toBeTrue();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
 
     $location->delete();
-    expect(Cache::has('filament-menu-builder'))->toBeFalse();
+    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
 });

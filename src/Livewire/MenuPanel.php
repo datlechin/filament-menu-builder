@@ -14,6 +14,7 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -76,13 +77,19 @@ class MenuPanel extends Component implements HasSchemas
     {
         $this->validate();
 
-        $order = $this->menu->menuItems->max('order') ?? 0;
-
         $plugin = FilamentMenuBuilderPlugin::get();
 
         $selectedItems = collect($this->items)
-            ->filter(fn ($item) => in_array($item['linkable_id'] ?? $item['title'], $this->data))
-            ->map(function ($item) use (&$order, $plugin) {
+            ->filter(fn ($item) => in_array($item['linkable_id'] ?? $item['title'], $this->data));
+
+        if ($selectedItems->isEmpty()) {
+            return;
+        }
+
+        DB::transaction(function () use ($selectedItems, $plugin) {
+            $order = $this->menu->menuItems()->lockForUpdate()->max('order') ?? 0;
+
+            $items = $selectedItems->map(function ($item) use (&$order, $plugin) {
                 $title = $item['title'];
 
                 if ($plugin->isTranslatable() && in_array('title', $plugin->getTranslatableMenuItemFields())) {
@@ -97,14 +104,11 @@ class MenuPanel extends Component implements HasSchemas
                 ];
             });
 
-        if ($selectedItems->isEmpty()) {
-            return;
-        }
-
-        $this->menu->menuItems()->createMany($selectedItems);
+            $this->menu->menuItems()->createMany($items);
+        });
 
         $this->reset('data');
-        $this->dispatch('menu:created');
+        $this->dispatch('menu:changed');
 
         Notification::make()
             ->title(__('filament-menu-builder::menu-builder.notifications.created.title'))

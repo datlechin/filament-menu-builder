@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
+use Datlechin\FilamentMenuBuilder\Concerns\ResolvesLocale;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,6 +23,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class Menu extends Model
 {
+    use ResolvesLocale;
+
     protected $guarded = [];
 
     public function getTable(): string
@@ -50,19 +53,21 @@ class Menu extends Model
         return $casts;
     }
 
-    public function resolveLocale(mixed $value): string
-    {
-        if (is_array($value)) {
-            return $value[app()->getLocale()] ?? $value[array_key_first($value)] ?? '';
-        }
-
-        return (string) ($value ?? '');
-    }
-
     protected static function booted(): void
     {
-        static::saved(fn () => Cache::forget('filament-menu-builder'));
-        static::deleted(fn () => Cache::forget('filament-menu-builder'));
+        static::saved(fn () => static::clearLocationCache());
+        static::deleted(fn () => static::clearLocationCache());
+    }
+
+    public static function clearLocationCache(): void
+    {
+        $keys = Cache::get('filament-menu-builder.location-keys', []);
+
+        foreach ($keys as $key) {
+            Cache::forget($key);
+        }
+
+        Cache::forget('filament-menu-builder.location-keys');
     }
 
     public function locations(): HasMany
@@ -81,21 +86,23 @@ class Menu extends Model
 
     public static function location(string $location): ?self
     {
-        return Cache::rememberForever('filament-menu-builder', fn () => collect())
-            ->get($location, fn () => self::resolveLocation($location));
-    }
+        $cacheKey = "filament-menu-builder.location.{$location}";
 
-    protected static function resolveLocation(string $location): ?self
-    {
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
         $menu = self::query()
             ->where('is_visible', true)
             ->whereRelation('locations', 'location', $location)
             ->with('menuItems')
             ->first();
 
-        $cache = Cache::get('filament-menu-builder', collect());
-        $cache->put($location, $menu);
-        Cache::forever('filament-menu-builder', $cache);
+        Cache::forever($cacheKey, $menu);
+
+        $keys = Cache::get('filament-menu-builder.location-keys', []);
+        $keys[] = $cacheKey;
+        Cache::forever('filament-menu-builder.location-keys', array_unique($keys));
 
         return $menu;
     }

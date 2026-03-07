@@ -13,17 +13,18 @@ class TranslatableFieldWrapper
     /**
      * @param  string[]  $locales
      */
-    public static function wrap(Field $field, array $locales): Tabs
+    public static function wrap(Field $field, array $locales, ?string $primaryLocale = null): Tabs
     {
         $fieldName = $field->getName();
+        $primaryLocale ??= $locales[0];
 
-        $tabs = array_map(function (string $locale) use ($field, $locales, $fieldName): Tab {
+        $tabs = array_map(function (string $locale) use ($field, $primaryLocale, $fieldName): Tab {
             $clonedField = clone $field;
             $clonedField->name("{$fieldName}.{$locale}");
             $clonedField->statePath("{$fieldName}.{$locale}");
             $clonedField->label(null);
 
-            if ($locale !== $locales[0]) {
+            if ($locale !== $primaryLocale) {
                 $clonedField->required(false);
             }
 

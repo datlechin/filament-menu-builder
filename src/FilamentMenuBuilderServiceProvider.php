@@ -92,6 +92,7 @@ class FilamentMenuBuilderServiceProvider extends PackageServiceProvider
         return [
             'create_menus_table',
             'add_panel_icon_classes_to_menu_items_table',
+            'add_rel_to_menu_items_table',
         ];
     }
 }

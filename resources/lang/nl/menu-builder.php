@@ -30,6 +30,8 @@ return [
         'add' => [
             'label' => 'Toevoegen aan menu',
         ],
+        'edit' => 'Bewerken',
+        'delete' => 'Verwijderen',
         'indent' => 'Inspringen',
         'unindent' => 'Uitspringen',
         'locations' => [

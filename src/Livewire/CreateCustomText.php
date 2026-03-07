@@ -13,6 +13,7 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateCustomText extends Component implements HasSchemas
@@ -27,12 +28,16 @@ class CreateCustomText extends Component implements HasSchemas
     {
         $state = $this->form->getState();
 
-        $this->menu
-            ->menuItems()
-            ->create([
-                'title' => $state['title'],
-                'order' => $this->menu->menuItems->max('order') + 1,
-            ]);
+        DB::transaction(function () use ($state) {
+            $order = ($this->menu->menuItems()->lockForUpdate()->max('order') ?? 0) + 1;
+
+            $this->menu
+                ->menuItems()
+                ->create([
+                    'title' => $state['title'],
+                    'order' => $order,
+                ]);
+        });
 
         Notification::make()
             ->title(__('filament-menu-builder::menu-builder.notifications.created.title'))
@@ -40,7 +45,7 @@ class CreateCustomText extends Component implements HasSchemas
             ->send();
 
         $this->form->fill();
-        $this->dispatch('menu:created');
+        $this->dispatch('menu:changed');
     }
 
     public function form(Schema $schema): Schema

@@ -8,6 +8,7 @@ return [
         'url' => 'URL',
         'icon' => 'Icon',
         'classes' => 'CSS Classes',
+        'rel' => 'Rel Attribute',
         'linkable_type' => 'Type',
         'linkable_id' => 'ID',
     ],
@@ -32,6 +33,8 @@ return [
         'add' => [
             'label' => 'Add to Menu',
         ],
+        'edit' => 'Edit',
+        'delete' => 'Delete',
         'indent' => 'Indent',
         'unindent' => 'Unindent',
         'locations' => [

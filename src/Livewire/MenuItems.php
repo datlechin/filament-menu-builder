@@ -34,7 +34,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
     public Menu $menu;
 
     #[Computed]
-    #[On('menu:created')]
+    #[On('menu:changed')]
     public function menuItems(): Collection
     {
         return $this->menu->menuItems;
@@ -48,13 +48,13 @@ class MenuItems extends Component implements HasActions, HasSchemas
     public function editAction(): Action
     {
         return Action::make('edit')
-            ->label('Edit')
+            ->label(__('filament-menu-builder::menu-builder.actions.edit'))
             ->iconButton()
             ->icon('heroicon-m-pencil-square')
             ->slideOver()
             ->modalWidth(Width::Medium)
             ->record(fn (array $arguments) => $this->getMenuItemService()->findByIdWithRelations($arguments['id']))
-            ->fillForm(fn (array $arguments): array => $this->getMenuItemService()->findByIdWithRelations($arguments['id'])->toArray())
+            ->fillForm(fn ($record): array => $record->toArray())
             ->form(fn (): array => $this->getEditFormSchema())
             ->action(fn (array $data, array $arguments) => $this->getMenuItemService()->update($arguments['id'], $data));
     }
@@ -62,7 +62,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
     public function deleteAction(): Action
     {
         return Action::make('delete')
-            ->label('Delete')
+            ->label(__('filament-menu-builder::menu-builder.actions.delete'))
             ->color('danger')
             ->icon('heroicon-s-trash')
             ->iconButton()
@@ -121,6 +121,9 @@ class MenuItems extends Component implements HasActions, HasSchemas
             TextInput::make('classes')
                 ->label(__('filament-menu-builder::menu-builder.form.classes'))
                 ->placeholder('text-sm font-bold'),
+            TextInput::make('rel')
+                ->label(__('filament-menu-builder::menu-builder.form.rel'))
+                ->placeholder('nofollow noopener noreferrer'),
             Select::make('target')
                 ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                 ->options(LinkTarget::class)

@@ -15,6 +15,7 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateCustomLink extends Component implements HasSchemas
@@ -36,16 +37,21 @@ class CreateCustomLink extends Component implements HasSchemas
     {
         $state = $this->form->getState();
 
-        $this->menu
-            ->menuItems()
-            ->create([
-                'title' => $state['title'],
-                'url' => $state['url'],
-                'icon' => $state['icon'] ?? null,
-                'classes' => $state['classes'] ?? null,
-                'target' => $state['target'],
-                'order' => $this->menu->menuItems->max('order') + 1,
-            ]);
+        DB::transaction(function () use ($state) {
+            $order = ($this->menu->menuItems()->lockForUpdate()->max('order') ?? 0) + 1;
+
+            $this->menu
+                ->menuItems()
+                ->create([
+                    'title' => $state['title'],
+                    'url' => $state['url'],
+                    'icon' => $state['icon'] ?? null,
+                    'classes' => $state['classes'] ?? null,
+                    'rel' => $state['rel'] ?? null,
+                    'target' => $state['target'],
+                    'order' => $order,
+                ]);
+        });
 
         Notification::make()
             ->title(__('filament-menu-builder::menu-builder.notifications.created.title'))
@@ -55,7 +61,7 @@ class CreateCustomLink extends Component implements HasSchemas
         $this->form->fill([
             'target' => LinkTarget::Self->value,
         ]);
-        $this->dispatch('menu:created');
+        $this->dispatch('menu:changed');
     }
 
     public function form(Schema $schema): Schema
@@ -93,6 +99,9 @@ class CreateCustomLink extends Component implements HasSchemas
                 TextInput::make('classes')
                     ->label(__('filament-menu-builder::menu-builder.form.classes'))
                     ->placeholder('text-sm font-bold'),
+                TextInput::make('rel')
+                    ->label(__('filament-menu-builder::menu-builder.form.rel'))
+                    ->placeholder('nofollow noopener noreferrer'),
                 Select::make('target')
                     ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                     ->options(LinkTarget::class)

@@ -10,12 +10,31 @@ class StaticMenuPanel extends AbstractMenuPanel
 {
     protected array $items = [];
 
-    public function add(string $title, Closure | string $url): static
-    {
-        $this->items[] = [
+    public function add(
+        string $title,
+        Closure | string $url,
+        ?string $target = null,
+        ?string $icon = null,
+        ?string $classes = null,
+    ): static {
+        $item = [
             'title' => $title,
             'url' => $url,
         ];
+
+        if ($target !== null) {
+            $item['target'] = $target;
+        }
+
+        if ($icon !== null) {
+            $item['icon'] = $icon;
+        }
+
+        if ($classes !== null) {
+            $item['classes'] = $classes;
+        }
+
+        $this->items[] = $item;
 
         return $this;
     }
