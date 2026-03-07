@@ -39,6 +39,9 @@ All notable changes to `filament-menu-builder` will be documented in this file.
 - Fixed order collision on concurrent menu item additions (atomic `lockForUpdate`)
 - Translated Edit/Delete action labels
 
+### Documentation
+- Documented `rel` attribute, `StaticMenuPanel::add()` optional parameters, singular field API, and merge behavior in README
+
 ### Architecture
 - Extracted `ResolvesLocale` trait from duplicated code in `Menu` and `MenuItem`
 - `ManagesMenuItemHierarchy` now resolves `MenuItemService` via IoC container
