@@ -6,18 +6,19 @@ namespace Datlechin\FilamentMenuBuilder\Livewire;
 
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel as ContractsMenuPanel;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Filament\Forms\Components;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\EmptyState;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-class MenuPanel extends Component implements HasForms
+class MenuPanel extends Component implements HasSchemas
 {
-    use InteractsWithForms;
+    use InteractsWithSchemas;
 
     public Menu $menu;
 
@@ -81,6 +82,7 @@ class MenuPanel extends Component implements HasForms
             ->map(function ($item) use (&$order) {
                 return [
                     ...$item,
+                    'panel' => $item['linkable_type'] ?? $this->id,
                     'order' => ++$order,
                 ];
             });
@@ -100,21 +102,18 @@ class MenuPanel extends Component implements HasForms
             ->send();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         $items = collect($this->getItems())->mapWithKeys(fn ($item) => [$item['linkable_id'] ?? $item['title'] => $item['title']]);
 
-        return $form
-            ->schema([
-                Components\View::make('filament-tables::components.empty-state.index')
-                    ->viewData([
-                        'heading' => __('filament-menu-builder::menu-builder.panel.empty.heading'),
-                        'description' => __('filament-menu-builder::menu-builder.panel.empty.description'),
-                        'icon' => 'heroicon-o-link-slash',
-                    ])
+        return $schema
+            ->components([
+                EmptyState::make(__('filament-menu-builder::menu-builder.panel.empty.heading'))
+                    ->description(__('filament-menu-builder::menu-builder.panel.empty.description'))
+                    ->icon('heroicon-o-link-slash')
                     ->visible($items->isEmpty()),
 
-                Components\CheckboxList::make('data')
+                CheckboxList::make('data')
                     ->hiddenLabel()
                     ->required()
                     ->bulkToggleable()

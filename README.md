@@ -1,444 +1,263 @@
 # Filament Menu Builder
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/datlechin/filament-menu-builder.svg?style=flat-square)](https://packagist.org/packages/datlechin/filament-menu-builder)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/datlechin/filament-menu-builder/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/datlechin/filament-menu-builder/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/datlechin/filament-menu-builder.svg?style=flat-square)](https://packagist.org/packages/datlechin/filament-menu-builder)
 
-This [Filament](https://filamentphp.com) package allows you to create and manage menus in your Filament application.
+A [Filament](https://filamentphp.com) plugin for creating and managing menus with drag-and-drop ordering, nested items, custom links, and dynamic menu panels.
 
-![Filament Menu Builder](https://github.com/datlechin/filament-menu-builder/raw/main/art/menu-builder.jpg)
+## Requirements
 
-> [!NOTE]
-> I created this for my personal project, so some features and extensibility are still lacking. Pull requests are welcome.
+- PHP 8.2+
+- Filament 5.0+
+- Laravel 12+
 
 ## Installation
 
-You can install the package via composer:
+Install the package via Composer:
 
 ```bash
 composer require datlechin/filament-menu-builder
 ```
 
-You need to publish the migrations and run them:
+Publish and run the migrations:
 
 ```bash
 php artisan vendor:publish --tag="filament-menu-builder-migrations"
 php artisan migrate
 ```
 
-You can publish the config file with:
+Optionally publish the config file:
 
 ```bash
 php artisan vendor:publish --tag="filament-menu-builder-config"
 ```
 
-Optionally, if you want to customize the views, you can publish them with:
+Or use the install command:
 
 ```bash
-php artisan vendor:publish --tag="filament-menu-builder-views"
-```
-
-This is the contents of the published config file:
-
-```php
-return [
-    'tables' => [
-        'menus' => 'menus',
-        'menu_items' => 'menu_items',
-        'menu_locations' => 'menu_locations',
-    ],
-];
-```
-
-Add the plugin to `AdminPanelProvider`:
-
-```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-
-$panel
-    ...
-    ->plugin(FilamentMenuBuilderPlugin::make())
+php artisan filament-menu-builder:install
 ```
 
 ## Usage
 
-### Adding locations
-
-Locations are the places where you can display menus in the frontend. You can add locations in the `AdminPanelProvider`:
+Register the plugin in your Filament panel provider:
 
 ```php
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->addLocation('header', 'Header')
-            ->addLocation('footer', 'Footer')
-    )
-```
-
-The first argument is the key of the location, and the second argument is the title of the location.
-
-Alternatively, you may add locations using an array:
-
-```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->addLocations([
-                'header' => 'Header',
-                'footer' => 'Footer',
-            ])
-    )
-```
-
-### Setting up Menu Panels
-
-Menu panels are the panels that contain the menu items which you can add to the menus.
-
-#### Custom Link Menu Panel
-
-By default, the package provides a **Custom Link** menu panel that allows you to add custom links to the menus.
-
-![Custom Link Menu Panel](https://github.com/datlechin/filament-menu-builder/raw/main/art/custom-link.png)
-
-The panel can be disabled by using the following when configuring the plugin, should you not need this functionality.
-
-```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->showCustomLinkPanel(false)
-    )
-```
-
-#### Custom Text Menu Panel
-
-This package provides a **Custom Text** menu panel that allows you to add custom text items to the menus.
-
-It is identical to the **Custom Link** menu panel except for the fact that you only set a title without a URL or target. This can be useful to add headers to mega-style menus.
-
-The panel is disabled by default to prevent visual clutter. To enable the Custom Text menu panel, you can use the following when configuring the plugin.
-
-```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->showCustomTextPanel()
-    )
-```
-
-#### Static Menu Panel
-
-The static menu panel allows you to add menu items manually.
-
-```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
-
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->addMenuPanels([
-                StaticMenuPanel::make()
-                    ->add('Home', url('/'))
-                    ->add('Blog', url('/blog')),
-            ])
-    )
-```
-
-Similarily to locations, you may also add static menu items using an array:
-
-```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
-
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->addMenuPanels([
-                StaticMenuPanel::make()
-                    ->addMany([
-                        'Home' => url('/'),
-                        'Blog' => url('/blog'),
-                    ])
-            ])
-    )
-```
-
-![Static Menu Panel](https://github.com/datlechin/filament-menu-builder/raw/main/art/static-menu.png)
-
-#### Model Menu Panel
-
-The model menu panel allows you to add menu items from a model.
-
-To create a model menu panel, your model must implement the `\Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable` interface and `\Datlechin\FilamentMenuBuilder\Concerns\HasMenuPanel` trait.
-
-Then you must also implement the `getMenuPanelTitleColumn` and `getMenuPanelUrlUsing` methods. A complete example of this implementation is as follows:
-
-```php
-use Datlechin\FilamentMenuBuilder\Concerns\HasMenuPanel;
-use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
-use Illuminate\Database\Eloquent\Model;
-
-class Category extends Model implements MenuPanelable
+public function panel(Panel $panel): Panel
 {
-    use HasMenuPanel;
+    return $panel
+        ->plugins([
+            FilamentMenuBuilderPlugin::make(),
+        ]);
+}
+```
 
-    public function getMenuPanelTitleColumn(): string
+### Defining Locations
+
+Locations define where menus can be displayed in your application (e.g., header, footer, sidebar):
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->addLocations([
+        'header' => 'Header',
+        'footer' => 'Footer',
+    ])
+```
+
+### Custom Menu Panels
+
+Menu panels are sources for adding items to menus. You can create panels from Eloquent models or static items.
+
+#### Model Panel
+
+To add a panel from an Eloquent model, implement the `MenuPanelable` interface on your model:
+
+```php
+use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
+
+class Page extends Model implements MenuPanelable
+{
+    public function getMenuPanelTitle(): string
     {
-        return 'name';
+        return $this->title;
     }
 
-    public function getMenuPanelUrlUsing(): callable
+    public function getMenuPanelUrl(): string
     {
-        return fn (self $model) => route('categories.show', $model->slug);
+        return route('pages.show', $this);
+    }
+
+    public function getMenuPanelName(): string
+    {
+        return 'Pages';
     }
 }
 ```
 
-Then you can add the model menu panel to the plugin:
+Then register it with the plugin:
 
 ```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\MenuPanel\ModelMenuPanel;
 
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->addMenuPanels([
-                ModelMenuPanel::make()
-                    ->model(\App\Models\Category::class),
-            ])
-    )
+FilamentMenuBuilderPlugin::make()
+    ->addMenuPanels([
+        ModelMenuPanel::make()
+            ->model(Page::class),
+    ])
 ```
 
-![Model Menu Panel](https://github.com/datlechin/filament-menu-builder/raw/main/art/model-menu.png)
+#### Static Panel
 
-#### Additional Menu Panel Options
-
-When registering a menu panel, multiple methods are available allowing you to configure the panel's behavior such as collapse state and pagination.
+You can also add static items:
 
 ```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
 
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->addMenuPanels([
-                StaticMenuPanel::make()
-                    ->addMany([
-                        ...
-                    ])
-                    ->description('Lorem ipsum...')
-                    ->icon('heroicon-m-link')
-                    ->collapsed(true)
-                    ->collapsible(true)
-                    ->paginate(perPage: 5, condition: true)
-            ])
-    )
+FilamentMenuBuilderPlugin::make()
+    ->addMenuPanels([
+        StaticMenuPanel::make()
+            ->name('pages')
+            ->add('Home', '/')
+            ->add('About', '/about')
+            ->add('Contact', '/contact'),
+    ])
+```
+
+### Custom Link & Custom Text Panels
+
+The custom link panel is shown by default. You can toggle it and also enable the custom text panel (for non-link items like headings):
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->showCustomLinkPanel(true)
+    ->showCustomTextPanel(true)
 ```
 
 ### Custom Fields
 
-In some cases, you may want to extend menu and menu items with custom fields. To do this, start by passing an array of form components to the `addMenuFields` and `addMenuItemFields` methods when registering the plugin:
+You can add extra fields to the menu form or the menu item edit form:
 
 ```php
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->addMenuFields([
-                Toggle::make('is_logged_in'),
-            ])
-            ->addMenuItemFields([
-                TextInput::make('classes'),
-            ])
-    )
+FilamentMenuBuilderPlugin::make()
+    ->addMenuFields([
+        TextInput::make('description'),
+    ])
+    ->addMenuItemFields([
+        TextInput::make('badge'),
+    ])
 ```
 
-Next, create a migration adding the additional columns to the appropriate tables:
+### Customizing Navigation
 
 ```php
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::table(config('filament-menu-builder.tables.menus'), function (Blueprint $table) {
-            $table->boolean('is_logged_in')->default(false);
-        });
-
-        Schema::table(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
-            $table->string('classes')->nullable();
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table(config('filament-menu-builder.tables.menus'), function (Blueprint $table) {
-            $table->dropColumn('is_logged_in');
-        });
-
-        Schema::table(config('filament-menu-builder.tables.menu_items'), function (Blueprint $table) {
-            $table->dropColumn('classes');
-        });
-    }
-}
+FilamentMenuBuilderPlugin::make()
+    ->navigationLabel('Menus')
+    ->navigationGroup('Content')
+    ->navigationIcon('heroicon-o-bars-3')
+    ->navigationSort(3)
+    ->navigationCountBadge(true)
 ```
 
-Once done, simply run `php artisan migrate`.
+### Indent / Unindent
 
-### Customizing the Resource
-
-Out of the box, a default Menu Resource is registered with Filament when registering the plugin in the admin provider. This resource can be extended and overridden allowing for more fine-grained control.
-
-Start by extending the `Datlechin\FilamentMenuBuilder\Resources\MenuResource` class in your application. Below is an example:
+Nested menu items are supported via indent/unindent actions. This is enabled by default:
 
 ```php
-namespace App\Filament\Plugins\Resources;
-
-use Datlechin\FilamentMenuBuilder\Resources\MenuResource as BaseMenuResource;
-
-class MenuResource extends BaseMenuResource
-{
-    protected static ?string $navigationGroup = 'Navigation';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return number_format(static::getModel()::count());
-    }
-}
+FilamentMenuBuilderPlugin::make()
+    ->enableIndentActions(true)
 ```
 
-Now pass the custom resource to `usingResource` while registering the plugin with the panel:
+### Custom Models
+
+You can replace the default models with your own:
 
 ```php
-use App\Filament\Plugins\Resources\MenuResource;
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->usingResource(MenuResource::class)
-    )
+FilamentMenuBuilderPlugin::make()
+    ->usingMenuModel(CustomMenu::class)
+    ->usingMenuItemModel(CustomMenuItem::class)
+    ->usingMenuLocationModel(CustomMenuLocation::class)
 ```
 
-### Customizing the Models
+### Rendering Menus
 
-The default models used by the plugin can be configured and overridden similarly to the plugin resource as seen above.
-
-Simply extend the default models and then pass the classes when registering the plugin in the panel:
-
-```php
-use App\Models\Menu;
-use App\Models\MenuItem;
-use App\Models\MenuLocation;
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->usingMenuModel(Menu::class)
-            ->usingMenuItemModel(MenuItem::class)
-            ->usingMenuLocationModel(MenuLocation::class)
-    )
-```
-
-### Using Menus
-
-Getting the assigned menu for a registered location can be done using the `Menu` model. Below we will call the menu assigned to the `primary` location:
+Retrieve a menu by its location in your views or controllers:
 
 ```php
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 
-$menu = Menu::location('primary');
+$menu = Menu::location('header');
 ```
 
-Menu items can be iterated from the `menuItems` relationship:
+This uses caching under the hood for performance. The cache is automatically busted when menus or menu items are updated.
 
-```php
-@foreach ($menu->menuItems as $item)
-    <a href="{{ $item->url }}">{{ $item->title }}</a>
-@endforeach
+Loop through menu items:
+
+```blade
+@if($menu)
+    <nav>
+        <ul>
+            @foreach($menu->menuItems as $item)
+                <li class="{{ $item->classes }} {{ $item->isActive() ? 'active' : '' }}">
+                    @if($item->url)
+                        <a href="{{ $item->url }}" target="{{ $item->target }}">
+                            {{ $item->title }}
+                        </a>
+                    @else
+                        <span>{{ $item->title }}</span>
+                    @endif
+
+                    @if($item->children->isNotEmpty())
+                        <ul>
+                            @foreach($item->children as $child)
+                                <li>
+                                    <a href="{{ $child->url }}">{{ $child->title }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    </nav>
+@endif
 ```
 
-When a menu item is a parent, a collection of the child menu items will be available on the `children` property:
+#### Active State Detection
+
+Menu items provide methods for checking if they match the current URL:
 
 ```php
-@foreach ($menu->menuItems as $item)
-    <a href="{{ $item->url }}">{{ $item->title }}</a>
-
-    @if ($item->children)
-        @foreach ($item->children as $child)
-            <a href="{{ $child->url }}">{{ $child->title }}</a>
-        @endforeach
-    @endif
-@endforeach
+$item->isActive();                 // exact URL match
+$item->isActiveOrHasActiveChild(); // matches self or any descendant
 ```
 
-### Configuring Indent/Unindent Actions
+### MenuItem Properties
 
-The package includes indent and unindent buttons that provide an alternative to drag-and-drop for organizing menu hierarchy. This feature is enabled by default but can be configured:
+| Property   | Type     | Description                           |
+|------------|----------|---------------------------------------|
+| `title`    | string   | The display title                     |
+| `url`      | ?string  | The URL (null for text-only items)    |
+| `target`   | string   | Link target (`_self`, `_blank`, etc.) |
+| `icon`     | ?string  | Icon identifier (e.g. `heroicon-o-home`) |
+| `classes`  | ?string  | CSS classes for the item              |
+| `type`     | string   | Panel name / source type (accessor)   |
+| `children` | Collection | Nested child items                  |
 
-```php
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+## Testing
 
-$panel
-    ...
-    ->plugin(
-        FilamentMenuBuilderPlugin::make()
-            ->enableIndentActions(false) // Disable
-    )
+```bash
+composer test
 ```
 
 ## Changelog
 
-Please see [CHANGELOG](https://github.com/datlechin/filament-menu-builder/raw/main/CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](https://github.com/datlechin/filament-menu-builder/raw/main/.github/CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](https://github.com/datlechin/filament-menu-builder/security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [Ngo Quoc Dat](https://github.com/datlechin)
-- [Log1x](https://github.com/Log1x)
-- [All Contributors](https://github.com/datlechin/filament-menu-builder/contributors)
+Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
 ## License
 
-The MIT License (MIT). Please see [License File](https://github.com/datlechin/filament-menu-builder/raw/main/LICENSE.md) for more information.
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

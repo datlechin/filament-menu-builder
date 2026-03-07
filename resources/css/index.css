@@ -1,1 +1,28 @@
-@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/utilities' layer(utilities);
+
+@source '../views/**/*';
+
+.fi-sortable-ghost {
+    @apply opacity-30;
+}
+
+.fi-menu-builder-item-handle {
+    @apply cursor-move;
+}
+
+.fi-menu-builder-item-label {
+    @apply inline-flex items-center gap-1.5;
+}
+
+.fi-menu-builder-item-label-icon {
+    @apply size-4 shrink-0;
+}
+
+.fi-menu-builder-item-url {
+    @apply font-normal text-gray-500 dark:text-gray-400;
+}
+
+.fi-menu-builder-item-children {
+    @apply ps-6 pe-3 pb-3;
+}

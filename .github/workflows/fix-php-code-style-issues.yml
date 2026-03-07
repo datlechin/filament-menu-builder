@@ -1,4 +1,4 @@
-name: 'Fix PHP Code Styling'
+name: Fix PHP code style issues
 
 on:
   push:
@@ -19,9 +19,11 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Fix PHP code style issues
-        uses: aglipanci/laravel-pint-action@2.4
+        uses: aglipanci/laravel-pint-action@2.5
+        with:
+          configPath: pint.json
 
-      - name: Commit changes
+      - name: Commit linted files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Fix styling

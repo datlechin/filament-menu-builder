@@ -12,12 +12,17 @@
     wire:key="{{ $item->getKey() }}"
     data-sortable-item="{{ $item->getKey() }}"
     x-data="{ open: $persist(true).as('menu-item-' + {{ $item->getKey() }}) }"
+    class="fi-fo-repeater-item"
 >
-    <div
-        class="flex justify-between px-3 py-2 bg-white shadow-sm rounded-xl ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10"
-    >
-        <div class="flex flex-1 items-center gap-2 truncate">
-            {{ $this->reorderAction }}
+    <div class="fi-fo-repeater-item-header">
+        <div class="fi-fo-repeater-item-header-start-actions">
+            <x-filament::icon-button
+                icon="heroicon-m-arrows-up-down"
+                color="gray"
+                size="sm"
+                data-sortable-handle
+                class="fi-menu-builder-item-handle"
+            />
 
             @if ($hasChildren)
                 <x-filament::icon-button
@@ -25,43 +30,68 @@
                     x-on:click="open = !open"
                     x-bind:title="open ? '{{ trans('filament-menu-builder::menu-builder.items.collapse') }}' : '{{ trans('filament-menu-builder::menu-builder.items.expand') }}'"
                     color="gray"
-                    class="transition duration-200 ease-in-out"
                     x-bind:class="{ 'rotate-90': open }"
+                    class="transition duration-200"
                     size="sm"
                 />
             @endif
 
             @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isIndentActionsEnabled())
-                {{ ($this->unindentAction)(['id' => $item->getKey()]) }}
-                {{ ($this->indentAction)(['id' => $item->getKey()]) }}
+                <x-filament::icon-button
+                    icon="heroicon-m-arrow-left"
+                    color="gray"
+                    size="sm"
+                    wire:click="unindent({{ $item->getKey() }})"
+                />
+                <x-filament::icon-button
+                    icon="heroicon-m-arrow-right"
+                    color="gray"
+                    size="sm"
+                    wire:click="indent({{ $item->getKey() }})"
+                />
             @endif
-
-            <div class="text-sm font-medium leading-6 text-gray-950 dark:text-white whitespace-nowrap">
-                {{ $item->title }}
-            </div>
-
-            <div class="hidden overflow-hidden text-sm text-gray-500 sm:block dark:text-gray-400 whitespace-nowrap text-ellipsis">
-                {{ $item->url }}
-            </div>
         </div>
-        <div class="flex items-center gap-2">
-            <x-filament::badge :color="$item->type === 'internal' ? 'primary' : 'gray'" class="hidden sm:block">
+
+        <span class="fi-fo-repeater-item-header-label fi-truncated fi-menu-builder-item-label">
+            @if ($item->icon)
+                <x-filament::icon :icon="$item->icon" class="fi-menu-builder-item-label-icon" />
+            @endif
+            {{ $item->title }}
+        </span>
+
+        <span class="fi-fo-repeater-item-header-label fi-truncated fi-menu-builder-item-url">
+            {{ $item->url }}
+        </span>
+
+        <div class="fi-fo-repeater-item-header-end-actions">
+            <x-filament::badge :color="$item->panel ? 'primary' : 'gray'">
                 {{ $item->type }}
             </x-filament::badge>
-            {{ ($this->editAction)(['id' => $item->getKey(), 'title' => $item->title]) }}
-            {{ ($this->deleteAction)(['id' => $item->getKey(), 'title' => $item->title]) }}
+            <x-filament::icon-button
+                icon="heroicon-m-pencil-square"
+                size="sm"
+                wire:click="mountAction('edit', {{ Js::from(['id' => $item->getKey(), 'title' => $item->title]) }})"
+            />
+            <x-filament::icon-button
+                icon="heroicon-s-trash"
+                color="danger"
+                size="sm"
+                wire:click="mountAction('delete', {{ Js::from(['id' => $item->getKey(), 'title' => $item->title]) }})"
+            />
         </div>
     </div>
 
-    <ul
-        x-collapse
-        x-show="open"
-        wire:key="{{ $item->getKey() }}.children"
-        x-data="menuBuilder({ parentId: {{ $item->getKey()  }} })"
-        class="mt-2 space-y-2 ms-4"
-    >
-        @foreach ($item->children as $child)
-            <x-filament-menu-builder::menu-item :item="$child" />
-        @endforeach
-    </ul>
+    @if ($hasChildren)
+        <ul
+            x-collapse
+            x-show="open"
+            wire:key="{{ $item->getKey() }}.children"
+            x-data="menuBuilder({ parentId: {{ $item->getKey()  }} })"
+            class="fi-fo-repeater-items grid fi-menu-builder-item-children"
+        >
+            @foreach ($item->children as $child)
+                <x-filament-menu-builder::menu-item :item="$child" />
+            @endforeach
+        </ul>
+    @endif
 </li>

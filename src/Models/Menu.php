@@ -7,6 +7,7 @@ namespace Datlechin\FilamentMenuBuilder\Models;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -35,6 +36,12 @@ class Menu extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('filament-menu-builder'));
+        static::deleted(fn () => Cache::forget('filament-menu-builder'));
+    }
+
     public function locations(): HasMany
     {
         return $this->hasMany(FilamentMenuBuilderPlugin::get()->getMenuLocationModel());
@@ -51,10 +58,22 @@ class Menu extends Model
 
     public static function location(string $location): ?self
     {
-        return self::query()
+        return Cache::rememberForever('filament-menu-builder', fn () => collect())
+            ->get($location, fn () => self::resolveLocation($location));
+    }
+
+    protected static function resolveLocation(string $location): ?self
+    {
+        $menu = self::query()
             ->where('is_visible', true)
             ->whereRelation('locations', 'location', $location)
             ->with('menuItems')
             ->first();
+
+        $cache = Cache::get('filament-menu-builder', collect());
+        $cache->put($location, $menu);
+        Cache::forever('filament-menu-builder', $cache);
+
+        return $menu;
     }
 }

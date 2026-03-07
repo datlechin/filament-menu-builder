@@ -23,8 +23,11 @@ return new class extends Migration
             $table->foreignIdFor(Menu::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(MenuItem::class, 'parent_id')->nullable()->constrained($table->getTable())->nullOnDelete();
             $table->nullableMorphs('linkable');
+            $table->string('panel')->nullable();
             $table->string('title');
             $table->string('url')->nullable();
+            $table->string('icon')->nullable();
+            $table->string('classes')->nullable();
             $table->string('target', 10)->default(LinkTarget::Self);
             $table->integer('order')->default(0);
             $table->timestamps();

@@ -37,11 +37,11 @@
         @endif
 
         @if ($this->items)
-            <x-slot:footerActions>
+            <x-slot:footer>
                 <x-filament::button type="submit">
                     {{ __('filament-menu-builder::menu-builder.actions.add.label') }}
                 </x-filament::button>
-            </x-slot:footerActions>
+            </x-slot:footer>
         @endif
     </x-filament::section>
 </form>

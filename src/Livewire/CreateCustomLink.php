@@ -8,40 +8,40 @@ use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 
-class CreateCustomLink extends Component implements HasForms
+class CreateCustomLink extends Component implements HasSchemas
 {
-    use InteractsWithForms;
+    use InteractsWithSchemas;
 
     public Menu $menu;
 
-    public string $title = '';
+    public ?array $data = [];
 
-    public string $url = '';
-
-    public string $target = LinkTarget::Self->value;
+    public function mount(): void
+    {
+        $this->form->fill([
+            'target' => LinkTarget::Self->value,
+        ]);
+    }
 
     public function save(): void
     {
-        $this->validate([
-            'title' => ['required', 'string'],
-            'url' => ['required', 'string'],
-            'target' => ['required', 'string', Rule::in(LinkTarget::cases())],
-        ]);
+        $state = $this->form->getState();
 
         $this->menu
             ->menuItems()
             ->create([
-                'title' => $this->title,
-                'url' => $this->url,
-                'target' => $this->target,
+                'title' => $state['title'],
+                'url' => $state['url'],
+                'icon' => $state['icon'] ?? null,
+                'classes' => $state['classes'] ?? null,
+                'target' => $state['target'],
                 'order' => $this->menu->menuItems->max('order') + 1,
             ]);
 
@@ -50,20 +50,29 @@ class CreateCustomLink extends Component implements HasForms
             ->success()
             ->send();
 
-        $this->reset('title', 'url', 'target');
+        $this->form->fill([
+            'target' => LinkTarget::Self->value,
+        ]);
         $this->dispatch('menu:created');
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->statePath('data')
+            ->components([
                 TextInput::make('title')
                     ->label(__('filament-menu-builder::menu-builder.form.title'))
                     ->required(),
                 TextInput::make('url')
                     ->label(__('filament-menu-builder::menu-builder.form.url'))
                     ->required(),
+                TextInput::make('icon')
+                    ->label(__('filament-menu-builder::menu-builder.form.icon'))
+                    ->placeholder('heroicon-o-home'),
+                TextInput::make('classes')
+                    ->label(__('filament-menu-builder::menu-builder.form.classes'))
+                    ->placeholder('text-sm font-bold'),
                 Select::make('target')
                     ->label(__('filament-menu-builder::menu-builder.open_in.label'))
                     ->options(LinkTarget::class)

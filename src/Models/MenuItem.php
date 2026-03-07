@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -19,7 +20,10 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int|null $parent_id
  * @property string $title
  * @property string|null $url
+ * @property string|null $panel
  * @property string|null $type
+ * @property string|null $icon
+ * @property string|null $classes
  * @property string|null $target
  * @property int $order
  * @property \Illuminate\Support\Carbon $created_at
@@ -51,9 +55,30 @@ class MenuItem extends Model
 
     protected static function booted(): void
     {
+        static::saved(fn () => Cache::forget('filament-menu-builder'));
         static::deleted(function (self $menuItem) {
+            Cache::forget('filament-menu-builder');
             $menuItem->children->each->delete();
         });
+    }
+
+    public function isActive(?string $currentUrl = null): bool
+    {
+        $currentUrl ??= request()->url();
+        $itemUrl = url($this->url ?? '');
+
+        return rtrim($currentUrl, '/') === rtrim($itemUrl, '/');
+    }
+
+    public function isActiveOrHasActiveChild(?string $currentUrl = null): bool
+    {
+        $currentUrl ??= request()->url();
+
+        if ($this->isActive($currentUrl)) {
+            return true;
+        }
+
+        return $this->children->contains(fn (self $child) => $child->isActiveOrHasActiveChild($currentUrl));
     }
 
     public function menu(): BelongsTo
@@ -93,7 +118,8 @@ class MenuItem extends Model
         return Attribute::get(function () {
             return match (true) {
                 $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelName(),
-                is_null($this->linkable) && is_null($this->url) => __('filament-menu-builder::menu-builder.custom_text'),
+                ! is_null($this->panel) => $this->panel,
+                is_null($this->url) => __('filament-menu-builder::menu-builder.custom_text'),
                 default => __('filament-menu-builder::menu-builder.custom_link'),
             };
         });

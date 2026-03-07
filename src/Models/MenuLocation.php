@@ -7,6 +7,7 @@ namespace Datlechin\FilamentMenuBuilder\Models;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -23,6 +24,12 @@ class MenuLocation extends Model
     public function getTable(): string
     {
         return config('filament-menu-builder.tables.menu_locations', parent::getTable());
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('filament-menu-builder'));
+        static::deleted(fn () => Cache::forget('filament-menu-builder'));
     }
 
     public function menu(): BelongsTo

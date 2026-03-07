@@ -42,7 +42,7 @@ class MenuItemService
                 'order' => DB::raw(
                     'case ' . collect($order)
                         ->map(
-                            fn ($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote($recordKey) . ' then ' . ($recordIndex + 1),
+                            fn ($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote((string) $recordKey) . ' then ' . ($recordIndex + 1),
                         )
                         ->implode(' ') . ' end',
                 ),

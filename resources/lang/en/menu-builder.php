@@ -6,6 +6,8 @@ return [
     'form' => [
         'title' => 'Title',
         'url' => 'URL',
+        'icon' => 'Icon',
+        'classes' => 'CSS Classes',
         'linkable_type' => 'Type',
         'linkable_id' => 'ID',
     ],

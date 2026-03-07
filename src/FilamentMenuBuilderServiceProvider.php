@@ -76,7 +76,7 @@ class FilamentMenuBuilderServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            AlpineComponent::make('filament-menu-builder', __DIR__ . '/../resources/dist/filament-menu-builder.js'),
+            AlpineComponent::make('menu-builder', __DIR__ . '/../resources/dist/filament-menu-builder.js'),
             Css::make('filament-menu-builder-styles', __DIR__ . '/../resources/dist/filament-menu-builder.css'),
         ];
     }

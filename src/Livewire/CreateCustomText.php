@@ -6,31 +6,29 @@ namespace Datlechin\FilamentMenuBuilder\Livewire;
 
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
-class CreateCustomText extends Component implements HasForms
+class CreateCustomText extends Component implements HasSchemas
 {
-    use InteractsWithForms;
+    use InteractsWithSchemas;
 
     public Menu $menu;
 
-    public string $title = '';
+    public ?array $data = [];
 
     public function save(): void
     {
-        $this->validate([
-            'title' => ['required', 'string'],
-        ]);
+        $state = $this->form->getState();
 
         $this->menu
             ->menuItems()
             ->create([
-                'title' => $this->title,
+                'title' => $state['title'],
                 'order' => $this->menu->menuItems->max('order') + 1,
             ]);
 
@@ -39,14 +37,15 @@ class CreateCustomText extends Component implements HasForms
             ->success()
             ->send();
 
-        $this->reset('title');
+        $this->form->fill();
         $this->dispatch('menu:created');
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->statePath('data')
+            ->components([
                 TextInput::make('title')
                     ->label(__('filament-menu-builder::menu-builder.form.title'))
                     ->required(),

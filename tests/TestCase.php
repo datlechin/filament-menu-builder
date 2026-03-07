@@ -7,31 +7,38 @@ namespace Datlechin\FilamentMenuBuilder\Tests;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderServiceProvider;
+use Datlechin\FilamentMenuBuilder\Tests\Fixtures\AdminPanelProvider;
+use Datlechin\FilamentMenuBuilder\Tests\Fixtures\User;
 use Filament\Actions\ActionsServiceProvider;
 use Filament\FilamentServiceProvider;
 use Filament\Forms\FormsServiceProvider;
 use Filament\Infolists\InfolistsServiceProvider;
 use Filament\Notifications\NotificationsServiceProvider;
+use Filament\Schemas\SchemasServiceProvider;
 use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 
 class TestCase extends Orchestra
 {
+    use LazilyRefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Datlechin\\FilamentMenuBuilder\\Database\\Factories\\' . class_basename($modelName) . 'Factory',
-        );
+        // Ensure Livewire's DataStore is a true singleton.
+        // The Mechanism::register() uses app()->instance() which may not persist.
+        // Re-bind the existing instance as a scoped singleton to prevent new instances.
+        $dataStore = app(\Livewire\Mechanisms\DataStore::class);
+        $this->app->instance(\Livewire\Mechanisms\DataStore::class, $dataStore);
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             ActionsServiceProvider::class,
@@ -43,18 +50,34 @@ class TestCase extends Orchestra
             InfolistsServiceProvider::class,
             LivewireServiceProvider::class,
             NotificationsServiceProvider::class,
+            SchemasServiceProvider::class,
             SupportServiceProvider::class,
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
             FilamentMenuBuilderServiceProvider::class,
+            AdminPanelProvider::class,
         ];
     }
 
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
-        config()->set('database.default', 'testing');
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
 
-        $migration = include __DIR__ . '/../database/migrations/create_menus_table.php.stub';
-        $migration->up();
+        $app['config']->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
+        $app['config']->set('auth.providers.users.model', User::class);
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/Fixtures');
+        $this->artisan('vendor:publish', [
+            '--tag' => 'filament-menu-builder-migrations',
+        ])->run();
+        $this->loadMigrationsFrom($this->app->databasePath('migrations'));
     }
 }

@@ -58,7 +58,7 @@ return [
         ],
     ],
     'custom_link' => 'Liên kết Tùy chỉnh',
-    'custom_text' => 'Custom Text',
+    'custom_text' => 'Văn bản Tùy chỉnh',
     'open_in' => [
         'label' => 'Mở trong',
         'options' => [

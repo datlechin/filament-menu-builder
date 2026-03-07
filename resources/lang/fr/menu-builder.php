@@ -54,11 +54,11 @@ return [
         'expand' => 'Développer',
         'collapse' => 'Réduire',
         'empty' => [
-            'heading' => 'Il n’y a aucun élément dans ce menu.',
+            'heading' => 'Il n\'y a aucun élément dans ce menu.',
         ],
     ],
     'custom_link' => 'Lien personnalisé',
-    'custom_text' => 'Custom Text',
+    'custom_text' => 'Texte personnalisé',
     'open_in' => [
         'label' => 'Ouvrir dans',
         'options' => [
@@ -79,7 +79,7 @@ return [
     'panel' => [
         'empty' => [
             'heading' => 'Aucun élément trouvé',
-            'description' => 'Il n’y a aucun élément dans ce menu.',
+            'description' => 'Il n\'y a aucun élément dans ce menu.',
         ],
         'pagination' => [
             'previous' => 'Précédent',
