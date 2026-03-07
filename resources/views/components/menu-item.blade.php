@@ -41,13 +41,13 @@
                     icon="heroicon-m-arrow-left"
                     color="gray"
                     size="sm"
-                    wire:click="unindent(@js($item->getKey()))"
+                    wire:click="unindent({{ Js::from($item->getKey()) }})"
                 />
                 <x-filament::icon-button
                     icon="heroicon-m-arrow-right"
                     color="gray"
                     size="sm"
-                    wire:click="indent(@js($item->getKey()))"
+                    wire:click="indent({{ Js::from($item->getKey()) }})"
                 />
             @endif
         </div>

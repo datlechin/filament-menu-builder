@@ -52,6 +52,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
             ->icon('heroicon-m-pencil-square')
             ->slideOver()
             ->modalWidth(Width::Medium)
+            ->record(fn (array $arguments) => $this->getMenuItemService()->findByIdWithRelations($arguments['id']))
             ->fillForm(fn (array $arguments): array => $this->getMenuItemService()->findByIdWithRelations($arguments['id'])->toArray())
             ->form(fn (): array => $this->getEditFormSchema())
             ->action(fn (array $data, array $arguments) => $this->getMenuItemService()->update($arguments['id'], $data));
