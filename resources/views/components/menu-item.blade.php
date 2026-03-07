@@ -56,7 +56,7 @@
             @if ($item->icon)
                 <x-filament::icon :icon="$item->icon" class="fi-menu-builder-item-label-icon" />
             @endif
-            {{ $item->title }}
+            {{ $item->resolveLocale($item->title) }}
         </span>
 
         <span class="fi-fo-repeater-item-header-label fi-truncated fi-menu-builder-item-url">
@@ -70,13 +70,13 @@
             <x-filament::icon-button
                 icon="heroicon-m-pencil-square"
                 size="sm"
-                wire:click="mountAction('edit', {{ Js::from(['id' => $item->getKey(), 'title' => $item->title]) }})"
+                wire:click="mountAction('edit', {{ Js::from(['id' => $item->getKey(), 'title' => $item->resolveLocale($item->title)]) }})"
             />
             <x-filament::icon-button
                 icon="heroicon-s-trash"
                 color="danger"
                 size="sm"
-                wire:click="mountAction('delete', {{ Js::from(['id' => $item->getKey(), 'title' => $item->title]) }})"
+                wire:click="mountAction('delete', {{ Js::from(['id' => $item->getKey(), 'title' => $item->resolveLocale($item->title)]) }})"
             />
         </div>
     </div>

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Support\TranslatableFieldWrapper;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
@@ -43,12 +45,20 @@ class CreateCustomText extends Component implements HasSchemas
 
     public function form(Schema $schema): Schema
     {
+        $plugin = FilamentMenuBuilderPlugin::get();
+
+        $titleField = TextInput::make('title')
+            ->label(__('filament-menu-builder::menu-builder.form.title'))
+            ->required();
+
+        if ($plugin->isTranslatable() && in_array('title', $plugin->getTranslatableMenuItemFields())) {
+            $titleField = TranslatableFieldWrapper::wrap($titleField, $plugin->getTranslatableLocales());
+        }
+
         return $schema
             ->statePath('data')
             ->components([
-                TextInput::make('title')
-                    ->label(__('filament-menu-builder::menu-builder.form.title'))
-                    ->required(),
+                $titleField,
             ]);
     }
 

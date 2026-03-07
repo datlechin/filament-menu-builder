@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel as ContractsMenuPanel;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
@@ -77,11 +78,20 @@ class MenuPanel extends Component implements HasSchemas
 
         $order = $this->menu->menuItems->max('order') ?? 0;
 
+        $plugin = FilamentMenuBuilderPlugin::get();
+
         $selectedItems = collect($this->items)
             ->filter(fn ($item) => in_array($item['linkable_id'] ?? $item['title'], $this->data))
-            ->map(function ($item) use (&$order) {
+            ->map(function ($item) use (&$order, $plugin) {
+                $title = $item['title'];
+
+                if ($plugin->isTranslatable() && in_array('title', $plugin->getTranslatableMenuItemFields())) {
+                    $title = [app()->getLocale() => $title];
+                }
+
                 return [
                     ...$item,
+                    'title' => $title,
                     'panel' => $item['linkable_type'] ?? $this->id,
                     'order' => ++$order,
                 ];

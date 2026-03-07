@@ -54,6 +54,15 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected bool $enableIndentActions = true;
 
+    /** @var string[]|null */
+    protected ?array $translatableLocales = null;
+
+    /** @var string[] */
+    protected array $translatableMenuFields = [];
+
+    /** @var string[] */
+    protected array $translatableMenuItemFields = ['title'];
+
     public function getId(): string
     {
         return 'menu-builder';
@@ -310,5 +319,64 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function getNavigationCountBadge(): bool
     {
         return $this->navigationCountBadge;
+    }
+
+    /**
+     * @param  string[]  $locales
+     */
+    public function translatable(array $locales): static
+    {
+        $this->translatableLocales = $locales;
+
+        return $this;
+    }
+
+    /**
+     * @param  string[]  $fields
+     */
+    public function translatableMenuFields(array $fields): static
+    {
+        $this->translatableMenuFields = $fields;
+
+        return $this;
+    }
+
+    /**
+     * @param  string[]  $fields
+     */
+    public function translatableMenuItemFields(array $fields): static
+    {
+        $this->translatableMenuItemFields = $fields;
+
+        return $this;
+    }
+
+    public function isTranslatable(): bool
+    {
+        return $this->translatableLocales !== null;
+    }
+
+    /**
+     * @return string[]|null
+     */
+    public function getTranslatableLocales(): ?array
+    {
+        return $this->translatableLocales;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getTranslatableMenuFields(): array
+    {
+        return $this->translatableMenuFields;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getTranslatableMenuItemFields(): array
+    {
+        return $this->translatableMenuItemFields;
     }
 }

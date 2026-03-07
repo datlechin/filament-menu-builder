@@ -199,6 +199,68 @@ FilamentMenuBuilderPlugin::make()
     ->enableIndentActions(true)
 ```
 
+### Translatable Menus
+
+The plugin has built-in support for multilingual menu titles. No additional packages are required — translatable fields are stored as JSON and the form UI shows locale tabs.
+
+#### Setup
+
+1. Enable translatable on the plugin with your desired locales:
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->translatable(['en', 'nl', 'vi'])
+```
+
+2. Publish and run the translatable migration to convert existing columns from `string` to `json`:
+
+```bash
+php artisan vendor:publish --tag="filament-menu-builder-translatable-migrations"
+php artisan migrate
+```
+
+The migration automatically wraps existing string data in the default locale (`en`). To change the default locale, edit the `$defaultLocale` property in the published migration before running it.
+
+#### Configuring Translatable Fields
+
+By default, only `MenuItem.title` is translatable. You can customize which fields are translatable:
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->translatable(['en', 'nl', 'vi'])
+    ->translatableMenuItemFields(['title'])  // default
+    ->translatableMenuFields(['name'])       // opt-in: make Menu name translatable too
+```
+
+#### Rendering Translated Titles
+
+In your Blade views, use `resolveLocale()` to display the title in the current app locale:
+
+```blade
+@foreach($menu->menuItems as $item)
+    <a href="{{ $item->url }}">
+        {{ $item->resolveLocale($item->title) }}
+    </a>
+@endforeach
+```
+
+`resolveLocale()` handles both string and array values — it returns the translation for `app()->getLocale()`, falls back to the first available translation, or returns the string as-is for non-translatable setups.
+
+#### Spatie Translatable Compatibility
+
+The JSON data format is fully compatible with [Spatie Laravel Translatable](https://github.com/spatie/laravel-translatable). If you later add the `HasTranslations` trait to a custom model, the plugin detects it automatically and skips its own JSON casting — Spatie's mutators take over seamlessly.
+
+```php
+use Spatie\Translatable\HasTranslations;
+
+class CustomMenuItem extends MenuItem
+{
+    use HasTranslations;
+
+    public array $translatable = ['title'];
+}
+```
+
 ### Custom Models
 
 You can replace the default models with your own:
@@ -232,17 +294,17 @@ Loop through menu items:
                 <li class="{{ $item->classes }} {{ $item->isActive() ? 'active' : '' }}">
                     @if($item->url)
                         <a href="{{ $item->url }}" target="{{ $item->target }}">
-                            {{ $item->title }}
+                            {{ $item->resolveLocale($item->title) }}
                         </a>
                     @else
-                        <span>{{ $item->title }}</span>
+                        <span>{{ $item->resolveLocale($item->title) }}</span>
                     @endif
 
                     @if($item->children->isNotEmpty())
                         <ul>
                             @foreach($item->children as $child)
                                 <li>
-                                    <a href="{{ $child->url }}">{{ $child->title }}</a>
+                                    <a href="{{ $child->url }}">{{ $child->resolveLocale($child->title) }}</a>
                                 </li>
                             @endforeach
                         </ul>
@@ -267,7 +329,7 @@ $item->isActiveOrHasActiveChild(); // matches self or any descendant
 
 | Property   | Type     | Description                           |
 |------------|----------|---------------------------------------|
-| `title`    | string   | The display title                     |
+| `title`    | string\|array | The display title (array when translatable) |
 | `url`      | ?string  | The URL (null for text-only items)    |
 | `target`   | string   | Link target (`_self`, `_blank`, etc.) |
 | `icon`     | ?string  | Icon identifier (e.g. `heroicon-o-home`) |

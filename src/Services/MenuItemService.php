@@ -172,9 +172,13 @@ class MenuItemService
 
     public function update(int | string $itemId, array $data): bool
     {
-        return $this->getModel()::query()
-            ->where('id', $itemId)
-            ->update($data) > 0;
+        $model = $this->findById($itemId);
+
+        if (! $model) {
+            return false;
+        }
+
+        return $model->update($data);
     }
 
     protected function getModel(): string

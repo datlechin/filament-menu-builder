@@ -62,6 +62,9 @@
             ]
         }
     },
+    "suggest": {
+        "spatie/laravel-translatable": "For enhanced translatable model support with HasTranslations trait"
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }

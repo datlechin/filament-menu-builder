@@ -8,6 +8,7 @@ use Datlechin\FilamentMenuBuilder\Concerns\ManagesMenuItemHierarchy;
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Support\TranslatableFieldWrapper;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -78,14 +79,32 @@ class MenuItems extends Component implements HasActions, HasSchemas
 
     protected function getEditFormSchema(): array
     {
+        $plugin = FilamentMenuBuilderPlugin::get();
+
+        $titleField = TextInput::make('title')
+            ->label(__('filament-menu-builder::menu-builder.form.title'))
+            ->required();
+
+        $urlField = TextInput::make('url')
+            ->hidden(fn (?string $state, Get $get): bool => blank($state) || filled($get('linkable_type')))
+            ->label(__('filament-menu-builder::menu-builder.form.url'))
+            ->required();
+
+        if ($plugin->isTranslatable()) {
+            $locales = $plugin->getTranslatableLocales();
+
+            if (in_array('title', $plugin->getTranslatableMenuItemFields())) {
+                $titleField = TranslatableFieldWrapper::wrap($titleField, $locales);
+            }
+
+            if (in_array('url', $plugin->getTranslatableMenuItemFields())) {
+                $urlField = TranslatableFieldWrapper::wrap($urlField, $locales);
+            }
+        }
+
         $fields = [
-            TextInput::make('title')
-                ->label(__('filament-menu-builder::menu-builder.form.title'))
-                ->required(),
-            TextInput::make('url')
-                ->hidden(fn (?string $state, Get $get): bool => blank($state) || filled($get('linkable_type')))
-                ->label(__('filament-menu-builder::menu-builder.form.url'))
-                ->required(),
+            $titleField,
+            $urlField,
             TextInput::make('linkable_type')
                 ->label(__('filament-menu-builder::menu-builder.form.linkable_type'))
                 ->hidden(fn (Get $get): bool => blank($get('linkable_type')))

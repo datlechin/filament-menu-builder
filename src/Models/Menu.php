@@ -31,9 +31,32 @@ class Menu extends Model
 
     protected function casts(): array
     {
-        return [
+        $casts = [
             'is_visible' => 'bool',
         ];
+
+        try {
+            $plugin = FilamentMenuBuilderPlugin::get();
+
+            if ($plugin->isTranslatable() && ! in_array(\Spatie\Translatable\HasTranslations::class, class_uses_recursive($this))) {
+                foreach ($plugin->getTranslatableMenuFields() as $field) {
+                    $casts[$field] = 'json';
+                }
+            }
+        } catch (\Throwable) {
+            // Plugin not registered yet (migration/seeder context)
+        }
+
+        return $casts;
+    }
+
+    public function resolveLocale(mixed $value): string
+    {
+        if (is_array($value)) {
+            return $value[app()->getLocale()] ?? $value[array_key_first($value)] ?? '';
+        }
+
+        return (string) ($value ?? '');
     }
 
     protected static function booted(): void

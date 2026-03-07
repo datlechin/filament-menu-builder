@@ -47,10 +47,33 @@ class MenuItem extends Model
 
     protected function casts(): array
     {
-        return [
+        $casts = [
             'order' => 'int',
             'target' => LinkTarget::class,
         ];
+
+        try {
+            $plugin = FilamentMenuBuilderPlugin::get();
+
+            if ($plugin->isTranslatable() && ! in_array(\Spatie\Translatable\HasTranslations::class, class_uses_recursive($this))) {
+                foreach ($plugin->getTranslatableMenuItemFields() as $field) {
+                    $casts[$field] = 'json';
+                }
+            }
+        } catch (\Throwable) {
+            // Plugin not registered yet (migration/seeder context)
+        }
+
+        return $casts;
+    }
+
+    public function resolveLocale(mixed $value): string
+    {
+        if (is_array($value)) {
+            return $value[app()->getLocale()] ?? $value[array_key_first($value)] ?? '';
+        }
+
+        return (string) ($value ?? '');
     }
 
     protected static function booted(): void

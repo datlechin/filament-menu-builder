@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Support\TranslatableFieldWrapper;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -58,15 +60,33 @@ class CreateCustomLink extends Component implements HasSchemas
 
     public function form(Schema $schema): Schema
     {
+        $plugin = FilamentMenuBuilderPlugin::get();
+
+        $titleField = TextInput::make('title')
+            ->label(__('filament-menu-builder::menu-builder.form.title'))
+            ->required();
+
+        $urlField = TextInput::make('url')
+            ->label(__('filament-menu-builder::menu-builder.form.url'))
+            ->required();
+
+        if ($plugin->isTranslatable()) {
+            $locales = $plugin->getTranslatableLocales();
+
+            if (in_array('title', $plugin->getTranslatableMenuItemFields())) {
+                $titleField = TranslatableFieldWrapper::wrap($titleField, $locales);
+            }
+
+            if (in_array('url', $plugin->getTranslatableMenuItemFields())) {
+                $urlField = TranslatableFieldWrapper::wrap($urlField, $locales);
+            }
+        }
+
         return $schema
             ->statePath('data')
             ->components([
-                TextInput::make('title')
-                    ->label(__('filament-menu-builder::menu-builder.form.title'))
-                    ->required(),
-                TextInput::make('url')
-                    ->label(__('filament-menu-builder::menu-builder.form.url'))
-                    ->required(),
+                $titleField,
+                $urlField,
                 TextInput::make('icon')
                     ->label(__('filament-menu-builder::menu-builder.form.icon'))
                     ->placeholder('heroicon-o-home'),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Resources;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\Support\TranslatableFieldWrapper;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -54,15 +55,28 @@ class MenuResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
+        $plugin = FilamentMenuBuilderPlugin::get();
+
+        $nameField = TextInput::make('name')
+            ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
+            ->required()
+            ->columnSpan(3);
+
+        if ($plugin->isTranslatable() && in_array('name', $plugin->getTranslatableMenuFields())) {
+            $nameField = TranslatableFieldWrapper::wrap(
+                TextInput::make('name')
+                    ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
+                    ->required(),
+                $plugin->getTranslatableLocales(),
+            );
+        }
+
         return $schema
             ->columns(1)
             ->components([
                 Grid::make(4)
                     ->schema([
-                        TextInput::make('name')
-                            ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
-                            ->required()
-                            ->columnSpan(3),
+                        $nameField,
 
                         ToggleButtons::make('is_visible')
                             ->grouped()
@@ -95,6 +109,7 @@ class MenuResource extends Resource
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable()
+                    ->formatStateUsing(fn (mixed $state): string => is_array($state) ? ($state[app()->getLocale()] ?? collect($state)->first() ?? '') : (string) $state)
                     ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
                 TextColumn::make('locations.location')
                     ->label(__('filament-menu-builder::menu-builder.resource.locations.label'))

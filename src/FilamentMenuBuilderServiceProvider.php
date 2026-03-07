@@ -57,6 +57,12 @@ class FilamentMenuBuilderServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        $this->publishes([
+            __DIR__ . '/../database/migrations/make_translatable_columns_json.php.stub' => $this->app->databasePath(
+                'migrations/' . date('Y_m_d_His') . '_make_translatable_columns_json.php',
+            ),
+        ], 'filament-menu-builder-translatable-migrations');
+
         FilamentAsset::register(
             $this->getAssets(),
             $this->getAssetPackageName(),
