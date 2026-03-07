@@ -6,7 +6,7 @@
 
 ![Filament Menu Builder](https://github.com/datlechin/filament-menu-builder/raw/main/art/menu-builder.jpg)
 
-A [Filament](https://filamentphp.com) plugin for creating and managing menus with drag-and-drop ordering, nested items, custom links, and dynamic menu panels.
+A [Filament](https://filamentphp.com) plugin for building menus with drag-and-drop ordering, nesting, custom links, and dynamic panels.
 
 ## Requirements
 
@@ -31,9 +31,9 @@ php artisan vendor:publish --tag="filament-menu-builder-migrations"
 php artisan migrate
 ```
 
-The upgrade migration is safe to run even on fresh installs — it checks for existing columns before adding them.
+The upgrade migration checks for existing columns before adding them, so it's safe on fresh installs too.
 
-3. If you published the config file, re-publish it to pick up any changes:
+3. Re-publish the config file if you published it previously:
 
 ```bash
 php artisan vendor:publish --tag="filament-menu-builder-config" --force
@@ -41,7 +41,7 @@ php artisan vendor:publish --tag="filament-menu-builder-config" --force
 
 ## Installation
 
-Install the package via Composer:
+Install via Composer:
 
 ```bash
 composer require datlechin/filament-menu-builder
@@ -54,7 +54,7 @@ php artisan vendor:publish --tag="filament-menu-builder-migrations"
 php artisan migrate
 ```
 
-Optionally publish the config file:
+Optionally, publish the config file:
 
 ```bash
 php artisan vendor:publish --tag="filament-menu-builder-config"
@@ -68,7 +68,7 @@ php artisan filament-menu-builder:install
 
 ## Usage
 
-Register the plugin in your Filament panel provider:
+Register the plugin in your panel provider:
 
 ```php
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
@@ -82,9 +82,9 @@ public function panel(Panel $panel): Panel
 }
 ```
 
-### Defining Locations
+### Locations
 
-Locations define where menus can be displayed in your application (e.g., header, footer, sidebar):
+Locations define where menus appear in your application:
 
 ```php
 FilamentMenuBuilderPlugin::make()
@@ -94,13 +94,13 @@ FilamentMenuBuilderPlugin::make()
     ])
 ```
 
-### Custom Menu Panels
+### Menu Panels
 
-Menu panels are sources for adding items to menus. You can create panels from Eloquent models or static items.
+Panels provide item sources for menus, either from Eloquent models or static lists.
 
 #### Model Panel
 
-To add a panel from an Eloquent model, implement the `MenuPanelable` interface on your model:
+Implement `MenuPanelable` on your model:
 
 ```php
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
@@ -124,7 +124,7 @@ class Page extends Model implements MenuPanelable
 }
 ```
 
-Then register it with the plugin:
+Then register it:
 
 ```php
 use Datlechin\FilamentMenuBuilder\MenuPanel\ModelMenuPanel;
@@ -137,8 +137,6 @@ FilamentMenuBuilderPlugin::make()
 ```
 
 #### Static Panel
-
-You can also add static items:
 
 ```php
 use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
@@ -153,9 +151,18 @@ FilamentMenuBuilderPlugin::make()
     ])
 ```
 
+`add()` also accepts `target`, `icon`, and `classes`:
+
+```php
+StaticMenuPanel::make()
+    ->name('social')
+    ->add('GitHub', 'https://github.com', target: '_blank', icon: 'heroicon-o-code-bracket')
+    ->add('Twitter', 'https://twitter.com', target: '_blank', classes: 'text-blue-500')
+```
+
 ### Custom Link & Custom Text Panels
 
-The custom link panel is shown by default. You can toggle it and also enable the custom text panel (for non-link items like headings):
+The custom link panel is shown by default. The custom text panel (for non-link items like headings) is opt-in:
 
 ```php
 FilamentMenuBuilderPlugin::make()
@@ -165,7 +172,7 @@ FilamentMenuBuilderPlugin::make()
 
 ### Custom Fields
 
-You can add extra fields to the menu form or the menu item edit form:
+Add extra fields to the menu or menu item forms:
 
 ```php
 use Filament\Forms\Components\TextInput;
@@ -178,6 +185,16 @@ FilamentMenuBuilderPlugin::make()
         TextInput::make('badge'),
     ])
 ```
+
+Singular methods work too:
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->addMenuField(TextInput::make('description'))
+    ->addMenuItemField(TextInput::make('badge'))
+```
+
+Multiple calls are merged, so fields registered from different service providers won't overwrite each other.
 
 ### Customizing Navigation
 
@@ -192,7 +209,7 @@ FilamentMenuBuilderPlugin::make()
 
 ### Indent / Unindent
 
-Nested menu items are supported via indent/unindent actions. This is enabled by default:
+Nesting via indent/unindent actions is enabled by default:
 
 ```php
 FilamentMenuBuilderPlugin::make()
@@ -201,29 +218,29 @@ FilamentMenuBuilderPlugin::make()
 
 ### Translatable Menus
 
-The plugin has built-in support for multilingual menu titles. No additional packages are required — translatable fields are stored as JSON and the form UI shows locale tabs.
+Built-in multilingual support with no extra packages required. Translatable fields are stored as JSON with locale tabs in the form UI.
 
 #### Setup
 
-1. Enable translatable on the plugin with your desired locales:
+1. Enable translatable with your locales:
 
 ```php
 FilamentMenuBuilderPlugin::make()
     ->translatable(['en', 'nl', 'vi'])
 ```
 
-2. Publish and run the translatable migration to convert existing columns from `string` to `json`:
+2. Publish and run the migration to convert columns from `string` to `json`:
 
 ```bash
 php artisan vendor:publish --tag="filament-menu-builder-translatable-migrations"
 php artisan migrate
 ```
 
-The migration automatically wraps existing string data in the default locale (`en`). To change the default locale, edit the `$defaultLocale` property in the published migration before running it.
+Existing string data is wrapped in the default locale (`en`). Edit `$defaultLocale` in the published migration to change this.
 
 #### Configuring Translatable Fields
 
-By default, only `MenuItem.title` is translatable. You can customize which fields are translatable:
+Only `MenuItem.title` is translatable by default:
 
 ```php
 FilamentMenuBuilderPlugin::make()
@@ -234,7 +251,7 @@ FilamentMenuBuilderPlugin::make()
 
 #### Rendering Translated Titles
 
-In your Blade views, use `resolveLocale()` to display the title in the current app locale:
+Use `resolveLocale()` in Blade to display titles in the current locale:
 
 ```blade
 @foreach($menu->menuItems as $item)
@@ -244,11 +261,11 @@ In your Blade views, use `resolveLocale()` to display the title in the current a
 @endforeach
 ```
 
-`resolveLocale()` handles both string and array values — it returns the translation for `app()->getLocale()`, falls back to the first available translation, or returns the string as-is for non-translatable setups.
+`resolveLocale()` returns the translation for `app()->getLocale()`, falls back to the first available translation, or returns the raw string for non-translatable setups.
 
 #### Spatie Translatable Compatibility
 
-The JSON data format is fully compatible with [Spatie Laravel Translatable](https://github.com/spatie/laravel-translatable). If you later add the `HasTranslations` trait to a custom model, the plugin detects it automatically and skips its own JSON casting — Spatie's mutators take over seamlessly.
+The JSON format is compatible with [Spatie Laravel Translatable](https://github.com/spatie/laravel-translatable). If you add `HasTranslations` to a custom model, the plugin detects it and defers to Spatie's mutators.
 
 ```php
 use Spatie\Translatable\HasTranslations;
@@ -263,7 +280,7 @@ class CustomMenuItem extends MenuItem
 
 ### Custom Models
 
-You can replace the default models with your own:
+Replace the default models with your own:
 
 ```php
 FilamentMenuBuilderPlugin::make()
@@ -274,7 +291,7 @@ FilamentMenuBuilderPlugin::make()
 
 ### Rendering Menus
 
-Retrieve a menu by its location in your views or controllers:
+Retrieve a menu by location. Results are cached and automatically busted on changes:
 
 ```php
 use Datlechin\FilamentMenuBuilder\Models\Menu;
@@ -282,9 +299,7 @@ use Datlechin\FilamentMenuBuilder\Models\Menu;
 $menu = Menu::location('header');
 ```
 
-This uses caching under the hood for performance. The cache is automatically busted when menus or menu items are updated.
-
-Loop through menu items:
+Render menu items:
 
 ```blade
 @if($menu)
@@ -293,7 +308,7 @@ Loop through menu items:
             @foreach($menu->menuItems as $item)
                 <li class="{{ $item->classes }} {{ $item->isActive() ? 'active' : '' }}">
                     @if($item->url)
-                        <a href="{{ $item->url }}" target="{{ $item->target }}">
+                        <a href="{{ $item->url }}" target="{{ $item->target }}" @if($item->rel) rel="{{ $item->rel }}" @endif>
                             {{ $item->resolveLocale($item->title) }}
                         </a>
                     @else
@@ -318,7 +333,7 @@ Loop through menu items:
 
 #### Active State Detection
 
-Menu items provide methods for checking if they match the current URL:
+Check if a menu item matches the current URL:
 
 ```php
 $item->isActive();                 // exact URL match
@@ -334,6 +349,7 @@ $item->isActiveOrHasActiveChild(); // matches self or any descendant
 | `target`   | string   | Link target (`_self`, `_blank`, etc.) |
 | `icon`     | ?string  | Icon identifier (e.g. `heroicon-o-home`) |
 | `classes`  | ?string  | CSS classes for the item              |
+| `rel`      | ?string  | Link rel attribute (e.g. `nofollow noopener`) |
 | `type`     | string   | Panel name / source type (accessor)   |
 | `children` | Collection | Nested child items                  |
 
@@ -345,8 +361,8 @@ composer test
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+See [CHANGELOG](CHANGELOG.md) for recent changes.
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+MIT License. See [LICENSE.md](LICENSE.md).
