@@ -250,6 +250,31 @@ $item->isActiveOrHasActiveChild(); // matches self or any descendant
 | `type`     | string   | Panel name / source type (accessor)   |
 | `children` | Collection | Nested child items                  |
 
+## Upgrading
+
+### From v0.7.x (Filament v3) to v1.x (Filament v5)
+
+1. Update your `composer.json`:
+
+```bash
+composer require datlechin/filament-menu-builder:^1.0
+```
+
+2. Publish and run the new migration to add the `panel`, `icon`, and `classes` columns:
+
+```bash
+php artisan vendor:publish --tag="filament-menu-builder-migrations"
+php artisan migrate
+```
+
+The upgrade migration is safe to run even on fresh installs — it checks for existing columns before adding them.
+
+3. If you published the config file, re-publish it to pick up any changes:
+
+```bash
+php artisan vendor:publish --tag="filament-menu-builder-config" --force
+```
+
 ## Testing
 
 ```bash
