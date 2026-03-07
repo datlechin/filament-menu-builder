@@ -8,7 +8,7 @@ A [Filament](https://filamentphp.com) plugin for creating and managing menus wit
 
 ## Requirements
 
-- PHP 8.2+
+- PHP 8.3+
 - Filament 5.0+
 - Laravel 12+
 
