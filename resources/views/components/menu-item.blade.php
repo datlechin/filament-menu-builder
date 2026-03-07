@@ -11,7 +11,7 @@
 <li
     wire:key="{{ $item->getKey() }}"
     data-sortable-item="{{ $item->getKey() }}"
-    x-data="{ open: $persist(true).as('menu-item-' + {{ $item->getKey() }}) }"
+    x-data="{ open: $persist(true).as('menu-item-' + @js($item->getKey())) }"
     class="fi-fo-repeater-item"
 >
     <div class="fi-fo-repeater-item-header">
@@ -41,13 +41,13 @@
                     icon="heroicon-m-arrow-left"
                     color="gray"
                     size="sm"
-                    wire:click="unindent({{ $item->getKey() }})"
+                    wire:click="unindent(@js($item->getKey()))"
                 />
                 <x-filament::icon-button
                     icon="heroicon-m-arrow-right"
                     color="gray"
                     size="sm"
-                    wire:click="indent({{ $item->getKey() }})"
+                    wire:click="indent(@js($item->getKey()))"
                 />
             @endif
         </div>
@@ -86,7 +86,7 @@
             x-collapse
             x-show="open"
             wire:key="{{ $item->getKey() }}.children"
-            x-data="menuBuilder({ parentId: {{ $item->getKey()  }} })"
+            x-data="menuBuilder({ parentId: @js($item->getKey()) })"
             class="fi-fo-repeater-items grid fi-menu-builder-item-children"
         >
             @foreach ($item->children as $child)

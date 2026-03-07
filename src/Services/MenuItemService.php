@@ -17,12 +17,12 @@ class MenuItemService
         $this->plugin = FilamentMenuBuilderPlugin::get();
     }
 
-    public function findById(int $id): ?Model
+    public function findById(int | string $id): ?Model
     {
         return $this->getModel()::query()->find($id);
     }
 
-    public function findByIdWithRelations(int $id): ?Model
+    public function findByIdWithRelations(int | string $id): ?Model
     {
         return $this->getModel()::query()
             ->where('id', $id)
@@ -60,7 +60,7 @@ class MenuItemService
             ->first();
     }
 
-    public function getMaxOrderForParent(?int $parentId, ?int $menuId = null): int
+    public function getMaxOrderForParent(int | string | null $parentId, int | string | null $menuId = null): int
     {
         $query = $this->getModel()::query()->where('parent_id', $parentId);
 
@@ -71,7 +71,7 @@ class MenuItemService
         return $query->max('order') ?? 0;
     }
 
-    public function getSiblings(?int $parentId): Collection
+    public function getSiblings(int | string | null $parentId): Collection
     {
         return $this->getModel()::query()
             ->where('parent_id', $parentId)
@@ -79,7 +79,7 @@ class MenuItemService
             ->get();
     }
 
-    public function reorderSiblings(?int $parentId): void
+    public function reorderSiblings(int | string | null $parentId): void
     {
         $siblings = $this->getSiblings($parentId);
 
@@ -88,7 +88,7 @@ class MenuItemService
         });
     }
 
-    public function indent(int $itemId): bool
+    public function indent(int | string $itemId): bool
     {
         $item = $this->findById($itemId);
 
@@ -115,7 +115,7 @@ class MenuItemService
         return true;
     }
 
-    public function unindent(int $itemId): bool
+    public function unindent(int | string $itemId): bool
     {
         $item = $this->findById($itemId);
 
@@ -141,7 +141,7 @@ class MenuItemService
         return true;
     }
 
-    public function canIndent(int $itemId): bool
+    public function canIndent(int | string $itemId): bool
     {
         $item = $this->findById($itemId);
 
@@ -152,14 +152,14 @@ class MenuItemService
         return $this->getPreviousSibling($item) !== null;
     }
 
-    public function canUnindent(int $itemId): bool
+    public function canUnindent(int | string $itemId): bool
     {
         $item = $this->findById($itemId);
 
         return $item && $item->parent_id !== null;
     }
 
-    public function delete(int $itemId): bool
+    public function delete(int | string $itemId): bool
     {
         $item = $this->findById($itemId);
 
@@ -170,7 +170,7 @@ class MenuItemService
         return $item->delete();
     }
 
-    public function update(int $itemId, array $data): bool
+    public function update(int | string $itemId, array $data): bool
     {
         return $this->getModel()::query()
             ->where('id', $itemId)

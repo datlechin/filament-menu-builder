@@ -13,22 +13,22 @@ trait ManagesMenuItemHierarchy
 {
     protected ?MenuItemService $menuItemService = null;
 
-    public function indent(int $itemId): void
+    public function indent(int | string $itemId): void
     {
         $this->getMenuItemService()->indent($itemId);
     }
 
-    public function unindent(int $itemId): void
+    public function unindent(int | string $itemId): void
     {
         $this->getMenuItemService()->unindent($itemId);
     }
 
-    public function canIndent(int $itemId): bool
+    public function canIndent(int | string $itemId): bool
     {
         return $this->getMenuItemService()->canIndent($itemId);
     }
 
-    public function canUnindent(int $itemId): bool
+    public function canUnindent(int | string $itemId): bool
     {
         return $this->getMenuItemService()->canUnindent($itemId);
     }
@@ -57,13 +57,13 @@ trait ManagesMenuItemHierarchy
             ->visible(fn (array $arguments): bool => $this->isUnindentActionVisible($arguments['id']));
     }
 
-    protected function isIndentActionVisible(int $itemId): bool
+    protected function isIndentActionVisible(int | string $itemId): bool
     {
         return FilamentMenuBuilderPlugin::get()->isIndentActionsEnabled() &&
                $this->canIndent($itemId);
     }
 
-    protected function isUnindentActionVisible(int $itemId): bool
+    protected function isUnindentActionVisible(int | string $itemId): bool
     {
         return FilamentMenuBuilderPlugin::get()->isIndentActionsEnabled() &&
                $this->canUnindent($itemId);
