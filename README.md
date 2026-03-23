@@ -66,6 +66,21 @@ Or use the install command:
 php artisan filament-menu-builder:install
 ```
 
+You will need to set up a Filament [custom theme](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme)
+
+If you don't yet have a custom theme, run the following command:
+
+```bash
+php artisan make:filament-theme
+```
+
+Next, open up the theme.css file for the custom theme and add the following line:
+
+```css
+@import "../../../../vendor/datlechin/filament-menu-builder/resources/css/index.css";
+@source "../../../../vendor/datlechin/filament-menu-builder/resources/**/*.blade.php";
+```
+
 ## Usage
 
 Register the plugin in your panel provider:

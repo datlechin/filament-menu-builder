@@ -58,10 +58,3 @@ compile({
     entryPoints: ['./resources/js/index.js'],
     outfile: './resources/dist/filament-menu-builder.js',
 })
-
-// Build CSS with Tailwind
-console.log('Building CSS with Tailwind...')
-execSync(
-    `npx @tailwindcss/cli -i ./resources/css/index.css -o ./resources/dist/filament-menu-builder.css ${isDev ? '' : '--minify'}`,
-    { stdio: 'inherit' },
-)
