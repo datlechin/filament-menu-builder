@@ -9,10 +9,13 @@ use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @property int $id
@@ -27,13 +30,13 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string|null $rel
  * @property string|null $target
  * @property int $order
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|MenuItem[] $children
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection|MenuItem[] $children
  * @property-read int|null $children_count
- * @property-read \Illuminate\Database\Eloquent\Model|MenuPanelable|null $linkable
- * @property-read \Datlechin\FilamentMenuBuilder\Models\Menu $menu
- * @property-read \Datlechin\FilamentMenuBuilder\Models\MenuItem|null $parent
+ * @property-read Model|MenuPanelable|null $linkable
+ * @property-read Menu $menu
+ * @property-read MenuItem|null $parent
  */
 class MenuItem extends Model
 {
@@ -58,7 +61,7 @@ class MenuItem extends Model
         try {
             $plugin = FilamentMenuBuilderPlugin::get();
 
-            if ($plugin->isTranslatable() && ! in_array(\Spatie\Translatable\HasTranslations::class, class_uses_recursive($this))) {
+            if ($plugin->isTranslatable() && ! in_array(HasTranslations::class, class_uses_recursive($this))) {
                 foreach ($plugin->getTranslatableMenuItemFields() as $field) {
                     $casts[$field] = 'json';
                 }

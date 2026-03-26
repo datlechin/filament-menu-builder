@@ -6,19 +6,22 @@ namespace Datlechin\FilamentMenuBuilder\Models;
 
 use Datlechin\FilamentMenuBuilder\Concerns\ResolvesLocale;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @property int $id
  * @property string $name
  * @property bool $is_visible
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\Datlechin\FilamentMenuBuilder\Models\MenuLocation[] $locations
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection|MenuLocation[] $locations
  * @property-read int|null $locations_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\Datlechin\FilamentMenuBuilder\Models\MenuItem[] $menuItems
+ * @property-read Collection|MenuItem[] $menuItems
  * @property-read int|null $menuItems_count
  */
 class Menu extends Model
@@ -41,7 +44,7 @@ class Menu extends Model
         try {
             $plugin = FilamentMenuBuilderPlugin::get();
 
-            if ($plugin->isTranslatable() && ! in_array(\Spatie\Translatable\HasTranslations::class, class_uses_recursive($this))) {
+            if ($plugin->isTranslatable() && ! in_array(HasTranslations::class, class_uses_recursive($this))) {
                 foreach ($plugin->getTranslatableMenuFields() as $field) {
                     $casts[$field] = 'json';
                 }

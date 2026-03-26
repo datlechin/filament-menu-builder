@@ -20,6 +20,7 @@ use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\LivewireServiceProvider;
+use Livewire\Mechanisms\DataStore;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 
@@ -34,8 +35,8 @@ class TestCase extends Orchestra
         // Ensure Livewire's DataStore is a true singleton.
         // The Mechanism::register() uses app()->instance() which may not persist.
         // Re-bind the existing instance as a scoped singleton to prevent new instances.
-        $dataStore = app(\Livewire\Mechanisms\DataStore::class);
-        $this->app->instance(\Livewire\Mechanisms\DataStore::class, $dataStore);
+        $dataStore = app(DataStore::class);
+        $this->app->instance(DataStore::class, $dataStore);
     }
 
     protected function getPackageProviders($app): array

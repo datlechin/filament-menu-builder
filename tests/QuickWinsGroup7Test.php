@@ -8,6 +8,7 @@ use Datlechin\FilamentMenuBuilder\MenuPanel\ModelMenuPanel;
 use Datlechin\FilamentMenuBuilder\Tests\Fixtures\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
@@ -29,7 +30,7 @@ afterEach(function () {
 // --- ModelMenuPanel with SoftDeletes ---
 
 it('excludes soft-deleted records from model panel items', function () {
-    \Illuminate\Support\Facades\DB::table('pages')->insert([
+    DB::table('pages')->insert([
         ['name' => 'Active', 'slug' => 'active', 'deleted_at' => null, 'created_at' => now(), 'updated_at' => now()],
         ['name' => 'Trashed', 'slug' => 'trashed', 'deleted_at' => now(), 'created_at' => now(), 'updated_at' => now()],
     ]);
@@ -44,7 +45,7 @@ it('excludes soft-deleted records from model panel items', function () {
 });
 
 it('includes all records when model does not use SoftDeletes', function () {
-    \Illuminate\Support\Facades\DB::table('pages')->insert([
+    DB::table('pages')->insert([
         ['name' => 'Home', 'slug' => 'home', 'created_at' => now(), 'updated_at' => now()],
         ['name' => 'About', 'slug' => 'about', 'created_at' => now(), 'updated_at' => now()],
     ]);

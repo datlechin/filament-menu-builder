@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use Datlechin\FilamentMenuBuilder\Livewire\MenuItems;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Services\MenuItemService;
+use Datlechin\FilamentMenuBuilder\Tests\Fixtures\User;
 
 // --- resolveLocale() should come from a shared trait ---
 
@@ -44,10 +46,10 @@ it('can resolve MenuItemService from the container', function () {
 // --- ManagesMenuItemHierarchy should use container ---
 
 it('resolves MenuItemService via container in ManagesMenuItemHierarchy', function () {
-    $this->actingAs(\Datlechin\FilamentMenuBuilder\Tests\Fixtures\User::factory()->create());
+    $this->actingAs(User::factory()->create());
     $menu = Menu::create(['name' => 'Test']);
 
-    $component = \Pest\Livewire\livewire(\Datlechin\FilamentMenuBuilder\Livewire\MenuItems::class, ['menu' => $menu]);
+    $component = \Pest\Livewire\livewire(MenuItems::class, ['menu' => $menu]);
     $instance = $component->instance();
 
     $reflection = new ReflectionMethod($instance, 'getMenuItemService');

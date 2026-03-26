@@ -8,6 +8,7 @@ use Datlechin\FilamentMenuBuilder\Livewire\MenuPanel;
 use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
+use Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\ListMenus;
 use Datlechin\FilamentMenuBuilder\Tests\Fixtures\User;
 use Illuminate\Support\Facades\DB;
 
@@ -125,7 +126,7 @@ it('only selects id and name when loading menus for location action', function (
     });
 
     // Access the getMenus method via the ListMenus page
-    $page = new \Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\ListMenus;
+    $page = new ListMenus;
     $reflection = new ReflectionMethod($page, 'getMenus');
     $reflection->invoke($page);
 
