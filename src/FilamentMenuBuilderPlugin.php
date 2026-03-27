@@ -12,6 +12,7 @@ use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Filament\Schemas\Components\Component;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Database\Eloquent\Model;
 
@@ -172,7 +173,7 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function addMenuField(\Filament\Schemas\Components\Component $field): static
+    public function addMenuField(Component $field): static
     {
         return $this->addMenuFields([$field]);
     }
@@ -188,7 +189,7 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function addMenuItemField(\Filament\Schemas\Components\Component $field): static
+    public function addMenuItemField(Component $field): static
     {
         return $this->addMenuItemFields([$field]);
     }

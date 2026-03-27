@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\MenuPanel;
 
 use Closure;
+use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
 use Illuminate\Database\Eloquent\Model;
 
 class ModelMenuPanel extends AbstractMenuPanel
 {
     /**
-     * @var \Illuminate\Database\Eloquent\Model&\Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable
+     * @var Model&MenuPanelable
      */
     protected Model $model;
 
     protected Closure $urlUsing;
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model&\Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable>  $model
+     * @param  class-string<Model&MenuPanelable>  $model
      */
     public function model(string $model): static
     {

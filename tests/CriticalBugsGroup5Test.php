@@ -6,6 +6,7 @@ use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 // --- Bug: Children not deleted on bulk delete (orphaned children) ---
 
@@ -110,7 +111,7 @@ it('does not lose cached locations when resolving a new one', function () {
 
     // Re-resolve header — should come from cache, not re-query
     $queryCount = 0;
-    \Illuminate\Support\Facades\DB::listen(function () use (&$queryCount) {
+    DB::listen(function () use (&$queryCount) {
         $queryCount++;
     });
 
@@ -140,7 +141,7 @@ it('invalidates all location caches when a menu item is saved', function () {
     // The cache key(s) should be cleared
     // Verify by checking that a fresh query runs on next location() call
     $queried = false;
-    \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queried) {
+    DB::listen(function ($query) use (&$queried) {
         if (str_contains($query->sql, 'menus') && str_contains($query->sql, 'is_visible')) {
             $queried = true;
         }

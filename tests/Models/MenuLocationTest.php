@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
+use Illuminate\Database\QueryException;
 
 it('can create a menu location', function () {
     $menu = Menu::create(['name' => 'Main Menu']);
@@ -46,5 +47,5 @@ it('enforces unique location', function () {
     expect(fn () => MenuLocation::create([
         'menu_id' => $menu->id,
         'location' => 'header',
-    ]))->toThrow(\Illuminate\Database\QueryException::class);
+    ]))->toThrow(QueryException::class);
 });

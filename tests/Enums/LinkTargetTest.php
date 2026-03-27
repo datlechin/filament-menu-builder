@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
+use Filament\Support\Contracts\HasLabel;
 
 it('has four cases', function () {
     expect(LinkTarget::cases())->toHaveCount(4);
@@ -16,7 +17,7 @@ it('has correct values', function () {
 });
 
 it('implements HasLabel', function () {
-    expect(LinkTarget::Self)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
+    expect(LinkTarget::Self)->toBeInstanceOf(HasLabel::class);
 });
 
 it('returns labels for all cases', function () {

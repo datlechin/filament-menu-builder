@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Concerns;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\Services\MenuItemService;
 use Filament\Actions\Action;
 use Filament\Support\Enums\Size;
 
 trait ManagesMenuItemHierarchy
 {
-    protected ?\Datlechin\FilamentMenuBuilder\Services\MenuItemService $menuItemService = null;
+    protected ?MenuItemService $menuItemService = null;
 
     public function indent(int | string $itemId): void
     {
@@ -68,10 +69,10 @@ trait ManagesMenuItemHierarchy
                $this->canUnindent($itemId);
     }
 
-    protected function getMenuItemService(): \Datlechin\FilamentMenuBuilder\Services\MenuItemService
+    protected function getMenuItemService(): MenuItemService
     {
         if ($this->menuItemService === null) {
-            $this->menuItemService = app(\Datlechin\FilamentMenuBuilder\Services\MenuItemService::class);
+            $this->menuItemService = app(MenuItemService::class);
         }
 
         return $this->menuItemService;
