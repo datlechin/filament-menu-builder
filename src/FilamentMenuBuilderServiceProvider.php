@@ -9,7 +9,6 @@ use Datlechin\FilamentMenuBuilder\Livewire\CreateCustomText;
 use Datlechin\FilamentMenuBuilder\Livewire\MenuItems;
 use Datlechin\FilamentMenuBuilder\Livewire\MenuPanel;
 use Filament\Support\Assets\AlpineComponent;
-use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
@@ -83,7 +82,6 @@ class FilamentMenuBuilderServiceProvider extends PackageServiceProvider
     {
         return [
             AlpineComponent::make('menu-builder', __DIR__ . '/../resources/dist/filament-menu-builder.js'),
-            Css::make('filament-menu-builder-styles', __DIR__ . '/../resources/dist/filament-menu-builder.css'),
         ];
     }
 
