@@ -9,6 +9,7 @@ use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
+use Filament\Forms\Components\TextInput;
 
 it('has an id', function () {
     $plugin = FilamentMenuBuilderPlugin::make();
@@ -225,7 +226,7 @@ it('returns empty menu item fields by default', function () {
 it('can set menu fields', function () {
     $plugin = FilamentMenuBuilderPlugin::make();
     $plugin->addMenuFields([
-        \Filament\Forms\Components\TextInput::make('custom_field'),
+        TextInput::make('custom_field'),
     ]);
 
     expect($plugin->getMenuFields())->toHaveCount(1);
@@ -234,7 +235,7 @@ it('can set menu fields', function () {
 it('can set menu item fields', function () {
     $plugin = FilamentMenuBuilderPlugin::make();
     $plugin->addMenuItemFields([
-        \Filament\Forms\Components\TextInput::make('custom_field'),
+        TextInput::make('custom_field'),
     ]);
 
     expect($plugin->getMenuItemFields())->toHaveCount(1);

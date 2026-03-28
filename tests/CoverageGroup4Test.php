@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\Livewire\CreateCustomLink;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Datlechin\FilamentMenuBuilder\Support\TranslatableFieldWrapper;
+use Datlechin\FilamentMenuBuilder\Tests\Fixtures\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Tabs;
 use Illuminate\Support\Facades\Cache;
@@ -35,12 +37,12 @@ it('wraps field with correct locale-scoped names', function () {
 });
 
 it('wraps fields for each configured locale in CreateCustomLink form', function () {
-    $this->actingAs(\Datlechin\FilamentMenuBuilder\Tests\Fixtures\User::factory()->create());
+    $this->actingAs(User::factory()->create());
     $menu = Menu::create(['name' => 'Test']);
 
     // The fixture AdminPanelProvider does not enable translatable,
     // so verify the form works without tabs when not translatable
-    $component = \Pest\Livewire\livewire(\Datlechin\FilamentMenuBuilder\Livewire\CreateCustomLink::class, ['menu' => $menu]);
+    $component = \Pest\Livewire\livewire(CreateCustomLink::class, ['menu' => $menu]);
 
     $component->assertFormFieldExists('title')
         ->assertFormFieldExists('url');

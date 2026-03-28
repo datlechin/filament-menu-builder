@@ -7,14 +7,15 @@ namespace Datlechin\FilamentMenuBuilder\Models;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $menu_id
  * @property string $location
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Datlechin\FilamentMenuBuilder\Models\Menu $menu
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Menu $menu
  */
 class MenuLocation extends Model
 {
