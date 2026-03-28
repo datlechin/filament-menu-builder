@@ -91,22 +91,17 @@ class Menu extends Model
     {
         $cacheKey = "filament-menu-builder.location.{$location}";
 
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
+        $menuId = Cache::rememberForever($cacheKey, function () use ($location) {
+            return self::query()
+                ->where('is_visible', true)
+                ->whereRelation('locations', 'location', $location)
+                ->value('id');
+        });
+
+        if (! $menuId) {
+            return null;
         }
 
-        $menu = self::query()
-            ->where('is_visible', true)
-            ->whereRelation('locations', 'location', $location)
-            ->with('menuItems')
-            ->first();
-
-        Cache::forever($cacheKey, $menu);
-
-        $keys = Cache::get('filament-menu-builder.location-keys', []);
-        $keys[] = $cacheKey;
-        Cache::forever('filament-menu-builder.location-keys', array_unique($keys));
-
-        return $menu;
+        return self::with('menuItems')->find($menuId);
     }
 }
