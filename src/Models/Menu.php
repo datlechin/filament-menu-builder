@@ -58,19 +58,45 @@ class Menu extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => static::clearLocationCache());
-        static::deleted(fn () => static::clearLocationCache());
+        static::saved(function (self $menu): void {
+            if (! $menu->wasChanged('is_visible')) {
+                return;
+            }
+
+            $menu->forgetLocationCaches();
+        });
+
+        static::deleted(fn (self $menu) => $menu->forgetLocationCaches());
     }
 
+    /**
+     * @deprecated Cache invalidation is handled per-event by model hooks.
+     *             Kept for backward compatibility with 1.0.0 callers.
+     */
     public static function clearLocationCache(): void
     {
-        $keys = Cache::get('filament-menu-builder.location-keys', []);
-
-        foreach ($keys as $key) {
-            Cache::forget($key);
+        try {
+            $locationModel = FilamentMenuBuilderPlugin::get()->getMenuLocationModel();
+        } catch (\Throwable) {
+            $locationModel = MenuLocation::class;
         }
 
-        Cache::forget('filament-menu-builder.location-keys');
+        $locationModel::query()
+            ->distinct()
+            ->pluck('location')
+            ->each(fn (string $location) => Cache::forget(self::locationCacheKey($location)));
+    }
+
+    public function forgetLocationCaches(): void
+    {
+        $this->locations()
+            ->pluck('location')
+            ->each(fn (string $location) => Cache::forget(self::locationCacheKey($location)));
+    }
+
+    public static function locationCacheKey(string $location): string
+    {
+        return "filament-menu-builder.location.v2.{$location}";
     }
 
     public function locations(): HasMany
@@ -89,24 +115,21 @@ class Menu extends Model
 
     public static function location(string $location): ?self
     {
-        $cacheKey = "filament-menu-builder.location.{$location}";
+        $menuId = Cache::rememberForever(
+            self::locationCacheKey($location),
+            fn (): int => (int) self::query()
+                ->where('is_visible', true)
+                ->whereRelation('locations', 'location', $location)
+                ->value('id'),
+        );
 
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
+        if ($menuId === 0) {
+            return null;
         }
 
-        $menu = self::query()
+        return self::query()
             ->where('is_visible', true)
-            ->whereRelation('locations', 'location', $location)
             ->with('menuItems')
-            ->first();
-
-        Cache::forever($cacheKey, $menu);
-
-        $keys = Cache::get('filament-menu-builder.location-keys', []);
-        $keys[] = $cacheKey;
-        Cache::forever('filament-menu-builder.location-keys', array_unique($keys));
-
-        return $menu;
+            ->find($menuId);
     }
 }

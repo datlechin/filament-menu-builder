@@ -148,14 +148,27 @@ it('caches menu location lookup', function () {
     expect($found->name)->toBe('Cached Menu');
 
     // Cache should now exist with per-location key
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
     // Second call should return from cache
     $cached = Menu::location('header');
     expect($cached->name)->toBe('Cached Menu');
 });
 
-it('busts cache when menu is saved', function () {
+it('caches the menu id, not the eloquent graph', function () {
+    $menu = Menu::create(['name' => 'Header', 'is_visible' => true]);
+
+    MenuLocation::create([
+        'menu_id' => $menu->id,
+        'location' => 'header',
+    ]);
+
+    Menu::location('header');
+
+    expect(Cache::get(Menu::locationCacheKey('header')))->toBe($menu->id);
+});
+
+it('reflects column updates immediately even when the cache is hit', function () {
     $menu = Menu::create(['name' => 'Original', 'is_visible' => true]);
 
     MenuLocation::create([
@@ -164,10 +177,13 @@ it('busts cache when menu is saved', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
+    // Non-resolution columns do not invalidate the cache, but the menu is
+    // re-queried on every call, so updates are still visible.
     $menu->update(['name' => 'Updated']);
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
+    expect(Menu::location('header')->name)->toBe('Updated');
 });
 
 it('busts cache when menu is deleted', function () {
@@ -179,13 +195,30 @@ it('busts cache when menu is deleted', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
     $menu->delete();
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeFalse();
 });
 
-it('busts cache when menu item is saved', function () {
+it('busts cache when is_visible toggles', function () {
+    $menu = Menu::create(['name' => 'Visible', 'is_visible' => true]);
+
+    MenuLocation::create([
+        'menu_id' => $menu->id,
+        'location' => 'header',
+    ]);
+
+    expect(Menu::location('header'))->not->toBeNull();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
+
+    $menu->update(['is_visible' => false]);
+
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeFalse();
+    expect(Menu::location('header'))->toBeNull();
+});
+
+it('does not invalidate location cache when a menu item is saved', function () {
     $menu = Menu::create(['name' => 'Test', 'is_visible' => true]);
 
     MenuLocation::create([
@@ -194,7 +227,7 @@ it('busts cache when menu item is saved', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
     MenuItem::create([
         'menu_id' => $menu->id,
@@ -203,7 +236,11 @@ it('busts cache when menu item is saved', function () {
         'order' => 1,
     ]);
 
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    // Items are not cached, so saving them does not need to invalidate the
+    // location → menu_id resolution cache. The new item still appears on the
+    // next lookup because menuItems are eagerly re-queried.
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
+    expect(Menu::location('header')->menuItems)->toHaveCount(1);
 });
 
 it('busts cache when menu location is changed', function () {
@@ -215,8 +252,64 @@ it('busts cache when menu location is changed', function () {
     ]);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
     $location->delete();
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeFalse();
+});
+
+it('busts both old and new keys when a location row is renamed', function () {
+    $menu = Menu::create(['name' => 'Test', 'is_visible' => true]);
+    $location = MenuLocation::create([
+        'menu_id' => $menu->id,
+        'location' => 'header',
+    ]);
+
+    Menu::location('header');
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
+
+    $location->update(['location' => 'footer']);
+
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeFalse()
+        ->and(Cache::has(Menu::locationCacheKey('footer')))->toBeFalse();
+});
+
+it('does not crash when MenuItem::menu is accessed outside a panel', function () {
+    $menu = Menu::create(['name' => 'Test', 'is_visible' => true]);
+    $item = MenuItem::create([
+        'menu_id' => $menu->id,
+        'title' => 'Home',
+        'url' => '/',
+        'order' => 1,
+    ]);
+
+    expect($item->menu)->toBeInstanceOf(Menu::class)
+        ->and($item->menu->is($menu))->toBeTrue();
+});
+
+it('survives a cache hit on a serializing driver', function () {
+    config()->set('cache.default', 'file');
+    Cache::store('file')->flush();
+
+    $menu = Menu::create(['name' => 'Header', 'is_visible' => true]);
+    MenuLocation::create([
+        'menu_id' => $menu->id,
+        'location' => 'header',
+    ]);
+    MenuItem::create([
+        'menu_id' => $menu->id,
+        'title' => 'Home',
+        'url' => '/',
+        'order' => 1,
+    ]);
+
+    // MISS — populates cache.
+    expect(Menu::location('header'))->toBeInstanceOf(Menu::class);
+
+    // HIT — must round-trip through serialize/unserialize without producing
+    // __PHP_Incomplete_Class. The cached payload is an int, so this is safe
+    // regardless of what models live in the menuItems graph.
+    expect(Menu::location('header'))->toBeInstanceOf(Menu::class);
+
+    Cache::store('file')->flush();
 });

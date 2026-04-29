@@ -84,18 +84,18 @@ it('returns true for isActive when url matches current url', function () {
 
 // --- MenuLocation::saved cache invalidation ---
 
-it('clears cache when a menu location is saved', function () {
+it('only invalidates the saved location, not unrelated locations', function () {
     $menu = Menu::create(['name' => 'Test', 'is_visible' => true]);
 
-    // Prime the cache using the location() method
     MenuLocation::create(['menu_id' => $menu->id, 'location' => 'header']);
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
-    // Creating another location should clear all location caches
+    // Creating an unrelated location does not invalidate the header cache;
+    // invalidation is surgical, scoped to the affected key.
     MenuLocation::create(['menu_id' => $menu->id, 'location' => 'footer']);
 
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 });
 
 it('clears cache when a menu location is updated', function () {
@@ -103,12 +103,13 @@ it('clears cache when a menu location is updated', function () {
     $location = MenuLocation::create(['menu_id' => $menu->id, 'location' => 'header']);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
-    // Update location — should clear cache
+    // Update location — should clear both old and new keys
     $location->update(['location' => 'footer']);
 
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeFalse()
+        ->and(Cache::has(Menu::locationCacheKey('footer')))->toBeFalse();
 });
 
 it('clears cache when a menu location is deleted', function () {
@@ -116,11 +117,11 @@ it('clears cache when a menu location is deleted', function () {
     $location = MenuLocation::create(['menu_id' => $menu->id, 'location' => 'header']);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
     $location->delete();
 
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeFalse();
 });
 
 // --- MenuResource::getNavigationBadge ---
@@ -150,14 +151,14 @@ it('returns formatted count when navigation badge is enabled', function () {
     $plugin->navigationCountBadge(false);
 });
 
-// --- MenuItem cache invalidation on save/delete ---
+// --- MenuItem save/delete contract ---
 
-it('clears location cache when a menu item is saved', function () {
+it('does not invalidate location cache when a menu item is saved', function () {
     $menu = Menu::create(['name' => 'Test', 'is_visible' => true]);
     MenuLocation::create(['menu_id' => $menu->id, 'location' => 'header']);
 
     Menu::location('header');
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 
     MenuItem::create([
         'menu_id' => $menu->id,
@@ -165,15 +166,14 @@ it('clears location cache when a menu item is saved', function () {
         'order' => 1,
     ]);
 
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeFalse();
+    // Items are not cached, so saving them does not need to invalidate the
+    // location → menu_id resolution cache. The new item still appears on the
+    // next lookup because menuItems are eagerly re-queried.
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 });
 
-it('clears cache and deletes children when a menu item is deleted', function () {
+it('cascades children when a menu item is deleted', function () {
     $menu = Menu::create(['name' => 'Test', 'is_visible' => true]);
-    MenuLocation::create(['menu_id' => $menu->id, 'location' => 'test']);
-
-    Menu::location('test');
-    expect(Cache::has('filament-menu-builder.location.test'))->toBeTrue();
 
     $parent = MenuItem::create([
         'menu_id' => $menu->id,
@@ -188,14 +188,10 @@ it('clears cache and deletes children when a menu item is deleted', function () 
         'parent_id' => $parent->id,
     ]);
 
-    // Re-prime cache
-    Menu::location('test');
-
     $parent->load('children');
     $parent->delete();
 
-    expect(Cache::has('filament-menu-builder.location.test'))->toBeFalse()
-        ->and(MenuItem::find($child->id))->toBeNull();
+    expect(MenuItem::find($child->id))->toBeNull();
 });
 
 // --- Menu::location() caching ---
@@ -213,7 +209,7 @@ it('caches menu location lookups', function () {
         ->and($result->name)->toBe('Header Menu');
 
     // Cache should now contain the result
-    expect(Cache::has('filament-menu-builder.location.header'))->toBeTrue();
+    expect(Cache::has(Menu::locationCacheKey('header')))->toBeTrue();
 });
 
 it('returns null for non-existent location', function () {

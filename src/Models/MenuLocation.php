@@ -8,6 +8,7 @@ use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -28,12 +29,34 @@ class MenuLocation extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => Menu::clearLocationCache());
-        static::deleted(fn () => Menu::clearLocationCache());
+        static::saved(function (self $location): void {
+            Cache::forget(Menu::locationCacheKey($location->location));
+
+            if ($location->wasChanged('location')) {
+                $original = $location->getOriginal('location');
+
+                if ($original !== null && $original !== '') {
+                    Cache::forget(Menu::locationCacheKey($original));
+                }
+            }
+        });
+
+        static::deleted(
+            fn (self $location) => Cache::forget(Menu::locationCacheKey($location->location)),
+        );
     }
 
     public function menu(): BelongsTo
     {
-        return $this->belongsTo(FilamentMenuBuilderPlugin::get()->getMenuModel());
+        return $this->belongsTo(self::resolveMenuModel());
+    }
+
+    protected static function resolveMenuModel(): string
+    {
+        try {
+            return FilamentMenuBuilderPlugin::get()->getMenuModel();
+        } catch (\Throwable) {
+            return Menu::class;
+        }
     }
 }
