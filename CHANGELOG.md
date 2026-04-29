@@ -2,7 +2,7 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
-## v1.0.1 - Unreleased
+## v1.0.3 - 2026-04-30
 
 ### Fixed
 - `Menu::location()` no longer throws `__PHP_Incomplete_Class` on cache HIT when the cache driver serializes (file / database / redis). The cached payload is now the menu id (`int`) instead of a full Eloquent graph with polymorphic relations, eliminating the failure class entirely.
