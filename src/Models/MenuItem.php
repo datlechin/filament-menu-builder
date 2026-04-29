@@ -75,9 +75,7 @@ class MenuItem extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => Menu::clearLocationCache());
-        static::deleted(function (self $menuItem) {
-            Menu::clearLocationCache();
+        static::deleted(function (self $menuItem): void {
             $menuItem->children()->each(fn (self $child) => $child->delete());
         });
     }
@@ -107,7 +105,16 @@ class MenuItem extends Model
 
     public function menu(): BelongsTo
     {
-        return $this->belongsTo(FilamentMenuBuilderPlugin::get()->getMenuModel());
+        return $this->belongsTo(self::resolveMenuModel());
+    }
+
+    protected static function resolveMenuModel(): string
+    {
+        try {
+            return FilamentMenuBuilderPlugin::get()->getMenuModel();
+        } catch (\Throwable) {
+            return Menu::class;
+        }
     }
 
     public function parent(): BelongsTo

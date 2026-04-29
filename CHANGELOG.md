@@ -2,6 +2,22 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## v1.0.1 - Unreleased
+
+### Fixed
+- `Menu::location()` no longer throws `__PHP_Incomplete_Class` on cache HIT when the cache driver serializes (file / database / redis). The cached payload is now the menu id (`int`) instead of a full Eloquent graph with polymorphic relations, eliminating the failure class entirely.
+- `Cache::has()` / `Cache::get()` race in `Menu::location()` replaced with atomic `Cache::rememberForever`.
+- Driver divergence on cached `null` (redis/memcached vs file/database) eliminated via integer sentinel.
+- `MenuItem::menu()` and `MenuLocation::menu()` no longer fail outside a Filament panel context (frontend layouts, queue workers, console commands) — they fall back to the base `Menu` model when the plugin is unavailable.
+
+### Changed
+- Cache invalidation on MenuItem save/delete removed; items are no longer cached so no invalidation is needed. MenuItem deletes still cascade to children.
+- Cache key prefix bumped to `filament-menu-builder.location.v2.{location}` so existing cached payloads from `1.0.0` are not read after upgrade.
+- `Menu::clearLocationCache()` retained but deprecated; the keys-index (`filament-menu-builder.location-keys`) is no longer written.
+
+### Upgrade
+Run `php artisan cache:clear` once after upgrading. Old `1.0.0` cache entries are unreachable but leave dead data on file/database drivers until cleared.
+
 ## v1.0.0 - 2026-03-07
 
 ### Major

@@ -83,70 +83,65 @@ it('uses per-location cache keys instead of a shared collection', function () {
         ->and($footer)->not->toBeNull()
         ->and($footer->name)->toBe('Footer Menu');
 
-    // Each location should be independently cached
-    // Clearing cache for one location should not affect the other
-    Cache::forget('filament-menu-builder.location.header');
+    // Each location is independently cached — clearing one does not affect the other.
+    Cache::forget(Menu::locationCacheKey('header'));
 
-    // Footer should still be cached (if using per-location keys)
-    // OR: if still using single key, at least both resolve correctly
+    expect(Cache::has(Menu::locationCacheKey('footer')))->toBeTrue();
+
     $footerAgain = Menu::location('footer');
     expect($footerAgain)->not->toBeNull()
         ->and($footerAgain->name)->toBe('Footer Menu');
 });
 
-it('does not lose cached locations when resolving a new one', function () {
+it('does not re-run the location resolution query on cache hit', function () {
     $menu1 = Menu::create(['name' => 'Header', 'is_visible' => true]);
     MenuLocation::create(['menu_id' => $menu1->id, 'location' => 'header']);
 
     $menu2 = Menu::create(['name' => 'Footer', 'is_visible' => true]);
     MenuLocation::create(['menu_id' => $menu2->id, 'location' => 'footer']);
 
-    // Resolve header first
-    $header = Menu::location('header');
-    expect($header->name)->toBe('Header');
+    Menu::location('header');
+    Menu::location('footer');
 
-    // Now resolve footer — header should NOT be lost from cache
-    $footer = Menu::location('footer');
-    expect($footer->name)->toBe('Footer');
-
-    // Re-resolve header — should come from cache, not re-query
-    $queryCount = 0;
-    DB::listen(function () use (&$queryCount) {
-        $queryCount++;
+    // Re-resolve header — the expensive whereRelation join against
+    // menu_locations must not run again (that is what the cache is for).
+    // The cheap `find($id)` rehydration is intentional and runs on every call.
+    $resolutionQueries = 0;
+    DB::listen(function ($query) use (&$resolutionQueries) {
+        if (str_contains($query->sql, 'menu_locations')) {
+            $resolutionQueries++;
+        }
     });
 
     $headerAgain = Menu::location('header');
-    expect($headerAgain)->not->toBeNull()
-        ->and($headerAgain->name)->toBe('Header');
 
-    // With per-location cache, this should be 0 queries
-    // With the old shared-collection approach, it might still work but is fragile
-    expect($queryCount)->toBe(0, 'Header should be served from cache without re-querying');
+    expect($headerAgain)->not->toBeNull()
+        ->and($headerAgain->name)->toBe('Header')
+        ->and($resolutionQueries)->toBe(0, 'menu_locations join should be cached');
 });
 
-it('invalidates all location caches when a menu item is saved', function () {
+it('does not invalidate location resolution cache when a menu item is saved', function () {
     $menu = Menu::create(['name' => 'Test', 'is_visible' => true]);
     MenuLocation::create(['menu_id' => $menu->id, 'location' => 'header']);
 
-    // Prime cache
     Menu::location('header');
 
-    // Create a menu item — should invalidate cache
     MenuItem::create([
         'menu_id' => $menu->id,
         'title' => 'New',
         'order' => 1,
     ]);
 
-    // The cache key(s) should be cleared
-    // Verify by checking that a fresh query runs on next location() call
-    $queried = false;
-    DB::listen(function ($query) use (&$queried) {
-        if (str_contains($query->sql, 'menus') && str_contains($query->sql, 'is_visible')) {
-            $queried = true;
+    // Items are not cached, so saving them does not need to invalidate the
+    // resolution cache. Verify by confirming the menu_locations join is not
+    // re-run after the item save.
+    $resolutionQueries = 0;
+    DB::listen(function ($query) use (&$resolutionQueries) {
+        if (str_contains($query->sql, 'menu_locations')) {
+            $resolutionQueries++;
         }
     });
 
     Menu::location('header');
-    expect($queried)->toBeTrue('Should re-query after cache invalidation');
+    expect($resolutionQueries)->toBe(0, 'Item saves must not invalidate the resolution cache');
 });
