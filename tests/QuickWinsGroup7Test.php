@@ -86,14 +86,14 @@ class Group7TestPage extends Model implements MenuPanelable
 
     protected $guarded = [];
 
-    public function getMenuPanelTitleColumn(): string
+    public function getMenuPanelTitle(): string
     {
-        return 'name';
+        return $this->name;
     }
 
-    public function getMenuPanelUrlUsing(): callable
+    public function getMenuPanelUrl(): string
     {
-        return fn (self $model) => "/{$model->slug}";
+        return "/{$this->slug}";
     }
 }
 
@@ -106,13 +106,13 @@ class Group7TestPageWithSoftDeletes extends Model implements MenuPanelable
 
     protected $guarded = [];
 
-    public function getMenuPanelTitleColumn(): string
+    public function getMenuPanelTitle(): string
     {
-        return 'name';
+        return $this->name;
     }
 
-    public function getMenuPanelUrlUsing(): callable
+    public function getMenuPanelUrl(): string
     {
-        return fn (self $model) => "/{$model->slug}";
+        return "/{$this->slug}";
     }
 }

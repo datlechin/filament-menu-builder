@@ -138,7 +138,7 @@ class MenuItem extends Model
     {
         return Attribute::get(function (?string $value) {
             return match (true) {
-                $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelUrlUsing()($this->linkable),
+                $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelUrl(),
                 default => $value,
             };
         });
