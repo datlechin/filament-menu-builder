@@ -45,9 +45,9 @@
   },
   "scripts": {
     "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
-    "test": "vendor/bin/pest",
-    "test-coverage": "vendor/bin/pest --coverage",
-    "format": "vendor/bin/pint"
+    "test": "vendor/bin/pest --parallel",
+    "test-coverage": "vendor/bin/pest --coverage --parallel --compact",
+    "format": "vendor/bin/pint --parallel"
   },
   "config": {
     "sort-packages": true,
