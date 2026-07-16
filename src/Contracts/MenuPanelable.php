@@ -8,9 +8,7 @@ interface MenuPanelable
 {
     public function getMenuPanelName(): string;
 
-    public function getMenuPanelTitleColumn(): string;
+    public function getMenuPanelTitle(): string;
 
-    public function getMenuPanelUrlUsing(): callable;
-
-    public function getMenuPanelModifyQueryUsing(): callable;
+    public function getMenuPanelUrl(): string;
 }

@@ -104,18 +104,13 @@ class TestPage extends Model implements MenuPanelable
         return 'Pages';
     }
 
-    public function getMenuPanelTitleColumn(): string
+    public function getMenuPanelTitle(): string
     {
-        return 'title';
+        return $this->title;
     }
 
-    public function getMenuPanelUrlUsing(): callable
+    public function getMenuPanelUrl(): string
     {
-        return fn (self $model) => '/pages/' . $model->slug;
-    }
-
-    public function getMenuPanelModifyQueryUsing(): callable
-    {
-        return fn ($query) => $query;
+        return '/pages/' . $this->slug;
     }
 }

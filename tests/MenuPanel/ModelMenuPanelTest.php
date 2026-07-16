@@ -102,18 +102,13 @@ class TestPost extends Model implements MenuPanelable
         return 'Blog Posts';
     }
 
-    public function getMenuPanelTitleColumn(): string
+    public function getMenuPanelTitle(): string
     {
-        return 'title';
+        return $this->title;
     }
 
-    public function getMenuPanelUrlUsing(): callable
+    public function getMenuPanelUrl(): string
     {
-        return fn (self $model) => '/blog/' . $model->slug;
-    }
-
-    public function getMenuPanelModifyQueryUsing(): callable
-    {
-        return fn ($query) => $query;
+        return '/blog/' . $this->slug;
     }
 }

@@ -34,10 +34,14 @@ class ModelMenuPanel extends AbstractMenuPanel
 
     public function getItems(): array
     {
-        return ($this->model->getMenuPanelModifyQueryUsing())($this->model->newQuery())
+        $query = method_exists($this->model, 'getMenuPanelQuery')
+            ? $this->model->getMenuPanelQuery()
+            : $this->model->newQuery();
+
+        return $query
             ->get()
-            ->map(fn (Model $model) => [
-                'title' => $model->{$this->model->getMenuPanelTitleColumn()},
+            ->map(fn (Model & MenuPanelable $model) => [
+                'title' => $model->getMenuPanelTitle(),
                 'linkable_type' => $model->getMorphClass(),
                 'linkable_id' => $model->getKey(),
             ])
