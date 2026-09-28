@@ -2,6 +2,20 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
+## Unreleased
+
+### Added
+- `FilamentMenuBuilderPlugin::maxDepth()` to limit how deep menu items can be nested, as an `int` or a per-menu closure (closes #173). Enforced for indent actions and drag and drop, on the server and in the browser.
+
+### Fixed
+- Indent and unindent buttons are now real Filament actions and are hidden when they cannot be applied (e.g. indenting the first item, unindenting a root item).
+- Reordering no longer accepts items from another menu, a parent from another menu, or a parent that is one of the moved item's own descendants.
+- Indenting or unindenting a root item no longer renumbers root items of every other menu.
+
+### Changed
+- `MenuItemService` hierarchy methods are now scoped to a menu: `indent()`, `unindent()` and `updateOrder()` take the `Menu` as their first argument and return `false` when a move is rejected; `getSiblings()` / `reorderSiblings()` take the menu id.
+- `MenuItemService::getPreviousSibling()`, `canIndent()` and `canUnindent()` were removed in favour of the `MenuHierarchy` snapshot returned by `MenuItemService::hierarchy($menu)` (`previousSiblingOf()`, `canIndent()`, `canUnindent()`, `canMove()`).
+
 ## v1.0.3 - 2026-04-30
 
 ### Fixed

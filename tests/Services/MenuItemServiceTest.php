@@ -44,7 +44,7 @@ it('can update item order', function () {
     $item1 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'A', 'order' => 1]);
     $item2 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'B', 'order' => 2]);
 
-    $this->service->updateOrder([$item2->id, $item1->id]);
+    $this->service->updateOrder($this->menu, [$item2->id, $item1->id]);
 
     expect($item2->fresh()->order)->toBe(1)
         ->and($item1->fresh()->order)->toBe(2);
@@ -54,13 +54,13 @@ it('sets parent_id when updating order', function () {
     $parent = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Parent', 'order' => 1]);
     $child = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Child', 'order' => 2]);
 
-    $this->service->updateOrder([$child->id], (string) $parent->id);
+    $this->service->updateOrder($this->menu, [$child->id], (string) $parent->id);
 
     expect($child->fresh()->parent_id)->toBe($parent->id);
 });
 
 it('does nothing when updating empty order', function () {
-    $this->service->updateOrder([]);
+    $this->service->updateOrder($this->menu, []);
 
     expect(true)->toBeTrue();
 });
@@ -69,16 +69,13 @@ it('can get previous sibling', function () {
     $item1 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'First', 'order' => 1]);
     $item2 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Second', 'order' => 2]);
 
-    $sibling = $this->service->getPreviousSibling($item2);
-
-    expect($sibling)->not->toBeNull()
-        ->and($sibling->id)->toBe($item1->id);
+    expect($this->service->hierarchy($this->menu)->previousSiblingOf($item2->id))->toBe($item1->id);
 });
 
 it('returns null when no previous sibling exists', function () {
     $item = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'First', 'order' => 1]);
 
-    expect($this->service->getPreviousSibling($item))->toBeNull();
+    expect($this->service->hierarchy($this->menu)->previousSiblingOf($item->id))->toBeNull();
 });
 
 it('can get max order for parent', function () {
@@ -105,7 +102,7 @@ it('can get siblings', function () {
     MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'A', 'order' => 1]);
     MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'B', 'order' => 2]);
 
-    $siblings = $this->service->getSiblings(null);
+    $siblings = $this->service->getSiblings($this->menu->id, null);
 
     expect($siblings)->toHaveCount(2);
 });
@@ -114,7 +111,7 @@ it('can reorder siblings', function () {
     $item1 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'A', 'order' => 5]);
     $item2 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'B', 'order' => 10]);
 
-    $this->service->reorderSiblings(null);
+    $this->service->reorderSiblings($this->menu->id, null);
 
     expect($item1->fresh()->order)->toBe(1)
         ->and($item2->fresh()->order)->toBe(2);
@@ -124,7 +121,7 @@ it('can indent an item', function () {
     $item1 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'First', 'order' => 1]);
     $item2 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Second', 'order' => 2]);
 
-    $result = $this->service->indent($item2->id);
+    $result = $this->service->indent($this->menu, $item2->id);
 
     expect($result)->toBeTrue()
         ->and($item2->fresh()->parent_id)->toBe($item1->id);
@@ -133,11 +130,11 @@ it('can indent an item', function () {
 it('cannot indent first item without previous sibling', function () {
     $item = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'First', 'order' => 1]);
 
-    expect($this->service->indent($item->id))->toBeFalse();
+    expect($this->service->indent($this->menu, $item->id))->toBeFalse();
 });
 
 it('cannot indent non-existent item', function () {
-    expect($this->service->indent(9999))->toBeFalse();
+    expect($this->service->indent($this->menu, 9999))->toBeFalse();
 });
 
 it('can unindent an item', function () {
@@ -149,7 +146,7 @@ it('can unindent an item', function () {
         'parent_id' => $parent->id,
     ]);
 
-    $result = $this->service->unindent($child->id);
+    $result = $this->service->unindent($this->menu, $child->id);
 
     expect($result)->toBeTrue()
         ->and($child->fresh()->parent_id)->toBeNull();
@@ -158,23 +155,23 @@ it('can unindent an item', function () {
 it('cannot unindent root level item', function () {
     $item = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Root', 'order' => 1]);
 
-    expect($this->service->unindent($item->id))->toBeFalse();
+    expect($this->service->unindent($this->menu, $item->id))->toBeFalse();
 });
 
 it('cannot unindent non-existent item', function () {
-    expect($this->service->unindent(9999))->toBeFalse();
+    expect($this->service->unindent($this->menu, 9999))->toBeFalse();
 });
 
 it('can check if item can be indented', function () {
     $item1 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'First', 'order' => 1]);
     $item2 = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Second', 'order' => 2]);
 
-    expect($this->service->canIndent($item1->id))->toBeFalse()
-        ->and($this->service->canIndent($item2->id))->toBeTrue();
+    expect($this->service->hierarchy($this->menu)->canIndent($item1->id))->toBeFalse()
+        ->and($this->service->hierarchy($this->menu)->canIndent($item2->id))->toBeTrue();
 });
 
 it('cannot indent non-existent item when checking', function () {
-    expect($this->service->canIndent(9999))->toBeFalse();
+    expect($this->service->hierarchy($this->menu)->canIndent(9999))->toBeFalse();
 });
 
 it('can check if item can be unindented', function () {
@@ -186,12 +183,12 @@ it('can check if item can be unindented', function () {
         'parent_id' => $parent->id,
     ]);
 
-    expect($this->service->canUnindent($parent->id))->toBeFalse()
-        ->and($this->service->canUnindent($child->id))->toBeTrue();
+    expect($this->service->hierarchy($this->menu)->canUnindent($parent->id))->toBeFalse()
+        ->and($this->service->hierarchy($this->menu)->canUnindent($child->id))->toBeTrue();
 });
 
 it('cannot unindent non-existent item when checking', function () {
-    expect($this->service->canUnindent(9999))->toBeFalse();
+    expect($this->service->hierarchy($this->menu)->canUnindent(9999))->toBeFalse();
 });
 
 it('can delete an item', function () {

@@ -77,6 +77,10 @@ return [
         'locations' => [
             'title' => 'Cập nhật vị trí menu',
         ],
+        'move_rejected' => [
+            'title' => 'Không thể di chuyển mục menu',
+            'body' => 'Không thể lồng mục menu sâu quá :depth cấp.',
+        ],
     ],
     'panel' => [
         'empty' => [

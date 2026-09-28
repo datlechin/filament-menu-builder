@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Services;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\Support\MenuHierarchy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -31,34 +32,81 @@ class MenuItemService
             ->first();
     }
 
-    public function updateOrder(array $order, ?string $parentId = null): void
+    public function hierarchy(Model $menu): MenuHierarchy
     {
-        if (empty($order)) {
-            return;
-        }
+        $items = $this->getModel()::query()
+            ->where('menu_id', $menu->getKey())
+            ->orderBy('order')
+            ->toBase()
+            ->get(['id', 'parent_id']);
 
-        $this->getModel()::query()
-            ->whereIn('id', $order)
-            ->update([
-                'order' => DB::raw(
-                    'case ' . collect($order)
-                        ->map(
-                            fn ($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote((string) $recordKey) . ' then ' . ($recordIndex + 1),
-                        )
-                        ->implode(' ') . ' end',
-                ),
-                'parent_id' => $parentId,
-            ]);
+        return new MenuHierarchy($items, $this->plugin->getMaxDepth($menu));
     }
 
-    public function getPreviousSibling(Model $item): ?Model
+    /**
+     * Make the given items the ordered children of the given parent (or the root).
+     *
+     * @param  array<int|string>  $order
+     */
+    public function updateOrder(Model $menu, array $order, int | string | null $parentId = null): bool
     {
-        return $this->getModel()::query()
-            ->where('menu_id', $item->menu_id)
-            ->where('parent_id', $item->parent_id)
-            ->where('order', '<', $item->order)
-            ->orderByDesc('order')
-            ->first();
+        if ($order === []) {
+            return true;
+        }
+
+        return DB::transaction(function () use ($menu, $order, $parentId): bool {
+            if (! $this->hierarchy($menu)->canMove($order, $parentId)) {
+                return false;
+            }
+
+            $this->getModel()::query()
+                ->where('menu_id', $menu->getKey())
+                ->whereIn('id', $order)
+                ->update([
+                    'order' => DB::raw(
+                        'case ' . collect($order)
+                            ->map(
+                                fn ($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote((string) $recordKey) . ' then ' . ($recordIndex + 1),
+                            )
+                            ->implode(' ') . ' end',
+                    ),
+                    'parent_id' => $parentId,
+                ]);
+
+            return true;
+        });
+    }
+
+    public function indent(Model $menu, int | string $itemId): bool
+    {
+        return DB::transaction(function () use ($menu, $itemId): bool {
+            $hierarchy = $this->hierarchy($menu);
+
+            if (! $hierarchy->canIndent($itemId)) {
+                return false;
+            }
+
+            $this->moveToEnd($menu, $itemId, $hierarchy->previousSiblingOf($itemId));
+
+            return true;
+        });
+    }
+
+    public function unindent(Model $menu, int | string $itemId): bool
+    {
+        return DB::transaction(function () use ($menu, $itemId): bool {
+            $hierarchy = $this->hierarchy($menu);
+
+            if (! $hierarchy->canUnindent($itemId)) {
+                return false;
+            }
+
+            $grandparentId = $hierarchy->parentOf($hierarchy->parentOf($itemId));
+
+            $this->moveToEnd($menu, $itemId, $grandparentId);
+
+            return true;
+        });
     }
 
     public function getMaxOrderForParent(int | string | null $parentId, int | string | null $menuId = null): int
@@ -72,92 +120,20 @@ class MenuItemService
         return $query->max('order') ?? 0;
     }
 
-    public function getSiblings(int | string | null $parentId): Collection
+    public function getSiblings(int | string $menuId, int | string | null $parentId): Collection
     {
         return $this->getModel()::query()
+            ->where('menu_id', $menuId)
             ->where('parent_id', $parentId)
             ->orderBy('order')
             ->get();
     }
 
-    public function reorderSiblings(int | string | null $parentId): void
+    public function reorderSiblings(int | string $menuId, int | string | null $parentId): void
     {
-        $siblings = $this->getSiblings($parentId);
-
-        $siblings->each(function ($sibling, $index) {
+        $this->getSiblings($menuId, $parentId)->each(function (Model $sibling, int $index): void {
             $sibling->update(['order' => $index + 1]);
         });
-    }
-
-    public function indent(int | string $itemId): bool
-    {
-        $item = $this->findById($itemId);
-
-        if (! $item) {
-            return false;
-        }
-
-        $previousSibling = $this->getPreviousSibling($item);
-
-        if (! $previousSibling) {
-            return false;
-        }
-
-        $maxOrder = $this->getMaxOrderForParent($previousSibling->id);
-        $originalParentId = $item->getOriginal('parent_id');
-
-        $item->update([
-            'parent_id' => $previousSibling->id,
-            'order' => $maxOrder + 1,
-        ]);
-
-        $this->reorderSiblings($originalParentId);
-
-        return true;
-    }
-
-    public function unindent(int | string $itemId): bool
-    {
-        $item = $this->findById($itemId);
-
-        if (! $item || ! $item->parent_id) {
-            return false;
-        }
-
-        $parent = $item->parent;
-        if (! $parent) {
-            return false;
-        }
-
-        $maxOrder = $this->getMaxOrderForParent($parent->parent_id, $item->menu_id);
-        $oldParentId = $item->parent_id;
-
-        $item->update([
-            'parent_id' => $parent->parent_id,
-            'order' => $maxOrder + 1,
-        ]);
-
-        $this->reorderSiblings($oldParentId);
-
-        return true;
-    }
-
-    public function canIndent(int | string $itemId): bool
-    {
-        $item = $this->findById($itemId);
-
-        if (! $item) {
-            return false;
-        }
-
-        return $this->getPreviousSibling($item) !== null;
-    }
-
-    public function canUnindent(int | string $itemId): bool
-    {
-        $item = $this->findById($itemId);
-
-        return $item && $item->parent_id !== null;
     }
 
     public function delete(int | string $itemId): bool
@@ -180,6 +156,22 @@ class MenuItemService
         }
 
         return $model->update($data);
+    }
+
+    /**
+     * Move an item to the end of its new parent's children and close the gap it left behind.
+     */
+    protected function moveToEnd(Model $menu, int | string $itemId, int | string | null $parentId): void
+    {
+        $item = $this->findById($itemId);
+        $previousParentId = $item->parent_id;
+
+        $item->update([
+            'parent_id' => $parentId,
+            'order' => $this->getMaxOrderForParent($parentId, $menu->getKey()) + 1,
+        ]);
+
+        $this->reorderSiblings($menu->getKey(), $previousParentId);
     }
 
     protected function getModel(): string

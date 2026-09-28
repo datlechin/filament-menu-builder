@@ -4,12 +4,16 @@
             <ul
                 x-load
                 x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('menu-builder', 'datlechin/filament-menu-builder') }}"
-                x-data="menuBuilder({ parentId: 0 })"
+                x-data="menuBuilder({ parentId: null, maxDepth: @js($this->hierarchy->getMaxDepth()) })"
+                data-sortable-depth="0"
                 class="fi-fo-repeater-items grid"
             >
                 @foreach($this->menuItems as $menuItem)
                     <x-filament-menu-builder::menu-item
                         :item="$menuItem"
+                        :hierarchy="$this->hierarchy"
+                        :indent-action="$this->indentAction"
+                        :unindent-action="$this->unindentAction"
                     />
                 @endforeach
             </ul>

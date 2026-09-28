@@ -231,6 +231,26 @@ FilamentMenuBuilderPlugin::make()
     ->enableIndentActions(true)
 ```
 
+### Maximum Depth
+
+By default, menu items can be nested indefinitely. Use `maxDepth()` to limit how deep items may be nested, both through the indent action and drag and drop. Depth is zero-based: root items have a depth of `0`, so `maxDepth(0)` keeps a menu flat and `maxDepth(2)` allows up to three levels.
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->maxDepth(2)
+```
+
+Pass a closure to use a different limit per menu. The closure receives the `$menu` being edited:
+
+```php
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+
+FilamentMenuBuilderPlugin::make()
+    ->maxDepth(fn (Menu $menu): ?int => $menu->locations()->where('location', 'footer')->exists() ? 0 : 2)
+```
+
+Moving an item also moves its children, so a move is only allowed when the item's deepest descendant stays within the limit. Unindenting is always allowed, and menus that are already deeper than a newly configured limit remain editable: their items can be reordered and moved up, but never deeper.
+
 ### Translatable Menus
 
 Built-in multilingual support with no extra packages required. Translatable fields are stored as JSON with locale tabs in the form UI.
