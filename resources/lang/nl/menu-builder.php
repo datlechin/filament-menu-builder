@@ -77,6 +77,10 @@ return [
         'locations' => [
             'title' => 'Menulocaties bijgewerkt',
         ],
+        'move_rejected' => [
+            'title' => 'Menu-item kon niet worden verplaatst',
+            'body' => 'Menu-items kunnen niet dieper dan :depth niveau worden genest.|Menu-items kunnen niet dieper dan :depth niveaus worden genest.',
+        ],
     ],
     'panel' => [
         'empty' => [

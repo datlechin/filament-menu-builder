@@ -1,9 +1,17 @@
 @props([
     'item',
+    'hierarchy',
+    'indentAction',
+    'unindentAction',
 ])
 
 @php
-    /** @var \Datlechin\FilamentMenuBuilder\Models\MenuItem $item */
+    /**
+     * @var \Datlechin\FilamentMenuBuilder\Models\MenuItem $item
+     * @var \Datlechin\FilamentMenuBuilder\Support\MenuHierarchy $hierarchy
+     * @var \Filament\Actions\Action $indentAction
+     * @var \Filament\Actions\Action $unindentAction
+     */
 
     $hasChildren = $item->children->isNotEmpty();
 @endphp
@@ -11,6 +19,7 @@
 <li
     wire:key="{{ $item->getKey() }}"
     data-sortable-item="{{ $item->getKey() }}"
+    data-sortable-height="{{ $hierarchy->heightOf($item->getKey()) }}"
     x-data="{ open: $persist(true).as('menu-item-' + @js($item->getKey())) }"
     class="fi-fo-repeater-item"
 >
@@ -36,20 +45,15 @@
                 />
             @endif
 
-            @if (\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::get()->isIndentActionsEnabled())
-                <x-filament::icon-button
-                    icon="heroicon-m-arrow-left"
-                    color="gray"
-                    size="sm"
-                    wire:click="unindent({{ Js::from($item->getKey()) }})"
-                />
-                <x-filament::icon-button
-                    icon="heroicon-m-arrow-right"
-                    color="gray"
-                    size="sm"
-                    wire:click="indent({{ Js::from($item->getKey()) }})"
-                />
-            @endif
+            @foreach ([$unindentAction, $indentAction] as $hierarchyAction)
+                @php
+                    $hierarchyAction = $hierarchyAction(['id' => $item->getKey()])->record($item);
+                @endphp
+
+                @if ($hierarchyAction->isVisible())
+                    {{ $hierarchyAction }}
+                @endif
+            @endforeach
         </div>
 
         <span class="fi-fo-repeater-item-header-label fi-truncated fi-menu-builder-item-label">
@@ -86,11 +90,17 @@
             x-collapse
             x-show="open"
             wire:key="{{ $item->getKey() }}.children"
-            x-data="menuBuilder({ parentId: @js($item->getKey()) })"
+            x-data="menuBuilder({ parentId: @js($item->getKey()), maxDepth: @js($hierarchy->getMaxDepth()) })"
+            data-sortable-depth="{{ $hierarchy->depthOf($item->getKey()) + 1 }}"
             class="fi-fo-repeater-items grid fi-menu-builder-item-children"
         >
             @foreach ($item->children as $child)
-                <x-filament-menu-builder::menu-item :item="$child" />
+                <x-filament-menu-builder::menu-item
+                    :item="$child"
+                    :hierarchy="$hierarchy"
+                    :indent-action="$indentAction"
+                    :unindent-action="$unindentAction"
+                />
             @endforeach
         </ul>
     @endif

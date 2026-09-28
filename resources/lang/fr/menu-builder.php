@@ -77,6 +77,10 @@ return [
         'locations' => [
             'title' => 'Emplacements de menu mis à jour',
         ],
+        'move_rejected' => [
+            'title' => 'L\'élément de menu n\'a pas pu être déplacé',
+            'body' => 'Les éléments de menu ne peuvent pas être imbriqués sur plus de :depth niveau.|Les éléments de menu ne peuvent pas être imbriqués sur plus de :depth niveaux.',
+        ],
     ],
     'panel' => [
         'empty' => [

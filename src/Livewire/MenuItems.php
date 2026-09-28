@@ -40,11 +40,6 @@ class MenuItems extends Component implements HasActions, HasSchemas
         return $this->menu->menuItems;
     }
 
-    public function reorder(array $order, ?string $parentId = null): void
-    {
-        $this->getMenuItemService()->updateOrder($order, $parentId);
-    }
-
     public function editAction(): Action
     {
         return Action::make('edit')

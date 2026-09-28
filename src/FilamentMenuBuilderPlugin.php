@@ -15,6 +15,7 @@ use Filament\Panel;
 use Filament\Schemas\Components\Component;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 class FilamentMenuBuilderPlugin implements Plugin
 {
@@ -54,6 +55,8 @@ class FilamentMenuBuilderPlugin implements Plugin
     protected bool $showCustomTextPanel = false;
 
     protected bool $enableIndentActions = true;
+
+    protected int | Closure | null $maxDepth = null;
 
     /** @var string[]|null */
     protected ?array $translatableLocales = null;
@@ -169,6 +172,19 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function enableIndentActions(bool $enable = true): static
     {
         $this->enableIndentActions = $enable;
+
+        return $this;
+    }
+
+    /**
+     * Limit how deep menu items may be nested. Root items have a depth of 0,
+     * so `maxDepth(0)` keeps menus flat. Pass `null` for unlimited nesting.
+     *
+     * A closure receives the `$menu` being edited, allowing per-menu limits.
+     */
+    public function maxDepth(int | Closure | null $depth): static
+    {
+        $this->maxDepth = $depth;
 
         return $this;
     }
@@ -298,6 +314,21 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function isIndentActionsEnabled(): bool
     {
         return $this->enableIndentActions;
+    }
+
+    public function getMaxDepth(Model $menu): ?int
+    {
+        $depth = $this->evaluate(
+            $this->maxDepth,
+            namedInjections: ['menu' => $menu],
+            typedInjections: [Model::class => $menu, Menu::class => $menu, $menu::class => $menu],
+        );
+
+        if ($depth !== null && $depth < 0) {
+            throw new InvalidArgumentException("The maximum menu depth must be zero or greater, [{$depth}] given.");
+        }
+
+        return $depth;
     }
 
     public function getLocations(): array

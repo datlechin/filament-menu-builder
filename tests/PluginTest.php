@@ -248,3 +248,34 @@ it('accepts closure for menu fields', function () {
 
     expect($plugin->getMenuFields())->toBe($closure);
 });
+
+it('has no max depth by default', function () {
+    $plugin = FilamentMenuBuilderPlugin::make();
+
+    expect($plugin->getMaxDepth(new Menu))->toBeNull();
+});
+
+it('can set a max depth', function () {
+    $plugin = FilamentMenuBuilderPlugin::make()->maxDepth(2);
+
+    expect($plugin->getMaxDepth(new Menu))->toBe(2);
+});
+
+it('resolves a per-menu max depth from a closure', function () {
+    $plugin = FilamentMenuBuilderPlugin::make()
+        ->maxDepth(fn (Menu $menu): ?int => $menu->name === 'Footer' ? 0 : null);
+
+    expect($plugin->getMaxDepth(new Menu(['name' => 'Footer'])))->toBe(0)
+        ->and($plugin->getMaxDepth(new Menu(['name' => 'Header'])))->toBeNull();
+});
+
+it('injects the menu into a max depth closure by name', function () {
+    $plugin = FilamentMenuBuilderPlugin::make()
+        ->maxDepth(fn ($menu): int => $menu->name === 'Footer' ? 0 : 3);
+
+    expect($plugin->getMaxDepth(new Menu(['name' => 'Footer'])))->toBe(0);
+});
+
+it('rejects a negative max depth', function () {
+    FilamentMenuBuilderPlugin::make()->maxDepth(-1)->getMaxDepth(new Menu);
+})->throws(InvalidArgumentException::class);
