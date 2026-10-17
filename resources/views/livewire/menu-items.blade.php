@@ -1,22 +1,14 @@
 <div>
     @if($this->menuItems->isNotEmpty())
         <div class="fi-fo-repeater">
-            <ul
+            <x-filament-menu-builder::menu-item-list
+                :items="$this->menuItems"
+                :hierarchy="$this->hierarchy"
+                :start-actions="[$this->unindentAction, $this->indentAction]"
+                :end-actions="[$this->editAction, $this->deleteAction]"
                 x-load
                 x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('menu-builder', 'datlechin/filament-menu-builder') }}"
-                x-data="menuBuilder({ parentId: null, maxDepth: @js($this->hierarchy->getMaxDepth()) })"
-                data-sortable-depth="0"
-                class="fi-fo-repeater-items grid"
-            >
-                @foreach($this->menuItems as $menuItem)
-                    <x-filament-menu-builder::menu-item
-                        :item="$menuItem"
-                        :hierarchy="$this->hierarchy"
-                        :indent-action="$this->indentAction"
-                        :unindent-action="$this->unindentAction"
-                    />
-                @endforeach
-            </ul>
+            />
         </div>
     @else
         <x-filament::empty-state

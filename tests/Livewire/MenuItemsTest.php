@@ -130,7 +130,7 @@ it('can delete a menu item via action', function () {
     expect(MenuItem::find($item->id))->toBeNull();
 });
 
-function hierarchyActionHandler(string $action, int | string $itemId): string
+function itemActionHandler(string $action, int | string $itemId): string
 {
     return "mountAction('{$action}', " . Js::from(['id' => $itemId]);
 }
@@ -144,11 +144,11 @@ it('renders indent actions only where they can be applied', function () {
     $second = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Second', 'order' => 2]);
 
     livewire(MenuItems::class, ['menu' => $this->menu])
-        ->assertDontSeeHtml(hierarchyActionHandler('indent', $sibling->id))
-        ->assertSeeHtml(hierarchyActionHandler('unindent', $sibling->id))
-        ->assertDontSeeHtml(hierarchyActionHandler('indent', $root->id))
-        ->assertDontSeeHtml(hierarchyActionHandler('unindent', $root->id))
-        ->assertSeeHtml(hierarchyActionHandler('indent', $second->id));
+        ->assertDontSeeHtml(itemActionHandler('indent', $sibling->id))
+        ->assertSeeHtml(itemActionHandler('unindent', $sibling->id))
+        ->assertDontSeeHtml(itemActionHandler('indent', $root->id))
+        ->assertDontSeeHtml(itemActionHandler('unindent', $root->id))
+        ->assertSeeHtml(itemActionHandler('indent', $second->id));
 });
 
 it('does not render indent actions when they are disabled', function () {
@@ -158,7 +158,7 @@ it('does not render indent actions when they are disabled', function () {
     $second = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Second', 'order' => 2]);
 
     livewire(MenuItems::class, ['menu' => $this->menu])
-        ->assertDontSeeHtml(hierarchyActionHandler('indent', $second->id));
+        ->assertDontSeeHtml(itemActionHandler('indent', $second->id));
 });
 
 it('indents an item through the indent action and re-renders its actions', function () {
@@ -168,10 +168,10 @@ it('indents an item through the indent action and re-renders its actions', funct
 
     livewire(MenuItems::class, ['menu' => $this->menu])
         ->callAction('indent', arguments: ['id' => $second->id])
-        ->assertSeeHtml(hierarchyActionHandler('unindent', $second->id))
-        ->assertDontSeeHtml(hierarchyActionHandler('indent', $second->id))
-        ->assertSeeHtml(hierarchyActionHandler('indent', $third->id))
-        ->assertDontSeeHtml(hierarchyActionHandler('unindent', $third->id));
+        ->assertSeeHtml(itemActionHandler('unindent', $second->id))
+        ->assertDontSeeHtml(itemActionHandler('indent', $second->id))
+        ->assertSeeHtml(itemActionHandler('indent', $third->id))
+        ->assertDontSeeHtml(itemActionHandler('unindent', $third->id));
 
     expect($second->fresh()->parent_id)->toBe($first->id);
 });
@@ -243,4 +243,21 @@ it('exposes the max depth and subtree heights to the drag and drop guard', funct
         ->assertSeeHtml('maxDepth: 2')
         ->assertSeeHtml('data-sortable-height="1"')
         ->assertSeeHtml('data-sortable-depth="1"');
+});
+
+it('lays out every item list on a track that cannot grow wider than the list', function () {
+    $root = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Root', 'order' => 1]);
+    MenuItem::create(['menu_id' => $this->menu->id, 'title' => str_repeat('Long title ', 20), 'order' => 1, 'parent_id' => $root->id]);
+
+    $html = livewire(MenuItems::class, ['menu' => $this->menu])->html();
+
+    expect(substr_count($html, 'style="--cols-default: repeat(1, minmax(0, 1fr));"'))->toBe(2);
+});
+
+it('renders edit and delete as item actions', function () {
+    $item = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Home', 'url' => '/', 'order' => 1]);
+
+    livewire(MenuItems::class, ['menu' => $this->menu])
+        ->assertSeeHtml(itemActionHandler('edit', $item->id))
+        ->assertSeeHtml(itemActionHandler('delete', $item->id));
 });
