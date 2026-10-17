@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Support\Enums\Size;
 use Filament\Support\Enums\Width;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -46,6 +47,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
             ->label(__('filament-menu-builder::menu-builder.actions.edit'))
             ->iconButton()
             ->icon('heroicon-m-pencil-square')
+            ->size(Size::Small)
             ->slideOver()
             ->modalWidth(Width::Medium)
             ->record(fn (array $arguments) => $this->getMenuItemService()->findByIdWithRelations($arguments['id']))
@@ -61,6 +63,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
             ->color('danger')
             ->icon('heroicon-s-trash')
             ->iconButton()
+            ->size(Size::Small)
             ->requiresConfirmation()
             ->action(function (array $arguments): void {
                 $this->getMenuItemService()->delete($arguments['id']);

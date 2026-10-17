@@ -8,6 +8,8 @@ All notable changes to `filament-menu-builder` will be documented in this file.
 - `FilamentMenuBuilderPlugin::maxDepth()` to limit how deep menu items can be nested, as an `int` or a per-menu closure (closes #173). Enforced for indent actions and drag and drop, on the server and in the browser.
 
 ### Fixed
+- The menu items list no longer overflows its section on narrow screens or with long titles and URLs (closes #176). Item lists now use Filament's grid, titles and URLs are truncated with an ellipsis (the URL first), and an item's actions wrap onto their own row when the item is too narrow to fit them beside its title. Rebuild your Filament theme after upgrading to pick up the updated stylesheet.
+- Edit and delete buttons are now real Filament actions, so like the indent buttons they have an accessible label and a tooltip.
 - Indent and unindent buttons are now real Filament actions and are hidden when they cannot be applied (e.g. indenting the first item, unindenting a root item).
 - Reordering no longer accepts items from another menu, a parent from another menu, or a parent that is one of the moved item's own descendants.
 - Indenting or unindenting a root item no longer renumbers root items of every other menu.
