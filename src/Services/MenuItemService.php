@@ -34,13 +34,37 @@ class MenuItemService
 
     public function hierarchy(Model $menu): MenuHierarchy
     {
+        $maxDepth = $this->plugin->getMaxDepth($menu);
+
+        if (! $this->plugin->isNestingRestricted()) {
+            $items = $this->getModel()::query()
+                ->where('menu_id', $menu->getKey())
+                ->orderBy('order')
+                ->toBase()
+                ->get(['id', 'parent_id']);
+
+            return new MenuHierarchy($items, $maxDepth);
+        }
+
+        // The nesting restriction callback inspects the models themselves (their
+        // linkable type, panel, etc.), so hydrate them once and hand the hierarchy
+        // a predicate that only deals in identifiers.
         $items = $this->getModel()::query()
             ->where('menu_id', $menu->getKey())
             ->orderBy('order')
-            ->toBase()
-            ->get(['id', 'parent_id']);
+            ->get();
 
-        return new MenuHierarchy($items, $this->plugin->getMaxDepth($menu));
+        $itemsByKey = $items->keyBy(fn (Model $item): string => (string) $item->getKey());
+
+        return new MenuHierarchy(
+            $items,
+            $maxDepth,
+            fn (int | string $itemId, int | string | null $parentId): bool => $this->plugin->allowsNesting(
+                $itemsByKey[(string) $itemId],
+                $parentId === null ? null : $itemsByKey[(string) $parentId],
+                $menu,
+            ),
+        );
     }
 
     /**

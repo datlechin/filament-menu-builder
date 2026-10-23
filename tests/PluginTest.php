@@ -279,3 +279,45 @@ it('injects the menu into a max depth closure by name', function () {
 it('rejects a negative max depth', function () {
     FilamentMenuBuilderPlugin::make()->maxDepth(-1)->getMaxDepth(new Menu);
 })->throws(InvalidArgumentException::class);
+
+it('does not restrict nesting by default', function () {
+    $plugin = FilamentMenuBuilderPlugin::make();
+
+    expect($plugin->isNestingRestricted())->toBeFalse()
+        ->and($plugin->allowsNesting(new MenuItem, new MenuItem, new Menu))->toBeTrue();
+});
+
+it('resolves nesting permission from a callback', function () {
+    $plugin = FilamentMenuBuilderPlugin::make()
+        ->allowNesting(fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || $parent->title === 'Group');
+
+    expect($plugin->isNestingRestricted())->toBeTrue()
+        ->and($plugin->allowsNesting(new MenuItem, null, new Menu))->toBeTrue()
+        ->and($plugin->allowsNesting(new MenuItem, new MenuItem(['title' => 'Group']), new Menu))->toBeTrue()
+        ->and($plugin->allowsNesting(new MenuItem, new MenuItem(['title' => 'Link']), new Menu))->toBeFalse();
+});
+
+it('injects the menu into a nesting callback by name', function () {
+    $plugin = FilamentMenuBuilderPlugin::make()
+        ->allowNesting(fn (?MenuItem $parent, Menu $menu): bool => $menu->name !== 'Footer');
+
+    expect($plugin->allowsNesting(new MenuItem, null, new Menu(['name' => 'Footer'])))->toBeFalse()
+        ->and($plugin->allowsNesting(new MenuItem, null, new Menu(['name' => 'Header'])))->toBeTrue();
+});
+
+it('can remove the nesting restriction again', function () {
+    $plugin = FilamentMenuBuilderPlugin::make()
+        ->allowNesting(false)
+        ->allowNesting();
+
+    expect($plugin->isNestingRestricted())->toBeFalse();
+});
+
+it('disallows nesting entirely when given false', function () {
+    $plugin = FilamentMenuBuilderPlugin::make()
+        ->allowNesting(false);
+
+    expect($plugin->isNestingRestricted())->toBeTrue()
+        ->and($plugin->allowsNesting(new MenuItem, new MenuItem, new Menu))->toBeFalse()
+        ->and($plugin->allowsNesting(new MenuItem, null, new Menu))->toBeFalse();
+});

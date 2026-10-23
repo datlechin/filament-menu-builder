@@ -58,6 +58,8 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected int | Closure | null $maxDepth = null;
 
+    protected bool | Closure $allowNesting = true;
+
     /** @var string[]|null */
     protected ?array $translatableLocales = null;
 
@@ -185,6 +187,22 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function maxDepth(int | Closure | null $depth): static
     {
         $this->maxDepth = $depth;
+
+        return $this;
+    }
+
+    /**
+     * Restrict which menu items may be nested inside which parents. Pass
+     * `false` to disallow nesting entirely (equivalent to `maxDepth(0)`),
+     * or `true` to remove the restriction.
+     *
+     * A closure receives the `$item` being placed, its prospective
+     * `$parent` (`null` at the root level), and the `$menu` being edited,
+     * and returns whether the placement is allowed.
+     */
+    public function allowNesting(bool | Closure $condition = true): static
+    {
+        $this->allowNesting = $condition;
 
         return $this;
     }
@@ -329,6 +347,24 @@ class FilamentMenuBuilderPlugin implements Plugin
         }
 
         return $depth;
+    }
+
+    public function isNestingRestricted(): bool
+    {
+        return $this->allowNesting !== true;
+    }
+
+    public function allowsNesting(Model $item, ?Model $parent, Model $menu): bool
+    {
+        if (is_bool($this->allowNesting)) {
+            return $this->allowNesting;
+        }
+
+        return (bool) $this->evaluate(
+            $this->allowNesting,
+            namedInjections: ['item' => $item, 'parent' => $parent, 'menu' => $menu],
+            typedInjections: [Model::class => $item, MenuItem::class => $item, $item::class => $item, Menu::class => $menu, $menu::class => $menu],
+        );
     }
 
     public function getLocations(): array

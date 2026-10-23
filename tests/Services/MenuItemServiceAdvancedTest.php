@@ -165,6 +165,44 @@ it('resolves the max depth for the menu being edited', function () {
         ->and($this->service->indent($otherMenu, $otherSecond->id))->toBeTrue();
 });
 
+it('resolves the menu item models for the nesting restriction', function () {
+    // Only custom text items (no URL) may have children, and they may never be nested themselves.
+    FilamentMenuBuilderPlugin::get()->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || ($parent->url === null && $item->url !== null),
+    );
+
+    $group = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Group', 'order' => 1]);
+    $link = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Link', 'url' => '/link', 'order' => 2]);
+    $otherGroup = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Other group', 'order' => 3]);
+
+    expect($this->service->indent($this->menu, $link->id))->toBeTrue()
+        ->and($link->fresh()->parent_id)->toBe($group->id)
+        ->and($this->service->indent($this->menu, $otherGroup->id))->toBeFalse()
+        ->and($otherGroup->fresh()->parent_id)->toBeNull();
+});
+
+it('does not reorder into a parent the nesting restriction disallows', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null);
+
+    $parent = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Parent', 'order' => 1]);
+    $item = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Item', 'order' => 2]);
+
+    expect($this->service->updateOrder($this->menu, [$item->id], $parent->id))->toBeFalse()
+        ->and($item->fresh()->parent_id)->toBeNull()
+        ->and($this->service->updateOrder($this->menu, [$item->id, $parent->id]))->toBeTrue()
+        ->and($item->fresh()->order)->toBe(1);
+});
+
+it('does not unindent into a parent the nesting restriction disallows', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(fn (MenuItem $item, ?MenuItem $parent): bool => $parent !== null);
+
+    $parent = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Parent', 'order' => 1]);
+    $child = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Child', 'order' => 1, 'parent_id' => $parent->id]);
+
+    expect($this->service->unindent($this->menu, $child->id))->toBeFalse()
+        ->and($child->fresh()->parent_id)->toBe($parent->id);
+});
+
 it('does not move items that belong to another menu', function () {
     $otherMenu = Menu::create(['name' => 'Other Menu']);
     $foreign = MenuItem::create(['menu_id' => $otherMenu->id, 'title' => 'Foreign', 'order' => 1]);

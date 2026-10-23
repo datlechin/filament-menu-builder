@@ -251,6 +251,45 @@ FilamentMenuBuilderPlugin::make()
 
 Moving an item also moves its children, so a move is only allowed when the item's deepest descendant stays within the limit. Unindenting is always allowed, and menus that are already deeper than a newly configured limit remain editable: their items can be reordered and moved up, but never deeper.
 
+### Restricting Nesting
+
+By default, any menu item may become the parent of any other. Use `allowNesting()` to control which items may be nested inside which, both through the indent/unindent actions and drag and drop. The callback receives the `$item` being placed and its prospective `$parent` — `null` when the item is placed at the root level — and returns whether the placement is allowed:
+
+```php
+use Datlechin\FilamentMenuBuilder\Models\MenuItem;
+
+FilamentMenuBuilderPlugin::make()
+    ->showCustomTextPanel()
+    ->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || ($parent->url === null && $item->url !== null),
+    )
+```
+
+The example above builds grouped menus: Custom Text items act as group headings at the root, links may only be nested inside them, and headings themselves may never be nested:
+
+```
+About            ← Custom Text heading
+├── Our story    ← /our-story
+└── The team     ← /the-team
+Contact          ← /contact — links may still sit at the root
+```
+
+Passing `false` instead of a closure disallows nesting entirely, which is equivalent to `maxDepth(0)`; passing `true` removes the restriction.
+
+The `$menu` being edited is also available, allowing per-menu rules:
+
+```php
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Models\MenuItem;
+
+FilamentMenuBuilderPlugin::make()
+    ->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent, Menu $menu): bool => $parent === null || $menu->name !== 'Footer',
+    )
+```
+
+The restriction combines with `maxDepth()`: a placement must satisfy both. Indent and unindent buttons that would violate the restriction are hidden, and an invalid drag and drop is rejected with a notification. Items that already belong to a parent are only being reordered, so menus that were built before a restriction was configured remain editable — but an item can never move under a parent the callback disallows.
+
 ### Translatable Menus
 
 Built-in multilingual support with no extra packages required. Translatable fields are stored as JSON with locale tabs in the form UI.

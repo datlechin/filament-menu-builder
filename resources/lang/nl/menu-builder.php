@@ -80,6 +80,7 @@ return [
         'move_rejected' => [
             'title' => 'Menu-item kon niet worden verplaatst',
             'depth' => 'Menu-items kunnen niet dieper dan :depth niveau worden genest.|Menu-items kunnen niet dieper dan :depth niveaus worden genest.',
+            'nesting' => 'Dit menu-item kan niet in dat item worden genest.',
         ],
     ],
     'panel' => [

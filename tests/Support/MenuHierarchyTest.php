@@ -14,13 +14,14 @@ use Datlechin\FilamentMenuBuilder\Support\MenuHierarchy;
  *  └─ 5
  *  6
  */
-function makeHierarchy(?int $maxDepth = null, ?array $rows = null): MenuHierarchy
+function makeHierarchy(?int $maxDepth = null, ?array $rows = null, ?Closure $canNest = null): MenuHierarchy
 {
     $rows ??= [[1, null], [2, 1], [3, 2], [4, 3], [5, 1], [6, null]];
 
     return new MenuHierarchy(
         array_map(fn (array $row): object => (object) ['id' => $row[0], 'parent_id' => $row[1]], $rows),
         $maxDepth,
+        $canNest,
     );
 }
 
@@ -145,4 +146,65 @@ it('rejects unknown items and parents', function () {
 
 it('accepts string identifiers from the client', function () {
     expect(makeHierarchy(maxDepth: 1)->canMove(['6'], '1'))->toBeTrue();
+});
+
+it('prevents indenting under a parent the nesting restriction disallows', function () {
+    $hierarchy = makeHierarchy(canNest: fn (int $itemId, ?int $parentId): bool => $parentId !== 1);
+
+    expect($hierarchy->canIndent(6))->toBeFalse() // 6 would nest under 1
+        ->and($hierarchy->canIndent(5))->toBeTrue(); // 5 would nest under 2
+});
+
+it('prevents unindenting into a parent the nesting restriction disallows', function () {
+    $hierarchy = makeHierarchy(canNest: fn (int $itemId, ?int $parentId): bool => $parentId !== 2);
+
+    expect($hierarchy->canUnindent(4))->toBeFalse() // 4 would land under 2
+        ->and($hierarchy->canUnindent(3))->toBeTrue(); // 3 would land under 1
+});
+
+it('applies the nesting restriction to unindenting to the root', function () {
+    $hierarchy = makeHierarchy(canNest: fn (int $itemId, ?int $parentId): bool => $parentId !== null);
+
+    expect($hierarchy->canUnindent(2))->toBeFalse() // 2 would land at the root
+        ->and($hierarchy->canUnindent(3))->toBeTrue(); // 3 would land under 1
+});
+
+it('rejects moves into a parent the nesting restriction disallows', function () {
+    $hierarchy = makeHierarchy(canNest: fn (int $itemId, ?int $parentId): bool => $parentId !== 2);
+
+    expect($hierarchy->canMove([6], 2))->toBeFalse()
+        ->and($hierarchy->violatesNestingRestriction([6], 2))->toBeTrue()
+        ->and($hierarchy->canMove([6], 1))->toBeTrue()
+        ->and($hierarchy->violatesNestingRestriction([6], 1))->toBeFalse();
+});
+
+it('applies the nesting restriction to moves to the root', function () {
+    $hierarchy = makeHierarchy(canNest: fn (int $itemId, ?int $parentId): bool => $parentId !== null);
+
+    expect($hierarchy->canMove([5], null))->toBeFalse()
+        ->and($hierarchy->canMove([1, 6], null))->toBeTrue(); // 1 and 6 are already at the root
+});
+
+it('allows reordering existing children of a parent the nesting restriction disallows', function () {
+    $hierarchy = makeHierarchy(canNest: fn (int $itemId, ?int $parentId): bool => $parentId === null);
+
+    expect($hierarchy->canMove([3], 2))->toBeTrue()
+        ->and($hierarchy->canMove([2, 5], 1))->toBeTrue();
+});
+
+it('ignores unknown parents in the nesting restriction', function () {
+    $hierarchy = makeHierarchy(canNest: fn (): bool => false);
+
+    expect($hierarchy->violatesNestingRestriction([6], 99))->toBeFalse()
+        ->and($hierarchy->canMove([6], 99))->toBeFalse();
+});
+
+it('applies the nesting restriction and the max depth together', function () {
+    $hierarchy = makeHierarchy(maxDepth: 1, canNest: fn (int $itemId, ?int $parentId): bool => $parentId !== 1);
+
+    expect($hierarchy->canIndent(6))->toBeFalse() // within the max depth, but 1 is a disallowed parent
+        ->and($hierarchy->canIndent(5))->toBeFalse() // 2 is an allowed parent, but too deep
+        ->and($hierarchy->canMove([6], 2))->toBeFalse()
+        ->and($hierarchy->exceedsMaxDepth([6], 2))->toBeTrue()
+        ->and($hierarchy->violatesNestingRestriction([6], 2))->toBeFalse();
 });

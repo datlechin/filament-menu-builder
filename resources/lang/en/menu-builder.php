@@ -83,6 +83,7 @@ return [
         'move_rejected' => [
             'title' => 'Menu item could not be moved',
             'depth' => 'Menu items cannot be nested more than :depth level deep.|Menu items cannot be nested more than :depth levels deep.',
+            'nesting' => 'This menu item cannot be nested inside that item.',
         ],
     ],
     'panel' => [
