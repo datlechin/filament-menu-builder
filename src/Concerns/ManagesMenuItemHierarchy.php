@@ -116,7 +116,7 @@ trait ManagesMenuItemHierarchy
         Notification::make()
             ->title(__('filament-menu-builder::menu-builder.notifications.move_rejected.title'))
             ->body($this->hierarchy->exceedsMaxDepth($order, $parentId)
-                ? trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.body', $maxDepth, ['depth' => $maxDepth])
+                ? trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.depth', $maxDepth, ['depth' => $maxDepth])
                 : null)
             ->danger()
             ->send();

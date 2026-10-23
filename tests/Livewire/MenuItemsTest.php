@@ -204,7 +204,7 @@ it('rejects a drop beyond the max depth and notifies the user', function () {
         ->assertNotified(
             Notification::make()
                 ->title(__('filament-menu-builder::menu-builder.notifications.move_rejected.title'))
-                ->body(trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.body', 1, ['depth' => 1]))
+                ->body(trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.depth', 1, ['depth' => 1]))
                 ->danger(),
         );
 
