@@ -69,5 +69,7 @@ return [
     ],
     'validation' => [
         'url' => 'The :attribute must be a web address, a path, or a mailto: or tel: link.',
+        'icon' => 'The :attribute must be the name of an installed icon, such as heroicon-o-home.',
+        'route_parameters' => 'Fill in the :parameters route parameter.|Fill in the :parameters route parameters.',
     ],
 ];

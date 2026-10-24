@@ -56,17 +56,17 @@ class MenuItemService
 
     /**
      * @param  array<string, mixed>  $data
-     * @return list<MenuItem>
+     * @return list<MenuItem>|null Null when the items may not be placed under the parent.
      */
-    public function create(Menu $menu, ItemType $type, array $data, int | string | null $parentId = null): array
+    public function create(Menu $menu, ItemType $type, array $data, int | string | null $parentId = null): ?array
     {
-        return DB::transaction(function () use ($menu, $type, $data, $parentId): array {
+        return DB::transaction(function () use ($menu, $type, $data, $parentId): ?array {
             $items = $this->items($menu);
             $hierarchy = $this->hierarchy($menu, $items);
             $parent = $parentId === null ? null : $items->find($parentId);
 
             if ($parentId !== null && (! $parent || ! $hierarchy->contains($parentId))) {
-                return [];
+                return null;
             }
 
             $maxDepth = $hierarchy->getMaxDepth();
@@ -86,7 +86,7 @@ class MenuItemService
             // All items are rejected together, so a bulk add never lands half way.
             foreach ($newItems as $item) {
                 if (($maxDepth !== null && $depth > $maxDepth) || ! $this->plugin->allowsNesting($item, $parent, $menu)) {
-                    return [];
+                    return null;
                 }
             }
 

@@ -34,6 +34,11 @@ class EditMenu extends EditRecord
             ]);
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        return $this->getRecord()->withTranslations($data);
+    }
+
     protected function getHeaderActions(): array
     {
         return [

@@ -92,12 +92,17 @@ class MenuItems extends Component implements HasActions, HasSchemas
                 $parentId = $arguments['parent'] ?? null;
                 $items = $this->getService()->create($this->menu, $this->getItemType($arguments), $data, $parentId);
 
-                if ($items === []) {
+                if ($items === null) {
                     $this->notifyRejected(fn (MenuHierarchy $hierarchy): bool => $parentId !== null
                         && $hierarchy->getMaxDepth() !== null
                         && $hierarchy->depthOf($parentId) + 1 > $hierarchy->getMaxDepth());
 
                     $action->halt();
+                }
+
+                // The selected records may have been deleted while the form was open.
+                if ($items === []) {
+                    $action->cancel();
                 }
 
                 $this->refreshTree();
@@ -121,6 +126,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
             ->slideOver()
             ->modalWidth(Width::Large)
             ->schema(fn (?MenuItem $record): array => $record ? $this->getItemTypeFor($record)->getFormSchema() : [])
+            ->mutateRecordDataUsing(fn (array $data, MenuItem $record): array => $record->withTranslations($data))
             ->after(fn () => $this->refreshTree())
             ->authorize(fn (?MenuItem $record): bool => $record !== null && $this->canEdit());
     }
@@ -276,7 +282,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
     protected function makeMoveAction(string $name, string $icon, Closure $isPossible, Closure $move): Action
     {
         return $this->makeItemAction($name, $icon)
-            ->visible(fn (array $arguments): bool => $isPossible($arguments['item']))
+            ->visible(fn (array $arguments): bool => isset($arguments['item']) && $isPossible($arguments['item']))
             ->action(function (array $arguments) use ($move): void {
                 $move($arguments['item']);
                 $this->refreshTree();
@@ -293,6 +299,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
         $maxDepth = $this->hierarchy->getMaxDepth();
 
         return $this->hierarchy->contains($parentId)
+            && ! FilamentMenuBuilderPlugin::get()->isNestingDisabled()
             && ($maxDepth === null || $this->hierarchy->depthOf($parentId) < $maxDepth);
     }
 

@@ -69,5 +69,7 @@ return [
     ],
     'validation' => [
         'url' => ':attribute moet een webadres, een pad, of een mailto:- of tel:-link zijn.',
+        'icon' => ':attribute moet de naam van een geïnstalleerd icoon zijn, zoals heroicon-o-home.',
+        'route_parameters' => 'Vul de routeparameter :parameters in.|Vul de routeparameters :parameters in.',
     ],
 ];

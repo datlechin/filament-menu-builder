@@ -60,10 +60,10 @@ it('merges custom fields and passes the item type to a closure', function () {
     expect(array_map(fn (TextInput $field): string => $field->getName(), $plugin->getMenuItemFields(TextItemType::make())))
         ->toBe(['data.badge', 'data.note']);
 
-    $plugin->addMenuItemFields(fn (ItemType $type): array => $type->opensLink() ? [TextInput::make('data.badge')] : []);
+    $plugin->addMenuItemFields(fn (ItemType $type): array => $type->opensLink() ? [TextInput::make('data.target_audience')] : []);
 
-    expect($plugin->getMenuItemFields(LinkItemType::make()))->toHaveCount(1)
-        ->and($plugin->getMenuItemFields(TextItemType::make()))->toBe([]);
+    expect($plugin->getMenuItemFields(LinkItemType::make()))->toHaveCount(3)
+        ->and($plugin->getMenuItemFields(TextItemType::make()))->toHaveCount(2);
 });
 
 it('normalizes the routes of a route item type', function () {

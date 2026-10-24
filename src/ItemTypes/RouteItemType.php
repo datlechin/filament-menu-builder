@@ -88,8 +88,30 @@ class RouteItemType extends ItemType
                 ->addable(false)
                 ->deletable(false)
                 ->editableKeys(false)
-                ->dehydrateStateUsing(fn (?array $state): ?array => array_filter($state ?? [], filled(...)) ?: null),
+                ->rules([fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                    $missing = array_diff(self::getRequiredParameterNames($get('route')), array_keys(array_filter($value ?? [], filled(...))));
+
+                    if ($missing !== []) {
+                        $fail(trans_choice('filament-menu-builder::menu-builder.validation.route_parameters', count($missing), ['parameters' => implode(', ', $missing)]));
+                    }
+                }])
+                // Parameters of a previously chosen route must not stay behind when the new one has none.
+                ->dehydratedWhenHidden()
+                ->dehydrateStateUsing(fn (?array $state, Get $get): ?array => array_filter(
+                    array_intersect_key($state ?? [], array_flip(self::getParameterNames($get('route')))),
+                    filled(...),
+                ) ?: null),
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function getRequiredParameterNames(?string $route): array
+    {
+        $optional = blank($route) ? [] : array_keys(Route::getRoutes()->getByName($route)?->getOptionalParameterNames() ?? []);
+
+        return array_values(array_diff(self::getParameterNames($route), $optional));
     }
 
     /**

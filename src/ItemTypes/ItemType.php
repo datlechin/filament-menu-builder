@@ -8,6 +8,7 @@ use Closure;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
+use Datlechin\FilamentMenuBuilder\Rules\IconName;
 use Datlechin\FilamentMenuBuilder\Support\TranslatableField;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -140,7 +141,8 @@ abstract class ItemType
                 ->visible($this->opensLink()),
             TextInput::make('icon')
                 ->label(__('filament-menu-builder::menu-builder.form.icon'))
-                ->placeholder('heroicon-o-home'),
+                ->placeholder('heroicon-o-home')
+                ->rule(new IconName),
             TextInput::make('classes')
                 ->label(__('filament-menu-builder::menu-builder.form.classes')),
         ];

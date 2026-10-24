@@ -35,14 +35,14 @@ class FilamentMenuBuilderPlugin implements Plugin
     protected ?array $itemTypes = null;
 
     /**
-     * @var array<Component>|Closure
+     * @var list<array<Component>|Closure>
      */
-    protected array | Closure $menuFields = [];
+    protected array $menuFields = [];
 
     /**
-     * @var array<Component>|Closure
+     * @var list<array<Component>|Closure>
      */
-    protected array | Closure $menuItemFields = [];
+    protected array $menuItemFields = [];
 
     protected int | Closure | null $maxDepth = null;
 
@@ -184,6 +184,11 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->allowNesting !== true;
     }
 
+    public function isNestingDisabled(): bool
+    {
+        return $this->allowNesting === false;
+    }
+
     public function allowsNesting(Model $item, ?Model $parent, Model $menu): bool
     {
         if (is_bool($this->allowNesting)) {
@@ -207,9 +212,7 @@ class FilamentMenuBuilderPlugin implements Plugin
      */
     public function addMenuFields(array | Closure $schema): static
     {
-        $this->menuFields = is_array($schema) && is_array($this->menuFields)
-            ? [...$this->menuFields, ...$schema]
-            : $schema;
+        $this->menuFields[] = $schema;
 
         return $this;
     }
@@ -219,7 +222,9 @@ class FilamentMenuBuilderPlugin implements Plugin
      */
     public function getMenuFields(): array
     {
-        return $this->evaluate($this->menuFields);
+        return collect($this->menuFields)
+            ->flatMap(fn (array | Closure $fields): array => $this->evaluate($fields))
+            ->all();
     }
 
     public function addMenuItemField(Component $field): static
@@ -232,9 +237,7 @@ class FilamentMenuBuilderPlugin implements Plugin
      */
     public function addMenuItemFields(array | Closure $schema): static
     {
-        $this->menuItemFields = is_array($schema) && is_array($this->menuItemFields)
-            ? [...$this->menuItemFields, ...$schema]
-            : $schema;
+        $this->menuItemFields[] = $schema;
 
         return $this;
     }
@@ -244,11 +247,13 @@ class FilamentMenuBuilderPlugin implements Plugin
      */
     public function getMenuItemFields(ItemType $type): array
     {
-        return $this->evaluate(
-            $this->menuItemFields,
-            namedInjections: ['type' => $type],
-            typedInjections: [ItemType::class => $type, $type::class => $type],
-        );
+        return collect($this->menuItemFields)
+            ->flatMap(fn (array | Closure $fields): array => $this->evaluate(
+                $fields,
+                namedInjections: ['type' => $type],
+                typedInjections: [ItemType::class => $type, $type::class => $type],
+            ))
+            ->all();
     }
 
     public function navigationLabel(string | Closure | null $label): static

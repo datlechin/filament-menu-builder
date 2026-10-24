@@ -53,6 +53,19 @@ trait HasTranslatableAttributes
         return is_array($translations) ? array_filter($translations, filled(...)) : [];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function withTranslations(array $data): array
+    {
+        foreach ($this->getTranslatedAttributeNames() as $attribute) {
+            $data[$attribute] = $this->getTranslationsOf($attribute);
+        }
+
+        return $data;
+    }
+
     public function translated(string $attribute, ?string $locale = null): string
     {
         if (! $this->isTranslatedAttribute($attribute)) {

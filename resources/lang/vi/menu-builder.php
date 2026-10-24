@@ -69,5 +69,7 @@ return [
     ],
     'validation' => [
         'url' => ':attribute phải là địa chỉ web, đường dẫn, hoặc liên kết mailto: hay tel:.',
+        'icon' => ':attribute phải là tên một icon đã cài, ví dụ heroicon-o-home.',
+        'route_parameters' => 'Hãy điền tham số route :parameters.',
     ],
 ];

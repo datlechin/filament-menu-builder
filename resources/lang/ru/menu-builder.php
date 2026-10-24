@@ -69,5 +69,7 @@ return [
     ],
     'validation' => [
         'url' => 'Поле :attribute должно быть веб-адресом, путём или ссылкой mailto: или tel:.',
+        'icon' => 'Поле :attribute должно содержать название установленной иконки, например heroicon-o-home.',
+        'route_parameters' => 'Заполните параметр маршрута :parameters.|Заполните параметры маршрута :parameters.|Заполните параметры маршрута :parameters.',
     ],
 ];

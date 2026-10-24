@@ -15,6 +15,8 @@
         ? (substr($url, strlen($root)) ?: '/')
         : $url;
     $hasChildren = $item->children->isNotEmpty();
+    // Icons saved before they were validated may no longer exist, and rendering them would fail the whole page.
+    $icon = filled($item->icon) && \Datlechin\FilamentMenuBuilder\Rules\IconName::exists($item->icon) ? $item->icon : null;
 @endphp
 
 <li
@@ -52,8 +54,8 @@
         </div>
 
         <div class="fi-fo-repeater-item-header-label fi-menu-builder-item-label">
-            @if ($item->icon)
-                <x-filament::icon :icon="$item->icon" class="fi-menu-builder-item-label-icon" />
+            @if ($icon)
+                <x-filament::icon :icon="$icon" class="fi-menu-builder-item-label-icon" />
             @endif
 
             <span class="fi-menu-builder-item-label-text">

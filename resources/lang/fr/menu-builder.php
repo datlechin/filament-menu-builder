@@ -69,5 +69,7 @@ return [
     ],
     'validation' => [
         'url' => 'Le champ :attribute doit être une adresse web, un chemin, ou un lien mailto: ou tel:.',
+        'icon' => 'Le champ :attribute doit être le nom d\'une icône installée, par exemple heroicon-o-home.',
+        'route_parameters' => 'Renseignez le paramètre de route :parameters.|Renseignez les paramètres de route :parameters.',
     ],
 ];

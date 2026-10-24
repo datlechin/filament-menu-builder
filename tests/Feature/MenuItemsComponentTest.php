@@ -276,3 +276,41 @@ it('shows the path of links to the same site', function () {
         ->assertSeeHtml('<span class="fi-menu-builder-item-url">/</span>')
         ->assertSeeHtml('<span class="fi-menu-builder-item-url">https://docs.example.com/start</span>');
 });
+
+it('rejects an icon that is not installed', function () {
+    menuItems()
+        ->callAction(createItem('link'), data: ['title' => 'Docs', 'url' => '/docs', 'icon' => 'heroicon-o-does-not-exist'])
+        ->assertHasActionErrors(['icon']);
+});
+
+it('still renders items whose icon no longer exists', function () {
+    MenuItem::factory()->for($this->menu)->create(['title' => 'Legacy', 'icon' => 'fa-home']);
+
+    menuItems()->assertOk()->assertSee('Legacy');
+});
+
+it('clears the parameters of the previous route', function () {
+    $item = MenuItem::factory()->for($this->menu)->route('pages.show', ['page' => 'about'])->create();
+
+    menuItems()
+        ->callAction(onItem('editItem', $item), data: ['route' => 'home'])
+        ->assertHasNoErrors();
+
+    expect($item->fresh()->route_parameters)->toBeNull()
+        ->and($item->fresh()->getUrl())->toBe('http://localhost');
+});
+
+it('requires the parameters of the route', function () {
+    menuItems()
+        ->callAction(createItem('route'), data: ['title' => 'Page', 'route' => 'pages.show', 'route_parameters' => ['page' => '']])
+        ->assertHasActionErrors(['route_parameters']);
+});
+
+it('does not offer sub-items when nesting is disallowed', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(false);
+    $item = MenuItem::factory()->for($this->menu)->create();
+
+    menuItems()
+        ->assertActionHidden(createItem('link', $item->id))
+        ->assertActionVisible(createItem('link'));
+});

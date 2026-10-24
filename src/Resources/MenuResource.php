@@ -120,7 +120,7 @@ class MenuResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->label(__('filament-menu-builder::menu-builder.resource.name'))
-                    ->formatStateUsing(fn (Menu $record): string => $record->translated('name'))
+                    ->getStateUsing(fn (Menu $record): string => $record->translated('name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('locations.location')

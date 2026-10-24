@@ -6,6 +6,7 @@ use Datlechin\FilamentMenuBuilder\Livewire\MenuItems;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\EditMenu;
+use Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\ListMenus;
 use Datlechin\FilamentMenuBuilder\Tests\Fixtures\User;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\DB;
@@ -73,4 +74,19 @@ it('converts existing values with the translatable migration', function () {
     (include __DIR__ . '/../../database/migrations/make_translatable_columns_json.php.stub')->up();
 
     expect(DB::table('menu_items')->pluck('title')->all())->toBe(['{"en":"Home"}', '{"vi":"Trang chủ"}']);
+});
+
+it('fills the edit form with every translation', function () {
+    $menu = Menu::factory()->create();
+    $item = MenuItem::factory()->for($menu)->create(['title' => ['en' => 'About', 'vi' => 'Giới thiệu'], 'url' => ['en' => '/about']]);
+
+    livewire(MenuItems::class, ['menu' => $menu])
+        ->mountAction(TestAction::make('editItem')->arguments(['item' => $item->id]))
+        ->assertSchemaStateSet(['title' => ['en' => 'About', 'vi' => 'Giới thiệu']], 'mountedActionSchema0');
+});
+
+it('shows each menu name once in the list', function () {
+    Menu::factory()->create(['name' => ['en' => 'Main', 'vi' => 'Chính']]);
+
+    livewire(ListMenus::class)->assertSee('Main')->assertDontSee('Main, Main');
 });

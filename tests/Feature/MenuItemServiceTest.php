@@ -58,17 +58,17 @@ it('does not create items beyond the max depth or under a disallowed parent', fu
     $parent = item();
 
     FilamentMenuBuilderPlugin::get()->maxDepth(0);
-    expect($this->service->create($this->menu, TextItemType::make(), ['title' => 'Child'], $parent->id))->toBe([]);
+    expect($this->service->create($this->menu, TextItemType::make(), ['title' => 'Child'], $parent->id))->toBeNull();
 
     FilamentMenuBuilderPlugin::get()->maxDepth(null)->allowNesting(fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || $item->type === 'link');
-    expect($this->service->create($this->menu, TextItemType::make(), ['title' => 'Child'], $parent->id))->toBe([])
+    expect($this->service->create($this->menu, TextItemType::make(), ['title' => 'Child'], $parent->id))->toBeNull()
         ->and($this->service->create($this->menu, LinkItemType::make(), ['title' => 'Child', 'url' => '/c'], $parent->id))->toHaveCount(1);
 });
 
 it('does not create items under a parent of another menu', function () {
     $foreign = MenuItem::factory()->create();
 
-    expect($this->service->create($this->menu, TextItemType::make(), ['title' => 'Child'], $foreign->id))->toBe([]);
+    expect($this->service->create($this->menu, TextItemType::make(), ['title' => 'Child'], $foreign->id))->toBeNull();
 });
 
 it('indents an item under its previous sibling and renumbers the old siblings', function () {
