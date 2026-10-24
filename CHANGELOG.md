@@ -2,7 +2,7 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
-## v2.0.0 - Unreleased
+## v2.0.0 - 2026-10-24
 
 Please review the [upgrade guide](UPGRADE.md) before upgrading.
 
