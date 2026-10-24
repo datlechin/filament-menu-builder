@@ -251,6 +251,31 @@ FilamentMenuBuilderPlugin::make()
 
 Moving an item also moves its children, so a move is only allowed when the item's deepest descendant stays within the limit. Unindenting is always allowed, and menus that are already deeper than a newly configured limit remain editable: their items can be reordered and moved up, but never deeper.
 
+### Restricting Nesting
+
+Use `allowNesting()` to control which items may be nested inside which, both through the indent actions and drag and drop. The closure receives the `$item` being moved, its new `$parent` (`null` at the root level) and the `$menu` being edited, and returns whether the move is allowed:
+
+```php
+use Datlechin\FilamentMenuBuilder\Models\MenuItem;
+
+FilamentMenuBuilderPlugin::make()
+    ->showCustomTextPanel()
+    ->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || ($parent->url === null && $item->url !== null),
+    )
+```
+
+This keeps Custom Text items at the root as group headings, with links nested inside them:
+
+```
+About            ← Custom Text heading
+├── Our story    ← /our-story
+└── The team     ← /the-team
+Contact          ← /contact, links can stay at the root
+```
+
+Pass `false` to keep every item at the root, or `true` to remove the restriction. A move has to pass both `allowNesting()` and `maxDepth()`. Indent buttons are hidden for moves that are not allowed, and invalid drops are rejected with a notification. Items can always be reordered under their current parent, so existing menus stay editable.
+
 ### Translatable Menus
 
 Built-in multilingual support with no extra packages required. Translatable fields are stored as JSON with locale tabs in the form UI.

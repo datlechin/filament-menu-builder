@@ -115,9 +115,11 @@ trait ManagesMenuItemHierarchy
 
         Notification::make()
             ->title(__('filament-menu-builder::menu-builder.notifications.move_rejected.title'))
-            ->body($this->hierarchy->exceedsMaxDepth($order, $parentId)
-                ? trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.body', $maxDepth, ['depth' => $maxDepth])
-                : null)
+            ->body(match (true) {
+                $this->hierarchy->exceedsMaxDepth($order, $parentId) => trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.body', $maxDepth, ['depth' => $maxDepth]),
+                $this->hierarchy->violatesNestingRestriction($order, $parentId) => __('filament-menu-builder::menu-builder.notifications.move_rejected.nesting'),
+                default => null,
+            })
             ->danger()
             ->send();
     }

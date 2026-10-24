@@ -34,13 +34,25 @@ class MenuItemService
 
     public function hierarchy(Model $menu): MenuHierarchy
     {
-        $items = $this->getModel()::query()
+        $query = $this->getModel()::query()
             ->where('menu_id', $menu->getKey())
-            ->orderBy('order')
-            ->toBase()
-            ->get(['id', 'parent_id']);
+            ->orderBy('order');
 
-        return new MenuHierarchy($items, $this->plugin->getMaxDepth($menu));
+        if (! $this->plugin->isNestingRestricted()) {
+            return new MenuHierarchy($query->toBase()->get(['id', 'parent_id']), $this->plugin->getMaxDepth($menu));
+        }
+
+        $items = $query->get()->keyBy(fn (Model $item): string => (string) $item->getKey());
+
+        return new MenuHierarchy(
+            $items,
+            $this->plugin->getMaxDepth($menu),
+            fn (int | string $itemId, int | string | null $parentId): bool => $this->plugin->allowsNesting(
+                $items[(string) $itemId],
+                $parentId === null ? null : $items[(string) $parentId],
+                $menu,
+            ),
+        );
     }
 
     /**

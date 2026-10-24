@@ -58,6 +58,8 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected int | Closure | null $maxDepth = null;
 
+    protected bool | Closure $allowNesting = true;
+
     /** @var string[]|null */
     protected ?array $translatableLocales = null;
 
@@ -185,6 +187,13 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function maxDepth(int | Closure | null $depth): static
     {
         $this->maxDepth = $depth;
+
+        return $this;
+    }
+
+    public function allowNesting(bool | Closure $condition = true): static
+    {
+        $this->allowNesting = $condition;
 
         return $this;
     }
@@ -329,6 +338,24 @@ class FilamentMenuBuilderPlugin implements Plugin
         }
 
         return $depth;
+    }
+
+    public function isNestingRestricted(): bool
+    {
+        return $this->allowNesting !== true;
+    }
+
+    public function allowsNesting(Model $item, ?Model $parent, Model $menu): bool
+    {
+        if (is_bool($this->allowNesting)) {
+            return $this->allowNesting || $parent === null;
+        }
+
+        return (bool) $this->evaluate(
+            $this->allowNesting,
+            namedInjections: ['item' => $item, 'parent' => $parent, 'menu' => $menu],
+            typedInjections: [Model::class => $item, MenuItem::class => $item, $item::class => $item, Menu::class => $menu, $menu::class => $menu],
+        );
     }
 
     public function getLocations(): array

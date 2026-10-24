@@ -211,6 +211,86 @@ it('rejects a drop beyond the max depth and notifies the user', function () {
     expect($item->fresh()->parent_id)->toBeNull();
 });
 
+it('renders indent actions only where the nesting restriction allows them', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || $parent->url === null,
+    );
+
+    $group = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Group', 'order' => 1]);
+    $link = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Link', 'url' => '/link', 'order' => 2]);
+    $otherLink = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Other link', 'url' => '/other', 'order' => 3]);
+
+    livewire(MenuItems::class, ['menu' => $this->menu])
+        ->assertSeeHtml(itemActionHandler('indent', $link->id))
+        ->assertDontSeeHtml(itemActionHandler('indent', $otherLink->id));
+});
+
+it('does not render the unindent action when the nesting restriction forbids the new parent', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent): bool => $parent !== null || $item->url === null,
+    );
+
+    $group = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Group', 'order' => 1]);
+    $link = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Link', 'url' => '/link', 'order' => 1, 'parent_id' => $group->id]);
+
+    livewire(MenuItems::class, ['menu' => $this->menu])
+        ->assertDontSeeHtml(itemActionHandler('unindent', $link->id));
+});
+
+it('rejects a drop the nesting restriction disallows and notifies the user', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || $parent->url === null,
+    );
+
+    $group = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Group', 'order' => 1]);
+    $link = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Link', 'url' => '/link', 'order' => 2]);
+    $otherLink = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Other link', 'url' => '/other', 'order' => 3]);
+
+    livewire(MenuItems::class, ['menu' => $this->menu])
+        ->call('reorder', [$otherLink->id], $link->id)
+        ->assertNotified(
+            Notification::make()
+                ->title(__('filament-menu-builder::menu-builder.notifications.move_rejected.title'))
+                ->body(__('filament-menu-builder::menu-builder.notifications.move_rejected.nesting'))
+                ->danger(),
+        );
+
+    expect($otherLink->fresh()->parent_id)->toBeNull();
+});
+
+it('allows a drop the nesting restriction permits', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(
+        fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || $parent->url === null,
+    );
+
+    $group = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Group', 'order' => 1]);
+    $link = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Link', 'url' => '/link', 'order' => 2]);
+
+    livewire(MenuItems::class, ['menu' => $this->menu])
+        ->call('reorder', [$link->id], $group->id)
+        ->assertNotNotified();
+
+    expect($link->fresh()->parent_id)->toBe($group->id);
+});
+
+it('explains the max depth when a drop violates it alongside the nesting restriction', function () {
+    FilamentMenuBuilderPlugin::get()
+        ->maxDepth(0)
+        ->allowNesting(false);
+
+    $first = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'First', 'order' => 1]);
+    $second = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Second', 'order' => 2]);
+
+    livewire(MenuItems::class, ['menu' => $this->menu])
+        ->call('reorder', [$second->id], $first->id)
+        ->assertNotified(
+            Notification::make()
+                ->title(__('filament-menu-builder::menu-builder.notifications.move_rejected.title'))
+                ->body(trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.body', 0, ['depth' => 0]))
+                ->danger(),
+        );
+});
+
 it('does not reorder items of another menu', function () {
     $otherMenu = Menu::create(['name' => 'Other Menu']);
     $foreign = MenuItem::create(['menu_id' => $otherMenu->id, 'title' => 'Foreign', 'order' => 1]);

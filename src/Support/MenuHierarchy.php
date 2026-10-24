@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Support;
 
+use Closure;
+
 /**
  * An immutable, in-memory snapshot of a single menu's item tree.
  *
@@ -37,8 +39,11 @@ final class MenuHierarchy
     /**
      * @param  iterable<object{id: int|string, parent_id: int|string|null}>  $items  Items of one menu, ordered by `order`.
      */
-    public function __construct(iterable $items, private readonly ?int $maxDepth = null)
-    {
+    public function __construct(
+        iterable $items,
+        private readonly ?int $maxDepth = null,
+        private readonly ?Closure $canNest = null,
+    ) {
         $children = [];
 
         foreach ($items as $item) {
@@ -111,12 +116,16 @@ final class MenuHierarchy
         $previousSibling = $this->previousSiblingOf($itemId);
 
         return $previousSibling !== null
-            && $this->fitsWithinMaxDepth($this->depthOf($previousSibling) + 1 + $this->heightOf($itemId));
+            && $this->fitsWithinMaxDepth($this->depthOf($previousSibling) + 1 + $this->heightOf($itemId))
+            && $this->allowsNestingUnder((string) $itemId, (string) $previousSibling);
     }
 
     public function canUnindent(int | string $itemId): bool
     {
-        return $this->contains($itemId) && $this->parentOf($itemId) !== null;
+        $key = (string) $itemId;
+        $parent = $this->parents[$key] ?? self::ROOT;
+
+        return $parent !== self::ROOT && $this->allowsNestingUnder($key, $this->parents[$parent]);
     }
 
     /**
@@ -144,7 +153,8 @@ final class MenuHierarchy
             }
         }
 
-        return ! $this->exceedsMaxDepth($itemIds, $parentId);
+        return ! $this->exceedsMaxDepth($itemIds, $parentId)
+            && ! $this->violatesNestingRestriction($itemIds, $parentId);
     }
 
     /**
@@ -177,9 +187,40 @@ final class MenuHierarchy
         return false;
     }
 
+    /**
+     * @param  array<int|string>  $itemIds
+     */
+    public function violatesNestingRestriction(array $itemIds, int | string | null $parentId): bool
+    {
+        if ($this->canNest === null) {
+            return false;
+        }
+
+        $parent = self::normalize($parentId);
+
+        if ($parent !== self::ROOT && ! $this->contains($parent)) {
+            return false;
+        }
+
+        foreach ($itemIds as $itemId) {
+            $key = (string) $itemId;
+
+            if ($this->contains($key) && $this->parents[$key] !== $parent && ! $this->allowsNestingUnder($key, $parent)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function fitsWithinMaxDepth(int $depth): bool
     {
         return $this->maxDepth === null || $depth <= $this->maxDepth;
+    }
+
+    private function allowsNestingUnder(string $key, string $parentKey): bool
+    {
+        return $this->canNest === null || ($this->canNest)($this->keys[$key], $this->keyOf($parentKey));
     }
 
     /**

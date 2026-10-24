@@ -12,10 +12,14 @@ export default ({ parentId, maxDepth }) => ({
             ghostClass: 'fi-sortable-ghost',
             dataIdAttr: 'data-sortable-item',
             onMove: ({ dragged, from, to }) => this.canDrop(dragged, from, to),
-            onSort: () => {
-                this.$wire.reorder(this.sortable.toArray(), this.parentId)
-            },
+            // Not onSort: it also fires on the source list, which would renumber it even when the server rejects the drop.
+            onAdd: () => this.reorder(),
+            onUpdate: () => this.reorder(),
         })
+    },
+
+    reorder() {
+        this.$wire.reorder(this.sortable.toArray(), this.parentId)
     },
 
     // Mirrors MenuHierarchy::canMove() so invalid drops are refused while

@@ -80,6 +80,7 @@ return [
         'move_rejected' => [
             'title' => 'Không thể di chuyển mục menu',
             'body' => 'Không thể lồng mục menu sâu quá :depth cấp.',
+            'nesting' => 'Không thể lồng mục menu này vào mục đó.',
         ],
     ],
     'panel' => [
