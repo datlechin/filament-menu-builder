@@ -95,6 +95,42 @@ final class MenuHierarchy
         return $position > 0 ? $this->keyOf($siblings[$position - 1]) : null;
     }
 
+    public function nextSiblingOf(int | string $itemId): int | string | null
+    {
+        $key = (string) $itemId;
+
+        if (! $this->contains($key)) {
+            return null;
+        }
+
+        $siblings = $this->children[$this->parents[$key]];
+        $position = array_search($key, $siblings, true);
+
+        return isset($siblings[$position + 1]) ? $this->keyOf($siblings[$position + 1]) : null;
+    }
+
+    /**
+     * @return list<int|string>
+     */
+    public function childrenOf(int | string | null $parentId): array
+    {
+        return array_map($this->keyOf(...), $this->children[self::normalize($parentId)] ?? []);
+    }
+
+    /**
+     * @return list<int|string>
+     */
+    public function descendantsOf(int | string $itemId): array
+    {
+        $descendants = [];
+
+        foreach ($this->childrenOf($itemId) as $childId) {
+            $descendants = [...$descendants, $childId, ...$this->descendantsOf($childId)];
+        }
+
+        return $descendants;
+    }
+
     public function isDescendantOf(int | string $itemId, int | string $ancestorId): bool
     {
         $ancestor = (string) $ancestorId;

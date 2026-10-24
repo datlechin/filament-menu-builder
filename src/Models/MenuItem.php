@@ -4,117 +4,98 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
-use Datlechin\FilamentMenuBuilder\Concerns\ResolvesLocale;
-use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
-use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
+use Datlechin\FilamentMenuBuilder\Concerns\HasTranslatableAttributes;
+use Datlechin\FilamentMenuBuilder\Contracts\MenuLinkable;
+use Datlechin\FilamentMenuBuilder\Database\Factories\MenuItemFactory;
+use Datlechin\FilamentMenuBuilder\MenuBuilder;
+use Datlechin\FilamentMenuBuilder\Rules\MenuUrl;
+use Datlechin\FilamentMenuBuilder\Support\MenuItemCollection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
-use Spatie\Translatable\HasTranslations;
+use Illuminate\Routing\Exceptions\UrlGenerationException;
+use Illuminate\Support\Facades\Route;
 
 /**
- * @property int $id
- * @property int $menu_id
- * @property int|null $parent_id
- * @property string $title
+ * @property int|string $id
+ * @property int|string $menu_id
+ * @property int|string|null $parent_id
+ * @property string $type
+ * @property string|array<string, string> $title
  * @property string|null $url
- * @property string|null $panel
- * @property string|null $type
+ * @property string|null $route
+ * @property array<string, mixed>|null $route_parameters
+ * @property string|null $linkable_type
+ * @property int|string|null $linkable_id
+ * @property string|null $target
+ * @property string|null $rel
  * @property string|null $icon
  * @property string|null $classes
- * @property string|null $rel
- * @property string|null $target
+ * @property array<string, mixed>|null $data
+ * @property bool $is_visible
  * @property int $order
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property-read Collection|MenuItem[] $children
- * @property-read int|null $children_count
- * @property-read Model|MenuPanelable|null $linkable
- * @property-read Menu $menu
- * @property-read MenuItem|null $parent
+ * @property-read MenuItemCollection<int, MenuItem> $children
+ * @property-read Model|null $linkable
  */
 class MenuItem extends Model
 {
-    use ResolvesLocale;
+    /** @use HasFactory<MenuItemFactory> */
+    use HasFactory;
+
+    use HasTranslatableAttributes;
 
     protected $guarded = [];
 
-    protected $with = ['linkable'];
+    protected $attributes = [
+        'is_visible' => true,
+        'order' => 0,
+    ];
 
     public function getTable(): string
     {
-        return config('filament-menu-builder.tables.menu_items', parent::getTable());
+        return MenuBuilder::table('menu_items');
+    }
+
+    protected static function translationsConfigKey(): string
+    {
+        return 'menu_item';
+    }
+
+    protected static function newFactory(): MenuItemFactory
+    {
+        return MenuItemFactory::new();
     }
 
     protected function casts(): array
     {
-        $casts = [
+        return [
             'order' => 'int',
-            'target' => LinkTarget::class,
+            'is_visible' => 'bool',
+            'route_parameters' => 'array',
+            'data' => 'array',
         ];
-
-        try {
-            $plugin = FilamentMenuBuilderPlugin::get();
-
-            if ($plugin->isTranslatable() && ! in_array(HasTranslations::class, class_uses_recursive($this))) {
-                foreach ($plugin->getTranslatableMenuItemFields() as $field) {
-                    $casts[$field] = 'json';
-                }
-            }
-        } catch (\Throwable) {
-            // Plugin not registered yet (migration/seeder context)
-        }
-
-        return $casts;
     }
 
     protected static function booted(): void
     {
-        static::deleted(function (self $menuItem): void {
-            $menuItem->children()->each(fn (self $child) => $child->delete());
-        });
+        static::saved(fn (self $item) => MenuBuilder::menuModel()::flushTreeCache($item->menu_id));
+        static::deleted(fn (self $item) => MenuBuilder::menuModel()::flushTreeCache($item->menu_id));
     }
 
-    public function isActive(?string $currentUrl = null): bool
+    /**
+     * @param  array<int, static>  $models
+     * @return MenuItemCollection<int, static>
+     */
+    public function newCollection(array $models = []): MenuItemCollection
     {
-        if (is_null($this->url)) {
-            return false;
-        }
-
-        $currentUrl ??= request()->url();
-        $itemUrl = url($this->url);
-
-        return rtrim($currentUrl, '/') === rtrim($itemUrl, '/');
-    }
-
-    public function isActiveOrHasActiveChild(?string $currentUrl = null): bool
-    {
-        $currentUrl ??= request()->url();
-
-        if ($this->isActive($currentUrl)) {
-            return true;
-        }
-
-        return $this->children->contains(fn (self $child) => $child->isActiveOrHasActiveChild($currentUrl));
+        return new MenuItemCollection($models);
     }
 
     public function menu(): BelongsTo
     {
-        return $this->belongsTo(self::resolveMenuModel());
-    }
-
-    protected static function resolveMenuModel(): string
-    {
-        try {
-            return FilamentMenuBuilderPlugin::get()->getMenuModel();
-        } catch (\Throwable) {
-            return Menu::class;
-        }
+        return $this->belongsTo(MenuBuilder::menuModel());
     }
 
     public function parent(): BelongsTo
@@ -124,9 +105,7 @@ class MenuItem extends Model
 
     public function children(): HasMany
     {
-        return $this->hasMany(static::class, 'parent_id')
-            ->with('children')
-            ->orderBy('order');
+        return $this->hasMany(static::class, 'parent_id')->orderBy('order');
     }
 
     public function linkable(): MorphTo
@@ -134,25 +113,49 @@ class MenuItem extends Model
         return $this->morphTo();
     }
 
-    protected function url(): Attribute
+    public function duplicateInto(Menu $menu, int | string | null $parentId = null): static
     {
-        return Attribute::get(function (?string $value) {
-            return match (true) {
-                $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelUrl(),
-                default => $value,
-            };
-        });
+        $copy = $this->replicate();
+        $copy->menu_id = $menu->getKey();
+        $copy->parent_id = $parentId;
+        $copy->save();
+
+        $this->children->each(fn (self $child) => $child->duplicateInto($menu, $copy->getKey()));
+
+        return $copy;
     }
 
-    protected function type(): Attribute
+    public function getUrl(?string $locale = null): ?string
     {
-        return Attribute::get(function () {
-            return match (true) {
-                $this->linkable instanceof MenuPanelable => $this->linkable->getMenuPanelName(),
-                ! is_null($this->panel) => $this->panel,
-                is_null($this->url) => __('filament-menu-builder::menu-builder.custom_text'),
-                default => __('filament-menu-builder::menu-builder.custom_link'),
-            };
-        });
+        $url = match (true) {
+            $this->linkable_type !== null => $this->linkable instanceof MenuLinkable ? $this->linkable->getMenuUrl() : null,
+            $this->route !== null => $this->generateRouteUrl(),
+            default => $this->translated('url', $locale),
+        };
+
+        return filled($url) && MenuUrl::isSafe($url) ? $url : null;
+    }
+
+    public function hasDestination(): bool
+    {
+        return $this->linkable_type !== null || $this->route !== null || filled($this->getAttributes()['url'] ?? null);
+    }
+
+    public function isBroken(): bool
+    {
+        return $this->hasDestination() && $this->getUrl() === null;
+    }
+
+    protected function generateRouteUrl(): ?string
+    {
+        if (! Route::has($this->route)) {
+            return null;
+        }
+
+        try {
+            return route($this->route, $this->route_parameters ?? []);
+        } catch (UrlGenerationException) {
+            return null;
+        }
     }
 }

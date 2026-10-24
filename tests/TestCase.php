@@ -65,18 +65,36 @@ class TestCase extends Orchestra
             'driver' => 'sqlite',
             'database' => ':memory:',
             'prefix' => '',
+            'foreign_key_constraints' => true,
         ]);
 
         $app['config']->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
         $app['config']->set('auth.providers.users.model', User::class);
     }
 
+    protected function defineRoutes($router): void
+    {
+        $router->get('/', fn () => 'home')->name('home');
+        $router->get('/blog', fn () => 'blog')->name('blog.index');
+        $router->get('/pages/{page}', fn () => 'page')->name('pages.show');
+    }
+
     protected function defineDatabaseMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/Fixtures');
-        $this->artisan('vendor:publish', [
-            '--tag' => 'filament-menu-builder-migrations',
-        ])->run();
-        $this->loadMigrationsFrom($this->app->databasePath('migrations'));
+        $this->loadMigrationsFrom($this->publishPackageMigrations());
+    }
+
+    protected function publishPackageMigrations(): string
+    {
+        $directory = sys_get_temp_dir() . '/filament-menu-builder-migrations';
+
+        if (! is_dir($directory)) {
+            mkdir($directory);
+        }
+
+        copy(__DIR__ . '/../database/migrations/create_menus_table.php.stub', "{$directory}/2026_01_01_000000_create_menus_table.php");
+
+        return $directory;
     }
 }

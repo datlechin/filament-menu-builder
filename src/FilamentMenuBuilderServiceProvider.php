@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder;
 
-use Datlechin\FilamentMenuBuilder\Livewire\CreateCustomLink;
-use Datlechin\FilamentMenuBuilder\Livewire\CreateCustomText;
 use Datlechin\FilamentMenuBuilder\Livewire\MenuItems;
-use Datlechin\FilamentMenuBuilder\Livewire\MenuPanel;
 use Filament\Support\Assets\AlpineComponent;
+use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
+use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -19,78 +18,40 @@ class FilamentMenuBuilderServiceProvider extends PackageServiceProvider
 {
     public static string $name = 'filament-menu-builder';
 
-    public static string $viewNamespace = 'filament-menu-builder';
-
     public function configurePackage(Package $package): void
     {
         $package
             ->name(static::$name)
-            ->hasInstallCommand(function (InstallCommand $command) {
-                $command
-                    ->publishConfigFile()
-                    ->publishMigrations()
-                    ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub('datlechin/filament-menu-builder');
-            });
-
-        $configFileName = $package->shortName();
-
-        if (file_exists($package->basePath("/../config/{$configFileName}.php"))) {
-            $package->hasConfigFile();
-        }
-
-        if (file_exists($package->basePath('/../database/migrations'))) {
-            $package->hasMigrations($this->getMigrations());
-        }
-
-        if (file_exists($package->basePath('/../resources/lang'))) {
-            $package->hasTranslations();
-        }
-
-        if (file_exists($package->basePath('/../resources/views'))) {
-            $package->hasViews(static::$viewNamespace);
-        }
+            ->hasConfigFile()
+            ->hasMigrations(['create_menus_table'])
+            ->hasTranslations()
+            ->hasViews(static::$name)
+            ->hasInstallCommand(fn (InstallCommand $command) => $command
+                ->publishConfigFile()
+                ->publishMigrations()
+                ->askToRunMigrations()
+                ->askToStarRepoOnGitHub('datlechin/filament-menu-builder'));
     }
-
-    public function packageRegistered(): void {}
 
     public function packageBooted(): void
     {
-        $this->publishes([
-            __DIR__ . '/../database/migrations/make_translatable_columns_json.php.stub' => $this->app->databasePath(
-                'migrations/' . date('Y_m_d_His') . '_make_translatable_columns_json.php',
-            ),
-        ], 'filament-menu-builder-translatable-migrations');
+        $this->publishMigrationStub('upgrade_menus_table_to_v2', 'filament-menu-builder-upgrade-migrations');
+        $this->publishMigrationStub('make_translatable_columns_json', 'filament-menu-builder-translatable-migrations');
 
-        FilamentAsset::register(
-            $this->getAssets(),
-            $this->getAssetPackageName(),
-        );
+        FilamentAsset::register([
+            AlpineComponent::make('menu-builder', __DIR__ . '/../resources/dist/filament-menu-builder.js'),
+            Css::make('menu-builder', __DIR__ . '/../resources/css/filament-menu-builder.css')->loadedOnRequest(),
+        ], 'datlechin/filament-menu-builder');
 
         Livewire::component('menu-builder-items', MenuItems::class);
-        Livewire::component('menu-builder-panel', MenuPanel::class);
-        Livewire::component('create-custom-link', CreateCustomLink::class);
-        Livewire::component('create-custom-text', CreateCustomText::class);
+
+        Blade::componentNamespace('Datlechin\\FilamentMenuBuilder\\View\\Components', static::$name);
     }
 
-    protected function getAssetPackageName(): ?string
+    protected function publishMigrationStub(string $name, string $tag): void
     {
-        return 'datlechin/filament-menu-builder';
-    }
-
-    protected function getAssets(): array
-    {
-        return [
-            AlpineComponent::make('menu-builder', __DIR__ . '/../resources/dist/filament-menu-builder.js'),
-        ];
-    }
-
-    protected function getMigrations(): array
-    {
-        return [
-            'create_menus_table',
-            'add_panel_icon_classes_to_menu_items_table',
-            'add_rel_to_menu_items_table',
-        ];
+        $this->publishes([
+            __DIR__ . "/../database/migrations/{$name}.php.stub" => $this->app->databasePath('migrations/' . date('Y_m_d_His') . "_{$name}.php"),
+        ], $tag);
     }
 }

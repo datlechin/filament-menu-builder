@@ -5,48 +5,47 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Services;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\ItemTypes\ItemType;
+use Datlechin\FilamentMenuBuilder\MenuBuilder;
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Support\MenuHierarchy;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
+use Datlechin\FilamentMenuBuilder\Support\MenuItemCollection;
 use Illuminate\Support\Facades\DB;
 
 class MenuItemService
 {
-    protected FilamentMenuBuilderPlugin $plugin;
+    public function __construct(protected FilamentMenuBuilderPlugin $plugin) {}
 
-    public function __construct()
+    public static function make(): static
     {
-        $this->plugin = FilamentMenuBuilderPlugin::get();
+        return new static(FilamentMenuBuilderPlugin::get());
     }
 
-    public function findById(int | string $id): ?Model
+    /**
+     * @return MenuItemCollection<int, MenuItem>
+     */
+    public function items(Menu $menu): MenuItemCollection
     {
-        return $this->getModel()::query()->find($id);
+        return $menu->items()->with('linkable')->get();
     }
 
-    public function findByIdWithRelations(int | string $id): ?Model
+    /**
+     * @param  MenuItemCollection<int, MenuItem>|null  $items
+     */
+    public function hierarchy(Menu $menu, ?MenuItemCollection $items = null): MenuHierarchy
     {
-        return $this->getModel()::query()
-            ->where('id', $id)
-            ->with('linkable')
-            ->first();
-    }
-
-    public function hierarchy(Model $menu): MenuHierarchy
-    {
-        $query = $this->getModel()::query()
-            ->where('menu_id', $menu->getKey())
-            ->orderBy('order');
+        $maxDepth = $this->plugin->getMaxDepth($menu);
 
         if (! $this->plugin->isNestingRestricted()) {
-            return new MenuHierarchy($query->toBase()->get(['id', 'parent_id']), $this->plugin->getMaxDepth($menu));
+            return new MenuHierarchy($items ?? $menu->items()->toBase()->get(['id', 'parent_id']), $maxDepth);
         }
 
-        $items = $query->get()->keyBy(fn (Model $item): string => (string) $item->getKey());
+        $items = ($items ?? $menu->items()->get())->keyBy(fn (MenuItem $item): string => (string) $item->getKey());
 
         return new MenuHierarchy(
             $items,
-            $this->plugin->getMaxDepth($menu),
+            $maxDepth,
             fn (int | string $itemId, int | string | null $parentId): bool => $this->plugin->allowsNesting(
                 $items[(string) $itemId],
                 $parentId === null ? null : $items[(string) $parentId],
@@ -56,11 +55,53 @@ class MenuItemService
     }
 
     /**
-     * Make the given items the ordered children of the given parent (or the root).
-     *
+     * @param  array<string, mixed>  $data
+     * @return list<MenuItem>
+     */
+    public function create(Menu $menu, ItemType $type, array $data, int | string | null $parentId = null): array
+    {
+        return DB::transaction(function () use ($menu, $type, $data, $parentId): array {
+            $items = $this->items($menu);
+            $hierarchy = $this->hierarchy($menu, $items);
+            $parent = $parentId === null ? null : $items->find($parentId);
+
+            if ($parentId !== null && (! $parent || ! $hierarchy->contains($parentId))) {
+                return [];
+            }
+
+            $maxDepth = $hierarchy->getMaxDepth();
+            $depth = $parent ? $hierarchy->depthOf($parentId) + 1 : 0;
+            $order = $items->where('parent_id', $parentId)->max('order') ?? 0;
+
+            $newItems = array_map(
+                fn (array $attributes): MenuItem => $menu->items()->make([
+                    ...$attributes,
+                    ...$type->getAttributes(),
+                    'parent_id' => $parentId,
+                    'order' => ++$order,
+                ]),
+                $type->getItemsToCreate($data),
+            );
+
+            // All items are rejected together, so a bulk add never lands half way.
+            foreach ($newItems as $item) {
+                if (($maxDepth !== null && $depth > $maxDepth) || ! $this->plugin->allowsNesting($item, $parent, $menu)) {
+                    return [];
+                }
+            }
+
+            foreach ($newItems as $item) {
+                $item->save();
+            }
+
+            return $newItems;
+        });
+    }
+
+    /**
      * @param  array<int|string>  $order
      */
-    public function updateOrder(Model $menu, array $order, int | string | null $parentId = null): bool
+    public function updateOrder(Menu $menu, array $order, int | string | null $parentId = null): bool
     {
         if ($order === []) {
             return true;
@@ -71,25 +112,13 @@ class MenuItemService
                 return false;
             }
 
-            $this->getModel()::query()
-                ->where('menu_id', $menu->getKey())
-                ->whereIn('id', $order)
-                ->update([
-                    'order' => DB::raw(
-                        'case ' . collect($order)
-                            ->map(
-                                fn ($recordKey, int $recordIndex): string => 'when id = ' . DB::getPdo()->quote((string) $recordKey) . ' then ' . ($recordIndex + 1),
-                            )
-                            ->implode(' ') . ' end',
-                    ),
-                    'parent_id' => $parentId,
-                ]);
+            $this->writeOrder($menu, $order, $parentId);
 
             return true;
         });
     }
 
-    public function indent(Model $menu, int | string $itemId): bool
+    public function indent(Menu $menu, int | string $itemId): bool
     {
         return DB::transaction(function () use ($menu, $itemId): bool {
             $hierarchy = $this->hierarchy($menu);
@@ -98,13 +127,13 @@ class MenuItemService
                 return false;
             }
 
-            $this->moveToEnd($menu, $itemId, $hierarchy->previousSiblingOf($itemId));
+            $this->moveToEnd($menu, $hierarchy, $itemId, $hierarchy->previousSiblingOf($itemId));
 
             return true;
         });
     }
 
-    public function unindent(Model $menu, int | string $itemId): bool
+    public function unindent(Menu $menu, int | string $itemId): bool
     {
         return DB::transaction(function () use ($menu, $itemId): bool {
             $hierarchy = $this->hierarchy($menu);
@@ -113,81 +142,112 @@ class MenuItemService
                 return false;
             }
 
-            $grandparentId = $hierarchy->parentOf($hierarchy->parentOf($itemId));
-
-            $this->moveToEnd($menu, $itemId, $grandparentId);
+            $this->moveToEnd($menu, $hierarchy, $itemId, $hierarchy->parentOf($hierarchy->parentOf($itemId)));
 
             return true;
         });
     }
 
-    public function getMaxOrderForParent(int | string | null $parentId, int | string | null $menuId = null): int
+    public function moveUp(Menu $menu, int | string $itemId): bool
     {
-        $query = $this->getModel()::query()->where('parent_id', $parentId);
-
-        if ($menuId) {
-            $query->where('menu_id', $menuId);
-        }
-
-        return $query->max('order') ?? 0;
+        return $this->swapWithSibling($menu, $itemId, -1);
     }
 
-    public function getSiblings(int | string $menuId, int | string | null $parentId): Collection
+    public function moveDown(Menu $menu, int | string $itemId): bool
     {
-        return $this->getModel()::query()
-            ->where('menu_id', $menuId)
-            ->where('parent_id', $parentId)
-            ->orderBy('order')
-            ->get();
+        return $this->swapWithSibling($menu, $itemId, 1);
     }
 
-    public function reorderSiblings(int | string $menuId, int | string | null $parentId): void
+    public function duplicate(Menu $menu, int | string $itemId): ?MenuItem
     {
-        $this->getSiblings($menuId, $parentId)->each(function (Model $sibling, int $index): void {
-            $sibling->update(['order' => $index + 1]);
+        return DB::transaction(function () use ($menu, $itemId): ?MenuItem {
+            $items = $this->items($menu);
+            // Loads every item's children in memory for the copy.
+            $items->toTree();
+            $hierarchy = $this->hierarchy($menu, $items);
+            $item = $items->find($itemId);
+
+            if (! $item || ! $hierarchy->contains($itemId)) {
+                return null;
+            }
+
+            $parentId = $hierarchy->parentOf($itemId);
+            $copy = $item->duplicateInto($menu, $parentId);
+
+            $siblings = $hierarchy->childrenOf($parentId);
+            array_splice($siblings, array_search($itemId, $siblings) + 1, 0, [$copy->getKey()]);
+
+            $this->writeOrder($menu, $siblings, $parentId);
+
+            return $copy;
         });
     }
 
-    public function delete(int | string $itemId): bool
+    public function delete(Menu $menu, int | string $itemId): bool
     {
-        $item = $this->findById($itemId);
+        return DB::transaction(function () use ($menu, $itemId): bool {
+            $hierarchy = $this->hierarchy($menu);
 
-        if (! $item) {
-            return false;
-        }
+            if (! $hierarchy->contains($itemId)) {
+                return false;
+            }
 
-        return $item->delete();
+            $parentId = $hierarchy->parentOf($itemId);
+
+            $menu->items()->whereKey([$itemId, ...$hierarchy->descendantsOf($itemId)])->delete();
+
+            $this->writeOrder($menu, array_values(array_diff($hierarchy->childrenOf($parentId), [$itemId])), $parentId);
+
+            return true;
+        });
     }
 
-    public function update(int | string $itemId, array $data): bool
+    protected function swapWithSibling(Menu $menu, int | string $itemId, int $direction): bool
     {
-        $model = $this->findById($itemId);
+        return DB::transaction(function () use ($menu, $itemId, $direction): bool {
+            $hierarchy = $this->hierarchy($menu);
+            $sibling = $direction < 0 ? $hierarchy->previousSiblingOf($itemId) : $hierarchy->nextSiblingOf($itemId);
 
-        if (! $model) {
-            return false;
-        }
+            if ($sibling === null) {
+                return false;
+            }
 
-        return $model->update($data);
+            $parentId = $hierarchy->parentOf($itemId);
+            $siblings = $hierarchy->childrenOf($parentId);
+            $position = array_search($itemId, $siblings);
+
+            [$siblings[$position], $siblings[$position + $direction]] = [$siblings[$position + $direction], $siblings[$position]];
+
+            $this->writeOrder($menu, $siblings, $parentId);
+
+            return true;
+        });
+    }
+
+    protected function moveToEnd(Menu $menu, MenuHierarchy $hierarchy, int | string $itemId, int | string | null $parentId): void
+    {
+        $previousParentId = $hierarchy->parentOf($itemId);
+
+        $this->writeOrder($menu, [...$hierarchy->childrenOf($parentId), $itemId], $parentId);
+        $this->writeOrder($menu, array_values(array_diff($hierarchy->childrenOf($previousParentId), [$itemId])), $previousParentId);
     }
 
     /**
-     * Move an item to the end of its new parent's children and close the gap it left behind.
+     * @param  array<int|string>  $order
      */
-    protected function moveToEnd(Model $menu, int | string $itemId, int | string | null $parentId): void
+    protected function writeOrder(Menu $menu, array $order, int | string | null $parentId): void
     {
-        $item = $this->findById($itemId);
-        $previousParentId = $item->parent_id;
+        if ($order !== []) {
+            $menu->items()
+                ->whereKey($order)
+                ->update([
+                    'parent_id' => $parentId,
+                    'order' => DB::raw('case ' . collect($order)
+                        ->map(fn (int | string $key, int $index): string => 'when id = ' . DB::getPdo()->quote((string) $key) . ' then ' . ($index + 1))
+                        ->implode(' ') . ' end'),
+                ]);
+        }
 
-        $item->update([
-            'parent_id' => $parentId,
-            'order' => $this->getMaxOrderForParent($parentId, $menu->getKey()) + 1,
-        ]);
-
-        $this->reorderSiblings($menu->getKey(), $previousParentId);
-    }
-
-    protected function getModel(): string
-    {
-        return $this->plugin->getMenuItemModel();
+        MenuBuilder::menuModel()::flushTreeCache($menu->getKey());
     }
 }

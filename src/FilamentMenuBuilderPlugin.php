@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder;
 
 use Closure;
-use Datlechin\FilamentMenuBuilder\Contracts\MenuPanel;
+use Datlechin\FilamentMenuBuilder\ItemTypes\ItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\LinkItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\TextItemType;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
-use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -23,17 +24,29 @@ class FilamentMenuBuilderPlugin implements Plugin
 
     protected string $resource = MenuResource::class;
 
-    protected string $menuModel = Menu::class;
-
-    protected string $menuItemModel = MenuItem::class;
-
-    protected string $menuLocationModel = MenuLocation::class;
-
+    /**
+     * @var array<string, string>
+     */
     protected array $locations = [];
 
+    /**
+     * @var array<string, ItemType>|null
+     */
+    protected ?array $itemTypes = null;
+
+    /**
+     * @var array<Component>|Closure
+     */
     protected array | Closure $menuFields = [];
 
+    /**
+     * @var array<Component>|Closure
+     */
     protected array | Closure $menuItemFields = [];
+
+    protected int | Closure | null $maxDepth = null;
+
+    protected bool | Closure $allowNesting = true;
 
     protected string | Closure | null $navigationLabel = null;
 
@@ -42,32 +55,6 @@ class FilamentMenuBuilderPlugin implements Plugin
     protected string | Closure | null $navigationIcon = 'heroicon-o-bars-3';
 
     protected int | Closure | null $navigationSort = null;
-
-    protected bool $navigationCountBadge = false;
-
-    /**
-     * @var MenuPanel[]
-     */
-    protected array $menuPanels = [];
-
-    protected bool $showCustomLinkPanel = true;
-
-    protected bool $showCustomTextPanel = false;
-
-    protected bool $enableIndentActions = true;
-
-    protected int | Closure | null $maxDepth = null;
-
-    protected bool | Closure $allowNesting = true;
-
-    /** @var string[]|null */
-    protected ?array $translatableLocales = null;
-
-    /** @var string[] */
-    protected array $translatableMenuFields = [];
-
-    /** @var string[] */
-    protected array $translatableMenuItemFields = ['title'];
 
     public function getId(): string
     {
@@ -79,10 +66,7 @@ class FilamentMenuBuilderPlugin implements Plugin
         $panel->resources([$this->getResource()]);
     }
 
-    public function boot(Panel $panel): void
-    {
-        //
-    }
+    public function boot(Panel $panel): void {}
 
     public static function make(): static
     {
@@ -101,25 +85,9 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function usingMenuModel(string $model): static
+    public function getResource(): string
     {
-        $this->menuModel = $model;
-
-        return $this;
-    }
-
-    public function usingMenuItemModel(string $model): static
-    {
-        $this->menuItemModel = $model;
-
-        return $this;
-    }
-
-    public function usingMenuLocationModel(string $model): static
-    {
-        $this->menuLocationModel = $model;
-
-        return $this;
+        return $this->resource;
     }
 
     public function addLocation(string $key, string $label): static
@@ -129,6 +97,9 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
+    /**
+     * @param  array<string, string>  $locations
+     */
     public function addLocations(array $locations): static
     {
         foreach ($locations as $key => $label) {
@@ -138,191 +109,52 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    public function addMenuPanel(MenuPanel $menuPanel): static
+    /**
+     * @return array<string, string>
+     */
+    public function getLocations(): array
     {
-        $this->menuPanels[] = $menuPanel;
+        return $this->locations;
+    }
+
+    /**
+     * @param  array<ItemType>  $itemTypes
+     */
+    public function itemTypes(array $itemTypes): static
+    {
+        $this->itemTypes = collect($itemTypes)
+            ->keyBy(fn (ItemType $itemType): string => $itemType->getKey())
+            ->all();
 
         return $this;
     }
 
     /**
-     * @param  array<MenuPanel>  $menuPanels
+     * @return array<string, ItemType>
      */
-    public function addMenuPanels(array $menuPanels): static
+    public function getItemTypes(): array
     {
-        foreach ($menuPanels as $menuPanel) {
-            $this->addMenuPanel($menuPanel);
-        }
-
-        return $this;
+        return $this->itemTypes ??= [
+            'link' => LinkItemType::make(),
+            'text' => TextItemType::make(),
+        ];
     }
 
-    public function showCustomLinkPanel(bool $show = true): static
+    public function getItemType(string $key): ?ItemType
     {
-        $this->showCustomLinkPanel = $show;
-
-        return $this;
+        return $this->getItemTypes()[$key] ?? null;
     }
 
-    public function showCustomTextPanel(bool $show = true): static
+    public function getItemTypeFor(MenuItem $item): ?ItemType
     {
-        $this->showCustomTextPanel = $show;
-
-        return $this;
+        return collect($this->getItemTypes())->first(fn (ItemType $itemType): bool => $itemType->matches($item));
     }
 
-    public function enableIndentActions(bool $enable = true): static
-    {
-        $this->enableIndentActions = $enable;
-
-        return $this;
-    }
-
-    /**
-     * Limit how deep menu items may be nested. Root items have a depth of 0,
-     * so `maxDepth(0)` keeps menus flat. Pass `null` for unlimited nesting.
-     *
-     * A closure receives the `$menu` being edited, allowing per-menu limits.
-     */
     public function maxDepth(int | Closure | null $depth): static
     {
         $this->maxDepth = $depth;
 
         return $this;
-    }
-
-    public function allowNesting(bool | Closure $condition = true): static
-    {
-        $this->allowNesting = $condition;
-
-        return $this;
-    }
-
-    public function addMenuField(Component $field): static
-    {
-        return $this->addMenuFields([$field]);
-    }
-
-    public function addMenuFields(array | Closure $schema): static
-    {
-        if (is_array($schema) && is_array($this->menuFields)) {
-            $this->menuFields = array_merge($this->menuFields, $schema);
-        } else {
-            $this->menuFields = $schema;
-        }
-
-        return $this;
-    }
-
-    public function addMenuItemField(Component $field): static
-    {
-        return $this->addMenuItemFields([$field]);
-    }
-
-    public function addMenuItemFields(array | Closure $schema): static
-    {
-        if (is_array($schema) && is_array($this->menuItemFields)) {
-            $this->menuItemFields = array_merge($this->menuItemFields, $schema);
-        } else {
-            $this->menuItemFields = $schema;
-        }
-
-        return $this;
-    }
-
-    public function navigationLabel(string | Closure | null $label = null): static
-    {
-        $this->navigationLabel = $label;
-
-        return $this;
-    }
-
-    public function navigationGroup(string | Closure | null $group = null): static
-    {
-        $this->navigationGroup = $group;
-
-        return $this;
-    }
-
-    public function navigationIcon(string | Closure $icon): static
-    {
-        $this->navigationIcon = $icon;
-
-        return $this;
-    }
-
-    public function navigationSort(int | Closure $order): static
-    {
-        $this->navigationSort = $order;
-
-        return $this;
-    }
-
-    public function navigationCountBadge(bool $show = true): static
-    {
-        $this->navigationCountBadge = $show;
-
-        return $this;
-    }
-
-    public function getResource(): string
-    {
-        return $this->resource;
-    }
-
-    /**
-     * @template TModel of Model
-     *
-     * @return class-string<TModel>
-     */
-    public function getMenuModel(): string
-    {
-        return $this->menuModel;
-    }
-
-    /**
-     * @template TModel of Model
-     *
-     * @return class-string<TModel>
-     */
-    public function getMenuItemModel(): string
-    {
-        return $this->menuItemModel;
-    }
-
-    /**
-     * @template TModel of Model
-     *
-     * @return class-string<TModel>
-     */
-    public function getMenuLocationModel(): string
-    {
-        return $this->menuLocationModel;
-    }
-
-    /**
-     * @return MenuPanel[]
-     */
-    public function getMenuPanels(): array
-    {
-        return collect($this->menuPanels)
-            ->sortBy(fn (MenuPanel $menuPanel) => $menuPanel->getSort())
-            ->all();
-    }
-
-    public function isShowCustomLinkPanel(): bool
-    {
-        return $this->showCustomLinkPanel;
-    }
-
-    public function isShowCustomTextPanel(): bool
-    {
-        return $this->showCustomTextPanel;
-    }
-
-    public function isIndentActionsEnabled(): bool
-    {
-        return $this->enableIndentActions;
     }
 
     public function getMaxDepth(Model $menu): ?int
@@ -338,6 +170,13 @@ class FilamentMenuBuilderPlugin implements Plugin
         }
 
         return $depth;
+    }
+
+    public function allowNesting(bool | Closure $condition = true): static
+    {
+        $this->allowNesting = $condition;
+
+        return $this;
     }
 
     public function isNestingRestricted(): bool
@@ -358,24 +197,65 @@ class FilamentMenuBuilderPlugin implements Plugin
         );
     }
 
-    public function getLocations(): array
+    public function addMenuField(Component $field): static
     {
-        return $this->locations;
+        return $this->addMenuFields([$field]);
     }
 
-    public function getMenuFields(): array | Closure
+    /**
+     * @param  array<Component>|Closure  $schema
+     */
+    public function addMenuFields(array | Closure $schema): static
     {
-        return $this->menuFields;
+        $this->menuFields = is_array($schema) && is_array($this->menuFields)
+            ? [...$this->menuFields, ...$schema]
+            : $schema;
+
+        return $this;
     }
 
-    public function getMenuItemFields(): array | Closure
+    /**
+     * @return array<Component>
+     */
+    public function getMenuFields(): array
     {
-        return $this->menuItemFields;
+        return $this->evaluate($this->menuFields);
     }
 
-    public function getNavigationGroup(): ?string
+    public function addMenuItemField(Component $field): static
     {
-        return $this->evaluate($this->navigationGroup);
+        return $this->addMenuItemFields([$field]);
+    }
+
+    /**
+     * @param  array<Component>|Closure  $schema  A closure receives the `$type` of the item being edited.
+     */
+    public function addMenuItemFields(array | Closure $schema): static
+    {
+        $this->menuItemFields = is_array($schema) && is_array($this->menuItemFields)
+            ? [...$this->menuItemFields, ...$schema]
+            : $schema;
+
+        return $this;
+    }
+
+    /**
+     * @return array<Component>
+     */
+    public function getMenuItemFields(ItemType $type): array
+    {
+        return $this->evaluate(
+            $this->menuItemFields,
+            namedInjections: ['type' => $type],
+            typedInjections: [ItemType::class => $type, $type::class => $type],
+        );
+    }
+
+    public function navigationLabel(string | Closure | null $label): static
+    {
+        $this->navigationLabel = $label;
+
+        return $this;
     }
 
     public function getNavigationLabel(): ?string
@@ -383,77 +263,39 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->evaluate($this->navigationLabel);
     }
 
+    public function navigationGroup(string | Closure | null $group): static
+    {
+        $this->navigationGroup = $group;
+
+        return $this;
+    }
+
+    public function getNavigationGroup(): ?string
+    {
+        return $this->evaluate($this->navigationGroup);
+    }
+
+    public function navigationIcon(string | Closure | null $icon): static
+    {
+        $this->navigationIcon = $icon;
+
+        return $this;
+    }
+
     public function getNavigationIcon(): ?string
     {
         return $this->evaluate($this->navigationIcon);
     }
 
+    public function navigationSort(int | Closure | null $sort): static
+    {
+        $this->navigationSort = $sort;
+
+        return $this;
+    }
+
     public function getNavigationSort(): ?int
     {
         return $this->evaluate($this->navigationSort);
-    }
-
-    public function getNavigationCountBadge(): bool
-    {
-        return $this->navigationCountBadge;
-    }
-
-    /**
-     * @param  string[]  $locales
-     */
-    public function translatable(array $locales): static
-    {
-        $this->translatableLocales = $locales;
-
-        return $this;
-    }
-
-    /**
-     * @param  string[]  $fields
-     */
-    public function translatableMenuFields(array $fields): static
-    {
-        $this->translatableMenuFields = $fields;
-
-        return $this;
-    }
-
-    /**
-     * @param  string[]  $fields
-     */
-    public function translatableMenuItemFields(array $fields): static
-    {
-        $this->translatableMenuItemFields = $fields;
-
-        return $this;
-    }
-
-    public function isTranslatable(): bool
-    {
-        return $this->translatableLocales !== null;
-    }
-
-    /**
-     * @return string[]|null
-     */
-    public function getTranslatableLocales(): ?array
-    {
-        return $this->translatableLocales;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getTranslatableMenuFields(): array
-    {
-        return $this->translatableMenuFields;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getTranslatableMenuItemFields(): array
-    {
-        return $this->translatableMenuItemFields;
     }
 }

@@ -3,94 +3,71 @@
 declare(strict_types=1);
 
 return [
+    'resource' => [
+        'label' => 'Menu',
+        'plural_label' => 'Menu',
+        'name' => 'Tên',
+        'locations' => 'Vị trí',
+        'no_locations' => 'Chưa gán',
+        'location_taken' => 'Đang hiển thị :menu',
+        'items' => 'Mục',
+        'is_visible' => 'Hiển thị',
+        'settings' => 'Cài đặt',
+    ],
+    'item_types' => [
+        'link' => 'Liên kết',
+        'text' => 'Văn bản',
+        'route' => 'Route',
+    ],
     'form' => [
         'title' => 'Tiêu đề',
         'url' => 'URL',
-        'linkable_type' => 'Loại',
-        'linkable_id' => 'ID',
+        'route' => 'Route',
+        'route_parameters' => 'Tham số route',
+        'open_in_new_tab' => 'Mở trong tab mới',
+        'advanced' => 'Nâng cao',
+        'rel' => 'Thuộc tính rel',
+        'icon' => 'Biểu tượng',
+        'classes' => 'CSS class',
+        'is_visible' => 'Hiển thị',
     ],
-    'resource' => [
-        'name' => [
-            'label' => 'Tên',
-        ],
-        'locations' => [
-            'label' => 'Vị trí',
-            'empty' => 'Chưa gán',
-        ],
-        'items' => [
-            'label' => 'Mục',
-        ],
-        'is_visible' => [
-            'label' => 'Hiển thị',
-            'visible' => 'Hiển thị',
-            'hidden' => 'Ẩn',
+    'items' => [
+        'heading' => 'Các mục',
+        'toggle' => 'Ẩn/hiện mục con',
+        'hidden' => 'Đang ẩn',
+        'broken' => 'Liên kết hỏng',
+        'empty' => [
+            'heading' => 'Menu này chưa có mục nào',
+            'description' => 'Thêm liên kết, trang hoặc tiêu đề để bắt đầu.',
         ],
     ],
     'actions' => [
-        'add' => [
-            'label' => 'Thêm vào Menu',
+        'add_item' => 'Thêm mục',
+        'add_child' => 'Thêm :type bên trong',
+        'create' => [
+            'heading' => 'Thêm :type',
         ],
-        'edit' => 'Chỉnh sửa',
-        'delete' => 'Xóa',
-        'indent' => 'Thụt lề',
-        'unindent' => 'Thụt lề ngược',
-        'locations' => [
-            'label' => 'Vị trí',
-            'heading' => 'Quản lý vị trí',
-            'description' => 'Chọn menu nào xuất hiện ở mỗi vị trí.',
-            'submit' => 'Cập nhật',
-            'form' => [
-                'location' => [
-                    'label' => 'Vị trí',
-                ],
-                'menu' => [
-                    'label' => 'Menu đã gán',
-                ],
-            ],
-            'empty' => [
-                'heading' => 'Không có vị trí nào được đăng ký',
-            ],
+        'delete' => [
+            'description' => ':count mục con của nó cũng sẽ bị xóa.',
         ],
-    ],
-    'items' => [
-        'expand' => 'Mở rộng',
-        'collapse' => 'Thu gọn',
-        'empty' => [
-            'heading' => 'Không có mục nào trong menu này.',
-        ],
-    ],
-    'custom_link' => 'Liên kết Tùy chỉnh',
-    'custom_text' => 'Văn bản Tùy chỉnh',
-    'open_in' => [
-        'label' => 'Mở trong',
-        'options' => [
-            'self' => 'Cùng tab',
-            'blank' => 'Tab mới',
-            'parent' => 'Tab cha',
-            'top' => 'Tab trên cùng',
-        ],
+        'reorder' => 'Kéo để sắp xếp',
+        'duplicateItem' => 'Nhân bản',
+        'moveUp' => 'Lên trên',
+        'moveDown' => 'Xuống dưới',
+        'indent' => 'Thụt vào',
+        'unindent' => 'Thụt ra',
     ],
     'notifications' => [
-        'created' => [
-            'title' => 'Liên kết đã được tạo',
-        ],
-        'locations' => [
-            'title' => 'Cập nhật vị trí menu',
+        'duplicated' => [
+            'title' => 'Đã nhân bản',
         ],
         'move_rejected' => [
-            'title' => 'Không thể di chuyển mục menu',
+            'title' => 'Không thể đặt mục menu ở đó',
             'body' => 'Không thể lồng mục menu sâu quá :depth cấp.',
             'nesting' => 'Không thể lồng mục menu này vào mục đó.',
         ],
     ],
-    'panel' => [
-        'empty' => [
-            'heading' => 'Không tìm thấy mục nào',
-            'description' => 'Không có mục nào trong menu này.',
-        ],
-        'pagination' => [
-            'previous' => 'Trước',
-            'next' => 'Tiếp',
-        ],
+    'validation' => [
+        'url' => ':attribute phải là địa chỉ web, đường dẫn, hoặc liên kết mailto: hay tel:.',
     ],
 ];
