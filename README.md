@@ -4,7 +4,7 @@
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/datlechin/filament-menu-builder/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/datlechin/filament-menu-builder/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/datlechin/filament-menu-builder.svg?style=flat-square)](https://packagist.org/packages/datlechin/filament-menu-builder)
 
-![Filament Menu Builder](https://github.com/datlechin/filament-menu-builder/raw/main/art/menu-builder.jpg)
+<img class="filament-hidden" src="https://github.com/datlechin/filament-menu-builder/raw/main/art/menu-builder.jpg" alt="Filament Menu Builder">
 
 - [Introduction](#introduction)
 - [Installation](#installation)
@@ -125,6 +125,10 @@ FilamentMenuBuilderPlugin::make()
 | `TextItemType` | Nothing. Use it for headings and group labels. |
 | `RouteItemType` | A named route of your application. |
 | `ModelItemType` | An Eloquent record, such as a page or a category. |
+
+Editors pick a type from the "Add item" menu above the menu tree:
+
+<img src="https://github.com/datlechin/filament-menu-builder/raw/main/art/add-item.png" alt="The Add item menu listing the item types" width="800">
 
 You may change the label and icon of any type. As with locations, pass a closure when the label should be translated:
 
@@ -290,6 +294,10 @@ FilamentMenuBuilderPlugin::make()
 ```
 
 ## Nesting
+
+Editors may nest and reorder items by dragging them, or from each item's menu:
+
+<img src="https://github.com/datlechin/filament-menu-builder/raw/main/art/item-actions.png" alt="An item's menu with actions to add a sub-item, duplicate, move and indent it" width="800">
 
 Items may be nested as deep as you like. To limit the depth, use the `maxDepth` method. Root items have a depth of `0`, so `maxDepth(0)` keeps a menu flat. You may also pass a closure, which receives the `$menu` being edited:
 
