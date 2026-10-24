@@ -5,42 +5,64 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Resources;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Datlechin\FilamentMenuBuilder\Support\TranslatableFieldWrapper;
+use Datlechin\FilamentMenuBuilder\MenuBuilder;
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\EditMenu;
+use Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\ListMenus;
+use Datlechin\FilamentMenuBuilder\Support\TranslatableField;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ReplicateAction;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Component;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class MenuResource extends Resource
 {
     public static function getModel(): string
     {
-        return FilamentMenuBuilderPlugin::get()->getMenuModel();
+        return MenuBuilder::menuModel();
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament-menu-builder::menu-builder.resource.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament-menu-builder::menu-builder.resource.plural_label');
+    }
+
+    public static function hasRecordTitle(): bool
+    {
+        return true;
+    }
+
+    public static function getRecordTitle(?Model $record): string
+    {
+        return $record?->translated('name') ?? static::getModelLabel();
     }
 
     public static function getNavigationLabel(): string
     {
-        return FilamentMenuBuilderPlugin::get()->getNavigationLabel() ?? Str::title(static::getPluralModelLabel()) ?? Str::title(static::getModelLabel());
+        return FilamentMenuBuilderPlugin::get()->getNavigationLabel() ?? static::getPluralModelLabel();
     }
 
-    public static function getNavigationIcon(): string
+    public static function getNavigationIcon(): ?string
     {
         return FilamentMenuBuilderPlugin::get()->getNavigationIcon();
-    }
-
-    public static function getNavigationSort(): ?int
-    {
-        return FilamentMenuBuilderPlugin::get()->getNavigationSort();
     }
 
     public static function getNavigationGroup(): ?string
@@ -48,54 +70,44 @@ class MenuResource extends Resource
         return FilamentMenuBuilderPlugin::get()->getNavigationGroup();
     }
 
-    public static function getNavigationBadge(): ?string
+    public static function getNavigationSort(): ?int
     {
-        return FilamentMenuBuilderPlugin::get()->getNavigationCountBadge() ? number_format(static::getModel()::count()) : null;
+        return FilamentMenuBuilderPlugin::get()->getNavigationSort();
+    }
+
+    public static function isScopedToTenant(): bool
+    {
+        return MenuBuilder::isTenantAware();
+    }
+
+    public static function getTenantOwnershipRelationshipName(): string
+    {
+        return 'tenant';
     }
 
     public static function form(Schema $schema): Schema
     {
-        $plugin = FilamentMenuBuilderPlugin::get();
-
-        $nameField = TextInput::make('name')
-            ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
-            ->required()
-            ->columnSpan(3);
-
-        if ($plugin->isTranslatable() && in_array('name', $plugin->getTranslatableMenuFields())) {
-            $nameField = TranslatableFieldWrapper::wrap(
-                TextInput::make('name')
-                    ->label(__('filament-menu-builder::menu-builder.resource.name.label'))
-                    ->required(),
-                $plugin->getTranslatableLocales(),
-            );
-        }
+        $locations = FilamentMenuBuilderPlugin::get()->getLocations();
 
         return $schema
             ->columns(1)
             ->components([
-                Grid::make(4)
-                    ->schema([
-                        $nameField,
-
-                        ToggleButtons::make('is_visible')
-                            ->grouped()
-                            ->boolean(
-                                trueLabel: __('filament-menu-builder::menu-builder.resource.is_visible.visible'),
-                                falseLabel: __('filament-menu-builder::menu-builder.resource.is_visible.hidden'),
-                            )
-                            ->colors([
-                                1 => 'primary',
-                                0 => 'danger',
-                            ])
-                            ->required()
-                            ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
-                            ->default(true),
-                    ]),
-
-                Group::make()
-                    ->visible(fn (Component $component) => $component->evaluate(FilamentMenuBuilderPlugin::get()->getMenuFields()) !== [])
-                    ->schema(FilamentMenuBuilderPlugin::get()->getMenuFields()),
+                TranslatableField::make('menu', 'name', fn (string $statePath): TextInput => TextInput::make($statePath)
+                    ->label(__('filament-menu-builder::menu-builder.resource.name'))
+                    ->required()
+                    ->maxLength(255)),
+                CheckboxList::make('locations')
+                    ->label(__('filament-menu-builder::menu-builder.resource.locations'))
+                    ->options($locations)
+                    ->descriptions(fn (?Menu $record): array => static::describeTakenLocations($record))
+                    ->visible($locations !== [])
+                    ->afterStateHydrated(fn (CheckboxList $component, ?Menu $record) => $component->state($record?->locations->pluck('location')->all() ?? []))
+                    ->saveRelationshipsUsing(fn (Menu $record, array $state) => $record->syncLocations($state))
+                    ->dehydrated(false),
+                Toggle::make('is_visible')
+                    ->label(__('filament-menu-builder::menu-builder.resource.is_visible'))
+                    ->default(true),
+                ...FilamentMenuBuilderPlugin::get()->getMenuFields(),
             ]);
     }
 
@@ -104,36 +116,41 @@ class MenuResource extends Resource
         $locations = FilamentMenuBuilderPlugin::get()->getLocations();
 
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->withCount('menuItems'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('locations')->withCount('items'))
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('filament-menu-builder::menu-builder.resource.name'))
+                    ->getStateUsing(fn (Menu $record): string => $record->translated('name'))
                     ->searchable()
-                    ->sortable()
-                    ->formatStateUsing(fn (mixed $state): string => is_array($state) ? ($state[app()->getLocale()] ?? collect($state)->first() ?? '') : (string) $state)
-                    ->label(__('filament-menu-builder::menu-builder.resource.name.label')),
-                TextColumn::make('locations.location')
-                    ->label(__('filament-menu-builder::menu-builder.resource.locations.label'))
-                    ->default(__('filament-menu-builder::menu-builder.resource.locations.empty'))
-                    ->color(fn (string $state) => array_key_exists($state, $locations) ? 'primary' : 'gray')
-                    ->formatStateUsing(fn (string $state) => $locations[$state] ?? $state)
-                    ->limitList(2)
-                    ->sortable()
-                    ->badge(),
-                TextColumn::make('menu_items_count')
-                    ->label(__('filament-menu-builder::menu-builder.resource.items.label'))
-                    ->icon('heroicon-o-link')
-                    ->numeric()
-                    ->default(0)
                     ->sortable(),
-                IconColumn::make('is_visible')
-                    ->label(__('filament-menu-builder::menu-builder.resource.is_visible.label'))
+                TextColumn::make('locations.location')
+                    ->label(__('filament-menu-builder::menu-builder.resource.locations'))
+                    ->formatStateUsing(fn (string $state): string => $locations[$state] ?? $state)
+                    ->badge()
+                    ->placeholder(__('filament-menu-builder::menu-builder.resource.no_locations'))
+                    ->visibleFrom('sm'),
+                TextColumn::make('items_count')
+                    ->label(__('filament-menu-builder::menu-builder.resource.items'))
+                    ->numeric()
                     ->sortable()
-                    ->boolean(),
+                    ->visibleFrom('md'),
+                IconColumn::make('is_visible')
+                    ->label(__('filament-menu-builder::menu-builder.resource.is_visible'))
+                    ->boolean()
+                    ->sortable()
+                    ->visibleFrom('md'),
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
+                ActionGroup::make([
+                    ReplicateAction::make()
+                        ->excludeAttributes(['items_count'])
+                        ->after(fn (Menu $record, Menu $replica) => $record->copyItemsTo($replica))
+                        ->successRedirectUrl(fn (Menu $replica): string => static::getUrl('edit', ['record' => $replica])),
+                    DeleteAction::make(),
+                ]),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
@@ -143,8 +160,27 @@ class MenuResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => MenuResource\Pages\ListMenus::route('/'),
-            'edit' => MenuResource\Pages\EditMenu::route('/{record}/edit'),
+            'index' => ListMenus::route('/'),
+            'edit' => EditMenu::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected static function describeTakenLocations(?Menu $record): array
+    {
+        $tenantKey = MenuBuilder::tenantForeignKey();
+
+        return MenuBuilder::menuLocationModel()::query()
+            ->with('menu')
+            ->when($record, fn (Builder $query) => $query->where('menu_id', '!=', $record->getKey()))
+            ->when($tenantKey, fn (Builder $query) => $query->where($tenantKey, $record?->getAttribute($tenantKey) ?? Filament::getTenant()?->getKey()))
+            ->get()
+            ->filter(fn ($location): bool => $location->menu !== null)
+            ->mapWithKeys(fn ($location): array => [
+                $location->location => __('filament-menu-builder::menu-builder.resource.location_taken', ['menu' => $location->menu->translated('name')]),
+            ])
+            ->all();
     }
 }

@@ -7,69 +7,69 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * The default locale to use when migrating existing string data to JSON.
-     */
-    protected string $defaultLocale = 'en';
+    // Existing values are stored under this locale. Defaults to `app.locale`.
+    protected ?string $locale = null;
+
+    // SQLite rebuilds a table to change a column, which would cascade to the menu items unless foreign keys are off.
+    public $withinTransaction = false;
 
     public function up(): void
     {
-        $menuItemsTable = config('filament-menu-builder.tables.menu_items', 'menu_items');
-        $menusTable = config('filament-menu-builder.tables.menus', 'menus');
-
-        $this->convertColumnToJson($menuItemsTable, 'title');
-        $this->convertColumnToJson($menusTable, 'name');
+        Schema::withoutForeignKeyConstraints(fn () => $this->convert());
     }
 
     public function down(): void
     {
-        $menuItemsTable = config('filament-menu-builder.tables.menu_items', 'menu_items');
-        $menusTable = config('filament-menu-builder.tables.menus', 'menus');
-
-        $this->revertColumnFromJson($menuItemsTable, 'title');
-        $this->revertColumnFromJson($menusTable, 'name');
+        Schema::withoutForeignKeyConstraints(fn () => $this->revert());
     }
 
-    protected function convertColumnToJson(string $table, string $column): void
+    private function convert(): void
     {
-        if (! Schema::hasTable($table)) {
-            return;
-        }
+        foreach ($this->columns() as [$table, $column]) {
+            DB::table($table)->whereNotNull($column)->lazyById()->each(function (object $row) use ($table, $column) {
+                if (is_array(json_decode($row->{$column}, true))) {
+                    return;
+                }
 
-        DB::table($table)->get()->each(function ($row) use ($table, $column) {
-            $value = $row->{$column};
-
-            if (is_string($value) && ! str_starts_with($value, '{') && ! str_starts_with($value, '[')) {
                 DB::table($table)->where('id', $row->id)->update([
-                    $column => json_encode([$this->defaultLocale => $value]),
+                    $column => json_encode([$this->locale ?? config('app.locale') => $row->{$column}]),
                 ]);
-            }
-        });
+            });
 
-        Schema::table($table, function (Blueprint $table) use ($column) {
-            $table->json($column)->change();
-        });
+            Schema::table($table, fn (Blueprint $blueprint) => $blueprint->json($column)->nullable($column === 'url')->change());
+        }
     }
 
-    protected function revertColumnFromJson(string $table, string $column): void
+    private function revert(): void
     {
-        if (! Schema::hasTable($table)) {
-            return;
+        foreach ($this->columns() as [$table, $column]) {
+            DB::table($table)->whereNotNull($column)->lazyById()->each(function (object $row) use ($table, $column) {
+                $translations = json_decode($row->{$column}, true);
+
+                if (is_array($translations)) {
+                    DB::table($table)->where('id', $row->id)->update([
+                        $column => $translations[$this->locale ?? config('app.locale')] ?? reset($translations) ?: '',
+                    ]);
+                }
+            });
+
+            Schema::table($table, fn (Blueprint $blueprint) => $blueprint->string($column, $column === 'url' ? 2048 : 255)->nullable($column === 'url')->change());
+        }
+    }
+
+    /**
+     * @return list<array{string, string}>
+     */
+    private function columns(): array
+    {
+        $columns = [];
+
+        foreach (['menu' => 'menus', 'menu_item' => 'menu_items'] as $model => $table) {
+            foreach (config("filament-menu-builder.translations.attributes.{$model}", []) as $column) {
+                $columns[] = [config("filament-menu-builder.tables.{$table}", $table), $column];
+            }
         }
 
-        DB::table($table)->get()->each(function ($row) use ($table, $column) {
-            $value = $row->{$column};
-            $decoded = json_decode($value, true);
-
-            if (is_array($decoded)) {
-                DB::table($table)->where('id', $row->id)->update([
-                    $column => collect($decoded)->first() ?? '',
-                ]);
-            }
-        });
-
-        Schema::table($table, function (Blueprint $table) use ($column) {
-            $table->string($column)->change();
-        });
+        return $columns;
     }
 };

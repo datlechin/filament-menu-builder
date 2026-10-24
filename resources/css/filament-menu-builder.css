@@ -1,0 +1,86 @@
+.fi-menu-builder-item-header {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+}
+
+.fi-menu-builder-item-handle {
+    cursor: move;
+}
+
+.fi-menu-builder-item-toggle {
+    transition: transform 200ms;
+}
+
+.fi-menu-builder-item-toggle-open {
+    transform: rotate(90deg);
+}
+
+/* Grows into the free space but gives way to the actions, which wrap onto their own row when it gets too narrow. */
+.fi-menu-builder-item-label {
+    display: flex;
+    flex: 1 1 8rem;
+    min-width: 0;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.fi-menu-builder-item-label-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+/* The badges and the actions wrap as two groups, onto their own row when the label leaves no room. */
+.fi-menu-builder-item-header > .fi-fo-repeater-item-header-end-actions {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 0.5rem;
+}
+
+.fi-menu-builder-item-badges {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.fi-menu-builder-item-badges > * {
+    flex-shrink: 0;
+}
+
+.fi-menu-builder-item-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* The URL follows the title on the same line, so it is cut off before the title is. */
+.fi-menu-builder-item-label-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fi-menu-builder-item-url {
+    margin-inline-start: 0.25rem;
+    font-weight: 400;
+    color: var(--gray-500);
+}
+
+.dark .fi-menu-builder-item-url {
+    color: var(--gray-400);
+}
+
+.fi-menu-builder-item-children {
+    padding-inline: 0.75rem 0.5rem;
+    padding-bottom: 0.75rem;
+}
+
+@media (min-width: 40rem) {
+    .fi-menu-builder-item-children {
+        padding-inline: 1.5rem 0.75rem;
+    }
+}

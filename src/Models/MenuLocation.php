@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Models;
 
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\MenuBuilder;
+use Datlechin\FilamentMenuBuilder\Support\MenuCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 
 /**
- * @property int $id
- * @property int $menu_id
+ * @property int|string $id
+ * @property int|string $menu_id
  * @property string $location
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property-read Menu $menu
  */
 class MenuLocation extends Model
 {
@@ -24,39 +20,31 @@ class MenuLocation extends Model
 
     public function getTable(): string
     {
-        return config('filament-menu-builder.tables.menu_locations', parent::getTable());
+        return MenuBuilder::table('menu_locations');
     }
 
     protected static function booted(): void
     {
         static::saved(function (self $location): void {
-            Cache::forget(Menu::locationCacheKey($location->location));
+            $location->forgetCache();
 
             if ($location->wasChanged('location')) {
-                $original = $location->getOriginal('location');
-
-                if ($original !== null && $original !== '') {
-                    Cache::forget(Menu::locationCacheKey($original));
-                }
+                $location->forgetCache($location->getOriginal('location'));
             }
         });
 
-        static::deleted(
-            fn (self $location) => Cache::forget(Menu::locationCacheKey($location->location)),
-        );
+        static::deleted(fn (self $location) => $location->forgetCache());
     }
 
     public function menu(): BelongsTo
     {
-        return $this->belongsTo(self::resolveMenuModel());
+        return $this->belongsTo(MenuBuilder::menuModel());
     }
 
-    protected static function resolveMenuModel(): string
+    protected function forgetCache(?string $location = null): void
     {
-        try {
-            return FilamentMenuBuilderPlugin::get()->getMenuModel();
-        } catch (\Throwable) {
-            return Menu::class;
-        }
+        $tenant = MenuBuilder::isTenantAware() ? $this->getAttribute(MenuBuilder::tenantForeignKey()) : null;
+
+        MenuCache::forget(MenuBuilder::menuModel()::locationCacheKey($location ?? $this->location, $tenant));
     }
 }

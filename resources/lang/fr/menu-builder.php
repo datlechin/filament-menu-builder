@@ -3,94 +3,73 @@
 declare(strict_types=1);
 
 return [
+    'resource' => [
+        'label' => 'Menu',
+        'plural_label' => 'Menus',
+        'name' => 'Nom',
+        'locations' => 'Emplacements',
+        'no_locations' => 'Aucun',
+        'location_taken' => 'Utilisé par :menu',
+        'items' => 'Éléments',
+        'is_visible' => 'Visible',
+        'settings' => 'Paramètres',
+    ],
+    'item_types' => [
+        'link' => 'Lien',
+        'text' => 'Texte',
+        'route' => 'Route',
+    ],
     'form' => [
         'title' => 'Titre',
         'url' => 'URL',
-        'linkable_type' => 'Type',
-        'linkable_id' => 'ID',
+        'route' => 'Route',
+        'route_parameters' => 'Paramètres de la route',
+        'open_in_new_tab' => 'Ouvrir dans un nouvel onglet',
+        'advanced' => 'Avancé',
+        'rel' => 'Attribut rel',
+        'icon' => 'Icône',
+        'classes' => 'Classes CSS',
+        'is_visible' => 'Visible',
     ],
-    'resource' => [
-        'name' => [
-            'label' => 'Nom',
-        ],
-        'locations' => [
-            'label' => 'Emplacements',
-            'empty' => 'Non assigné',
-        ],
-        'items' => [
-            'label' => 'Éléments',
-        ],
-        'is_visible' => [
-            'label' => 'Visibilité',
-            'visible' => 'Visible',
-            'hidden' => 'Masqué',
+    'items' => [
+        'heading' => 'Éléments',
+        'toggle' => 'Afficher ou masquer les sous-éléments',
+        'hidden' => 'Masqué',
+        'broken' => 'Lien cassé',
+        'empty' => [
+            'heading' => 'Ce menu ne contient aucun élément',
+            'description' => 'Ajoutez des liens, des pages ou des titres pour le construire.',
         ],
     ],
     'actions' => [
-        'add' => [
-            'label' => 'Ajouter au menu',
+        'add_item' => 'Ajouter un élément',
+        'add_child' => 'Ajouter :type à l\'intérieur',
+        'create' => [
+            'heading' => 'Ajouter :type',
         ],
-        'edit' => 'Modifier',
-        'delete' => 'Supprimer',
-        'indent' => 'Indenté',
-        'unindent' => 'Désindenté',
-        'locations' => [
-            'label' => 'Emplacements',
-            'heading' => 'Gérer les emplacements',
-            'description' => 'Choisissez quel menu apparaît à chaque emplacement.',
-            'submit' => 'Mettre à jour',
-            'form' => [
-                'location' => [
-                    'label' => 'Emplacement',
-                ],
-                'menu' => [
-                    'label' => 'Menu assigné',
-                ],
-            ],
-            'empty' => [
-                'heading' => 'Aucun emplacement enregistré',
-            ],
+        'delete' => [
+            'description' => 'Son sous-élément sera aussi supprimé.|Ses :count sous-éléments seront aussi supprimés.',
         ],
-    ],
-    'items' => [
-        'expand' => 'Développer',
-        'collapse' => 'Réduire',
-        'empty' => [
-            'heading' => 'Il n\'y a aucun élément dans ce menu.',
-        ],
-    ],
-    'custom_link' => 'Lien personnalisé',
-    'custom_text' => 'Texte personnalisé',
-    'open_in' => [
-        'label' => 'Ouvrir dans',
-        'options' => [
-            'self' => 'Même onglet',
-            'blank' => 'Nouvel onglet',
-            'parent' => 'Onglet parent',
-            'top' => 'Onglet supérieur',
-        ],
+        'reorder' => 'Glisser pour réordonner',
+        'duplicateItem' => 'Dupliquer',
+        'moveUp' => 'Monter',
+        'moveDown' => 'Descendre',
+        'indent' => 'Indenter',
+        'unindent' => 'Désindenter',
     ],
     'notifications' => [
-        'created' => [
-            'title' => 'Lien créé',
-        ],
-        'locations' => [
-            'title' => 'Emplacements de menu mis à jour',
+        'duplicated' => [
+            'title' => 'Dupliqué',
         ],
         'move_rejected' => [
-            'title' => 'L\'élément de menu n\'a pas pu être déplacé',
+            'title' => 'L\'élément de menu ne peut pas être placé ici',
             'body' => 'Les éléments de menu ne peuvent pas être imbriqués sur plus de :depth niveau.|Les éléments de menu ne peuvent pas être imbriqués sur plus de :depth niveaux.',
             'nesting' => 'Cet élément de menu ne peut pas être imbriqué dans cet élément.',
         ],
     ],
-    'panel' => [
-        'empty' => [
-            'heading' => 'Aucun élément trouvé',
-            'description' => 'Il n\'y a aucun élément dans ce menu.',
-        ],
-        'pagination' => [
-            'previous' => 'Précédent',
-            'next' => 'Suivant',
-        ],
+    'validation' => [
+        'url' => 'Le champ :attribute doit être une adresse web, un chemin, ou un lien mailto: ou tel:.',
+        'icon' => 'Le champ :attribute doit être le nom d\'une icône installée, par exemple heroicon-o-home.',
+        'route_parameters' => 'Renseignez le paramètre de route :parameters.|Renseignez les paramètres de route :parameters.',
     ],
 ];

@@ -3,94 +3,73 @@
 declare(strict_types=1);
 
 return [
+    'resource' => [
+        'label' => 'Menu',
+        'plural_label' => 'Menu\'s',
+        'name' => 'Naam',
+        'locations' => 'Locaties',
+        'no_locations' => 'Geen',
+        'location_taken' => 'Gebruikt door :menu',
+        'items' => 'Items',
+        'is_visible' => 'Zichtbaar',
+        'settings' => 'Instellingen',
+    ],
+    'item_types' => [
+        'link' => 'Link',
+        'text' => 'Tekst',
+        'route' => 'Route',
+    ],
     'form' => [
         'title' => 'Titel',
         'url' => 'URL',
-        'linkable_type' => 'Type',
-        'linkable_id' => 'ID',
+        'route' => 'Route',
+        'route_parameters' => 'Routeparameters',
+        'open_in_new_tab' => 'Openen in een nieuw tabblad',
+        'advanced' => 'Geavanceerd',
+        'rel' => 'Rel-attribuut',
+        'icon' => 'Icoon',
+        'classes' => 'CSS-klassen',
+        'is_visible' => 'Zichtbaar',
     ],
-    'resource' => [
-        'name' => [
-            'label' => 'Naam',
-        ],
-        'locations' => [
-            'label' => 'Locaties',
-            'empty' => 'Niet ingesteld',
-        ],
-        'items' => [
-            'label' => 'Items',
-        ],
-        'is_visible' => [
-            'label' => 'Zichtbaarheid',
-            'visible' => 'Zichtbaar',
-            'hidden' => 'Verborgen',
+    'items' => [
+        'heading' => 'Items',
+        'toggle' => 'Subitems tonen of verbergen',
+        'hidden' => 'Verborgen',
+        'broken' => 'Kapotte link',
+        'empty' => [
+            'heading' => 'Dit menu heeft geen items',
+            'description' => 'Voeg links, pagina\'s of koppen toe om het op te bouwen.',
         ],
     ],
     'actions' => [
-        'add' => [
-            'label' => 'Toevoegen aan menu',
+        'add_item' => 'Item toevoegen',
+        'add_child' => ':type toevoegen hierin',
+        'create' => [
+            'heading' => ':type toevoegen',
         ],
-        'edit' => 'Bewerken',
-        'delete' => 'Verwijderen',
+        'delete' => [
+            'description' => 'Het subitem wordt ook verwijderd.|De :count subitems worden ook verwijderd.',
+        ],
+        'reorder' => 'Sleep om te ordenen',
+        'duplicateItem' => 'Dupliceren',
+        'moveUp' => 'Omhoog',
+        'moveDown' => 'Omlaag',
         'indent' => 'Inspringen',
         'unindent' => 'Uitspringen',
-        'locations' => [
-            'label' => 'Locaties',
-            'heading' => 'Locaties beheren',
-            'description' => 'Stel in welk menu op welke locatie wordt getoond.',
-            'submit' => 'Wijzigingen opslaan',
-            'form' => [
-                'location' => [
-                    'label' => 'Locatie',
-                ],
-                'menu' => [
-                    'label' => 'Gekoppeld menu',
-                ],
-            ],
-            'empty' => [
-                'heading' => 'Geen locaties gevonden',
-            ],
-        ],
-    ],
-    'items' => [
-        'expand' => 'Uitklappen',
-        'collapse' => 'Inklappen',
-        'empty' => [
-            'heading' => 'Dit menu heeft geen items.',
-        ],
-    ],
-    'custom_link' => 'Aangepaste link',
-    'custom_text' => 'Aangepaste tekst',
-    'open_in' => [
-        'label' => 'Openen op',
-        'options' => [
-            'self' => 'Huidig tabblad',
-            'blank' => 'Nieuw tabblad',
-            'parent' => 'Bovenliggend tabblad',
-            'top' => 'Hoofdtabblad',
-        ],
     ],
     'notifications' => [
-        'created' => [
-            'title' => 'Link aangemaakt',
-        ],
-        'locations' => [
-            'title' => 'Menulocaties bijgewerkt',
+        'duplicated' => [
+            'title' => 'Gedupliceerd',
         ],
         'move_rejected' => [
-            'title' => 'Menu-item kon niet worden verplaatst',
+            'title' => 'Het menu-item kan daar niet staan',
             'body' => 'Menu-items kunnen niet dieper dan :depth niveau worden genest.|Menu-items kunnen niet dieper dan :depth niveaus worden genest.',
             'nesting' => 'Dit menu-item kan niet in dat item worden genest.',
         ],
     ],
-    'panel' => [
-        'empty' => [
-            'heading' => 'Geen items gevonden',
-            'description' => 'Dit menu heeft geen items.',
-        ],
-        'pagination' => [
-            'previous' => 'Vorige',
-            'next' => 'Volgende',
-        ],
+    'validation' => [
+        'url' => ':attribute moet een webadres, een pad, of een mailto:- of tel:-link zijn.',
+        'icon' => ':attribute moet de naam van een geïnstalleerd icoon zijn, zoals heroicon-o-home.',
+        'route_parameters' => 'Vul de routeparameter :parameters in.|Vul de routeparameters :parameters in.',
     ],
 ];

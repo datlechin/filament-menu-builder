@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Request
+    url: https://github.com/datlechin/filament-menu-builder/discussions/new?category=ideas
+    about: Suggest a new feature or an improvement.
+  - name: Question
+    url: https://github.com/datlechin/filament-menu-builder/discussions/new?category=q-a
+    about: Ask how to do something with the plugin.
+  - name: Security Vulnerability
+    url: https://github.com/datlechin/filament-menu-builder/blob/main/.github/SECURITY.md
+    about: Report a security vulnerability privately.

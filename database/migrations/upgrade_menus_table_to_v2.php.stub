@@ -1,0 +1,61 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $menuItems = config('filament-menu-builder.tables.menu_items', 'menu_items');
+
+        Schema::table($menuItems, function (Blueprint $table) use ($menuItems) {
+            $columns = Schema::getColumnListing($menuItems);
+
+            if (! in_array('type', $columns)) {
+                $table->string('type')->default('link')->after('parent_id');
+            }
+
+            if (! in_array('route', $columns)) {
+                $table->string('route')->nullable()->after('url');
+                $table->json('route_parameters')->nullable()->after('route');
+            }
+
+            foreach (['rel', 'icon', 'classes'] as $column) {
+                if (! in_array($column, $columns)) {
+                    $table->string($column)->nullable();
+                }
+            }
+
+            if (! in_array('data', $columns)) {
+                $table->json('data')->nullable();
+            }
+
+            if (! in_array('is_visible', $columns)) {
+                $table->boolean('is_visible')->default(true);
+            }
+
+            $table->string('target', 10)->nullable()->default(null)->change();
+        });
+
+        DB::table($menuItems)->whereNotNull('linkable_type')->update(['type' => 'model']);
+        DB::table($menuItems)->whereNull('linkable_type')->whereNull('url')->update(['type' => 'text']);
+        DB::table($menuItems)->where('target', '_self')->orWhere('target', '')->update(['target' => null]);
+
+        if (Schema::hasColumn($menuItems, 'panel')) {
+            Schema::table($menuItems, fn (Blueprint $table) => $table->dropColumn('panel'));
+        }
+    }
+
+    public function down(): void
+    {
+        $menuItems = config('filament-menu-builder.tables.menu_items', 'menu_items');
+
+        Schema::table($menuItems, function (Blueprint $table) {
+            $table->string('panel')->nullable();
+            $table->dropColumn(['type', 'route', 'route_parameters', 'data', 'is_visible']);
+        });
+    }
+};

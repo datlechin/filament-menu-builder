@@ -4,70 +4,250 @@ declare(strict_types=1);
 
 namespace Datlechin\FilamentMenuBuilder\Livewire;
 
-use Datlechin\FilamentMenuBuilder\Concerns\ManagesMenuItemHierarchy;
-use Datlechin\FilamentMenuBuilder\Enums\LinkTarget;
+use Closure;
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\ItemTypes\ItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\UnregisteredItemType;
+use Datlechin\FilamentMenuBuilder\MenuBuilder;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
-use Datlechin\FilamentMenuBuilder\Support\TranslatableFieldWrapper;
+use Datlechin\FilamentMenuBuilder\Models\MenuItem;
+use Datlechin\FilamentMenuBuilder\Services\MenuItemService;
+use Datlechin\FilamentMenuBuilder\Support\MenuHierarchy;
+use Datlechin\FilamentMenuBuilder\Support\MenuItemCollection;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Support\Enums\Size;
 use Filament\Support\Enums\Width;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
+/**
+ * @property-read MenuItemCollection<string, MenuItem> $items
+ * @property-read MenuItemCollection<int, MenuItem> $tree
+ * @property-read MenuHierarchy $hierarchy
+ */
 class MenuItems extends Component implements HasActions, HasSchemas
 {
     use InteractsWithActions;
     use InteractsWithSchemas;
-    use ManagesMenuItemHierarchy;
 
     public Menu $menu;
 
     #[Computed]
-    #[On('menu:changed')]
-    public function menuItems(): Collection
+    public function items(): MenuItemCollection
     {
-        return $this->menu->menuItems;
+        return $this->getService()->items($this->menu)->keyBy(fn (MenuItem $item): string => (string) $item->getKey());
     }
 
-    public function editAction(): Action
+    #[Computed]
+    public function tree(): MenuItemCollection
     {
-        return Action::make('edit')
-            ->label(__('filament-menu-builder::menu-builder.actions.edit'))
+        return $this->items->toTree();
+    }
+
+    #[Computed]
+    public function hierarchy(): MenuHierarchy
+    {
+        return $this->getService()->hierarchy($this->menu, $this->items);
+    }
+
+    /**
+     * @param  array<int|string>  $order
+     */
+    public function reorder(array $order, int | string | null $parentId = null): void
+    {
+        abort_unless($this->canEdit(), 403);
+
+        if ($this->getService()->updateOrder($this->menu, $order, $parentId)) {
+            $this->refreshTree();
+
+            return;
+        }
+
+        $this->notifyRejected(fn (MenuHierarchy $hierarchy): bool => $hierarchy->exceedsMaxDepth($order, $parentId));
+    }
+
+    public function createItemAction(): CreateAction
+    {
+        return CreateAction::make('createItem')
+            ->model(MenuBuilder::menuItemModel())
+            ->label(fn (array $arguments): string => filled($arguments['parent'] ?? null)
+                ? __('filament-menu-builder::menu-builder.actions.add_child', ['type' => $this->getItemType($arguments)->getLabel()])
+                : $this->getItemType($arguments)->getLabel())
+            ->icon(fn (array $arguments): ?string => $this->getItemType($arguments)->getIcon())
+            ->modalHeading(fn (array $arguments): string => __('filament-menu-builder::menu-builder.actions.create.heading', ['type' => $this->getItemType($arguments)->getLabel()]))
+            ->slideOver()
+            ->modalWidth(Width::Large)
+            ->schema(fn (array $arguments): array => $this->getItemType($arguments)->getCreateSchema())
+            ->using(function (array $data, array $arguments, CreateAction $action): MenuItem {
+                $parentId = $arguments['parent'] ?? null;
+                $items = $this->getService()->create($this->menu, $this->getItemType($arguments), $data, $parentId);
+
+                if ($items === null) {
+                    $this->notifyRejected(fn (MenuHierarchy $hierarchy): bool => $parentId !== null
+                        && $hierarchy->getMaxDepth() !== null
+                        && $hierarchy->depthOf($parentId) + 1 > $hierarchy->getMaxDepth());
+
+                    $action->halt();
+                }
+
+                // The selected records may have been deleted while the form was open.
+                if ($items === []) {
+                    $action->cancel();
+                }
+
+                $this->refreshTree();
+
+                return end($items);
+            })
+            ->visible(fn (array $arguments): bool => $this->getItemType($arguments)->isVisible($this->menu)
+                && (blank($arguments['parent'] ?? null) || $this->canAddChildTo($arguments['parent'])))
+            ->authorize(fn (): bool => $this->canEdit());
+    }
+
+    public function editItemAction(): EditAction
+    {
+        return EditAction::make('editItem')
+            ->record(fn (array $arguments): ?MenuItem => $this->findItem($arguments['item'] ?? null))
             ->iconButton()
             ->icon('heroicon-m-pencil-square')
+            ->color('gray')
             ->size(Size::Small)
+            ->modalHeading(fn (?MenuItem $record): ?string => $record?->translated('title'))
             ->slideOver()
-            ->modalWidth(Width::Medium)
-            ->record(fn (array $arguments) => $this->getMenuItemService()->findByIdWithRelations($arguments['id']))
-            ->fillForm(fn ($record): array => $record->toArray())
-            ->form(fn (): array => $this->getEditFormSchema())
-            ->action(fn (array $data, array $arguments) => $this->getMenuItemService()->update($arguments['id'], $data));
+            ->modalWidth(Width::Large)
+            ->schema(fn (?MenuItem $record): array => $record ? $this->getItemTypeFor($record)->getFormSchema() : [])
+            ->mutateRecordDataUsing(fn (array $data, MenuItem $record): array => $record->withTranslations($data))
+            ->after(fn () => $this->refreshTree())
+            ->authorize(fn (?MenuItem $record): bool => $record !== null && $this->canEdit());
     }
 
-    public function deleteAction(): Action
+    public function deleteItemAction(): DeleteAction
     {
-        return Action::make('delete')
-            ->label(__('filament-menu-builder::menu-builder.actions.delete'))
-            ->color('danger')
-            ->icon('heroicon-s-trash')
-            ->iconButton()
-            ->size(Size::Small)
-            ->requiresConfirmation()
+        return DeleteAction::make('deleteItem')
+            ->record(fn (array $arguments): ?MenuItem => $this->findItem($arguments['item'] ?? null))
+            ->hidden(fn (?MenuItem $record): bool => $record === null)
+            // Every item renders a delete action, so the default mod+d shortcut would be bound once per item.
+            ->keyBindings(null)
+            ->modalDescription(fn (?MenuItem $record): ?string => $record && ($count = count($this->hierarchy->descendantsOf($record->getKey())))
+                ? trans_choice('filament-menu-builder::menu-builder.actions.delete.description', $count, ['count' => $count])
+                : null)
+            ->using(fn (MenuItem $record): bool => $this->getService()->delete($this->menu, $record->getKey()))
+            ->after(fn () => $this->refreshTree())
+            ->authorize(fn (?MenuItem $record): bool => $record !== null && $this->canEdit());
+    }
+
+    public function duplicateItemAction(): Action
+    {
+        return $this->makeItemAction('duplicateItem', 'heroicon-m-square-2-stack')
             ->action(function (array $arguments): void {
-                $this->getMenuItemService()->delete($arguments['id']);
+                $this->getService()->duplicate($this->menu, $arguments['item']);
+                $this->refreshTree();
+
+                Notification::make()
+                    ->title(__('filament-menu-builder::menu-builder.notifications.duplicated.title'))
+                    ->success()
+                    ->send();
             });
+    }
+
+    public function moveUpAction(): Action
+    {
+        return $this->makeMoveAction(
+            'moveUp',
+            'heroicon-m-arrow-up',
+            fn (int | string $itemId): bool => $this->hierarchy->previousSiblingOf($itemId) !== null,
+            fn (int | string $itemId): bool => $this->getService()->moveUp($this->menu, $itemId),
+        );
+    }
+
+    public function moveDownAction(): Action
+    {
+        return $this->makeMoveAction(
+            'moveDown',
+            'heroicon-m-arrow-down',
+            fn (int | string $itemId): bool => $this->hierarchy->nextSiblingOf($itemId) !== null,
+            fn (int | string $itemId): bool => $this->getService()->moveDown($this->menu, $itemId),
+        );
+    }
+
+    public function indentAction(): Action
+    {
+        return $this->makeMoveAction(
+            'indent',
+            'heroicon-m-arrow-right',
+            fn (int | string $itemId): bool => $this->hierarchy->canIndent($itemId),
+            fn (int | string $itemId): bool => $this->getService()->indent($this->menu, $itemId),
+        );
+    }
+
+    public function unindentAction(): Action
+    {
+        return $this->makeMoveAction(
+            'unindent',
+            'heroicon-m-arrow-left',
+            fn (int | string $itemId): bool => $this->hierarchy->canUnindent($itemId),
+            fn (int | string $itemId): bool => $this->getService()->unindent($this->menu, $itemId),
+        );
+    }
+
+    public function getAddItemActions(): ActionGroup | Action
+    {
+        $actions = $this->getCreateActions();
+
+        if (count($actions) === 1) {
+            return $actions[0]->button();
+        }
+
+        return ActionGroup::make($actions)
+            ->label(__('filament-menu-builder::menu-builder.actions.add_item'))
+            ->icon('heroicon-m-plus')
+            ->button();
+    }
+
+    public function getItemActions(int | string $itemId): ActionGroup
+    {
+        $arguments = ['item' => $itemId];
+
+        return ActionGroup::make([
+            ActionGroup::make($this->getCreateActions($itemId))->dropdown(false),
+            ActionGroup::make([
+                ($this->duplicateItemAction)($arguments),
+                ($this->moveUpAction)($arguments),
+                ($this->moveDownAction)($arguments),
+                ($this->indentAction)($arguments),
+                ($this->unindentAction)($arguments),
+            ])->dropdown(false),
+            ActionGroup::make([
+                ($this->deleteItemAction)($arguments),
+            ])->dropdown(false),
+        ])
+            ->size(Size::Small)
+            ->color('gray');
+    }
+
+    public function getItemType(array $arguments): ItemType
+    {
+        return FilamentMenuBuilderPlugin::get()->getItemType($arguments['type'] ?? '') ?? abort(404);
+    }
+
+    public function getItemTypeFor(MenuItem $item): ItemType
+    {
+        return FilamentMenuBuilderPlugin::get()->getItemTypeFor($item) ?? UnregisteredItemType::make($item->type);
+    }
+
+    public function canEdit(): bool
+    {
+        return FilamentMenuBuilderPlugin::get()->getResource()::canEdit($this->menu);
     }
 
     public function render(): View
@@ -75,70 +255,77 @@ class MenuItems extends Component implements HasActions, HasSchemas
         return view('filament-menu-builder::livewire.menu-items');
     }
 
-    protected function getEditFormSchema(): array
+    /**
+     * @return list<Action>
+     */
+    protected function getCreateActions(int | string | null $parentId = null): array
     {
-        $plugin = FilamentMenuBuilderPlugin::get();
+        return collect(FilamentMenuBuilderPlugin::get()->getItemTypes())
+            ->filter(fn (ItemType $type): bool => $type->isVisible($this->menu))
+            ->map(fn (ItemType $type, string $key): Action => ($this->createItemAction)(['type' => $key, 'parent' => $parentId]))
+            ->values()
+            ->all();
+    }
 
-        $titleField = TextInput::make('title')
-            ->label(__('filament-menu-builder::menu-builder.form.title'))
-            ->required();
+    protected function makeItemAction(string $name, string $icon): Action
+    {
+        return Action::make($name)
+            ->label(__("filament-menu-builder::menu-builder.actions.{$name}"))
+            ->icon($icon)
+            ->authorize(fn (array $arguments): bool => $this->canEdit() && $this->findItem($arguments['item'] ?? null) !== null);
+    }
 
-        $urlField = TextInput::make('url')
-            ->hidden(fn (?string $state, Get $get): bool => blank($state) || filled($get('linkable_type')))
-            ->label(__('filament-menu-builder::menu-builder.form.url'))
-            ->required();
+    /**
+     * @param  Closure(int|string): bool  $isPossible
+     * @param  Closure(int|string): bool  $move
+     */
+    protected function makeMoveAction(string $name, string $icon, Closure $isPossible, Closure $move): Action
+    {
+        return $this->makeItemAction($name, $icon)
+            ->visible(fn (array $arguments): bool => isset($arguments['item']) && $isPossible($arguments['item']))
+            ->action(function (array $arguments) use ($move): void {
+                $move($arguments['item']);
+                $this->refreshTree();
+            });
+    }
 
-        if ($plugin->isTranslatable()) {
-            $locales = $plugin->getTranslatableLocales();
+    protected function findItem(int | string | null $itemId): ?MenuItem
+    {
+        return $this->items[(string) $itemId] ?? null;
+    }
 
-            if (in_array('title', $plugin->getTranslatableMenuItemFields())) {
-                $titleField = TranslatableFieldWrapper::wrap($titleField, $locales);
-            }
+    protected function canAddChildTo(int | string $parentId): bool
+    {
+        $maxDepth = $this->hierarchy->getMaxDepth();
 
-            if (in_array('url', $plugin->getTranslatableMenuItemFields())) {
-                $urlField = TranslatableFieldWrapper::wrap($urlField, $locales);
-            }
-        }
+        return $this->hierarchy->contains($parentId)
+            && ! FilamentMenuBuilderPlugin::get()->isNestingDisabled()
+            && ($maxDepth === null || $this->hierarchy->depthOf($parentId) < $maxDepth);
+    }
 
-        $fields = [
-            $titleField,
-            $urlField,
-            TextInput::make('linkable_type')
-                ->label(__('filament-menu-builder::menu-builder.form.linkable_type'))
-                ->hidden(fn (Get $get): bool => blank($get('linkable_type')))
-                ->disabled()
-                ->dehydrated(false),
-            TextInput::make('linkable_id')
-                ->label(__('filament-menu-builder::menu-builder.form.linkable_id'))
-                ->hidden(fn (Get $get): bool => blank($get('linkable_id')))
-                ->disabled()
-                ->dehydrated(false),
-            TextInput::make('icon')
-                ->label(__('filament-menu-builder::menu-builder.form.icon'))
-                ->placeholder('heroicon-o-home'),
-            TextInput::make('classes')
-                ->label(__('filament-menu-builder::menu-builder.form.classes'))
-                ->placeholder('text-sm font-bold'),
-            TextInput::make('rel')
-                ->label(__('filament-menu-builder::menu-builder.form.rel'))
-                ->placeholder('nofollow noopener noreferrer'),
-            Select::make('target')
-                ->label(__('filament-menu-builder::menu-builder.open_in.label'))
-                ->options(LinkTarget::class)
-                ->default(LinkTarget::Self),
-        ];
+    protected function refreshTree(): void
+    {
+        unset($this->items, $this->tree, $this->hierarchy);
+    }
 
-        $customFields = FilamentMenuBuilderPlugin::get()->getMenuItemFields();
+    /**
+     * @param  callable(MenuHierarchy): bool  $exceedsMaxDepth
+     */
+    protected function notifyRejected(callable $exceedsMaxDepth): void
+    {
+        $maxDepth = $this->hierarchy->getMaxDepth();
 
-        if ($customFields instanceof \Closure) {
-            $customFields = app()->call($customFields);
-        }
+        Notification::make()
+            ->title(__('filament-menu-builder::menu-builder.notifications.move_rejected.title'))
+            ->body($exceedsMaxDepth($this->hierarchy)
+                ? trans_choice('filament-menu-builder::menu-builder.notifications.move_rejected.body', $maxDepth, ['depth' => $maxDepth])
+                : __('filament-menu-builder::menu-builder.notifications.move_rejected.nesting'))
+            ->danger()
+            ->send();
+    }
 
-        if (! empty($customFields)) {
-            $fields[] = Group::make()
-                ->schema($customFields);
-        }
-
-        return $fields;
+    protected function getService(): MenuItemService
+    {
+        return MenuItemService::make();
     }
 }

@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Tests\Fixtures;
 
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
+use Datlechin\FilamentMenuBuilder\ItemTypes\LinkItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\ModelItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\RouteItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\TextItemType;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -33,12 +36,12 @@ class AdminPanelProvider extends PanelProvider
                         'header' => 'Header Navigation',
                         'footer' => 'Footer Navigation',
                     ])
-                    ->addMenuPanel(
-                        StaticMenuPanel::make('pages')
-                            ->add('Home', '/')
-                            ->add('About', '/about')
-                    )
-                    ->showCustomTextPanel()
+                    ->itemTypes([
+                        LinkItemType::make(),
+                        TextItemType::make(),
+                        RouteItemType::make()->routes(['home' => 'Home', 'pages.show' => 'Page']),
+                        ModelItemType::make(Page::class)->titleAttribute('title'),
+                    ]),
             )
             ->middleware([
                 EncryptCookies::class,
