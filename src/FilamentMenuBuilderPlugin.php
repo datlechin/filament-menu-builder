@@ -191,15 +191,6 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this;
     }
 
-    /**
-     * Restrict which menu items may be nested inside which parents. Pass
-     * `false` to disallow nesting entirely (equivalent to `maxDepth(0)`),
-     * or `true` to remove the restriction.
-     *
-     * A closure receives the `$item` being placed, its prospective
-     * `$parent` (`null` at the root level), and the `$menu` being edited,
-     * and returns whether the placement is allowed.
-     */
     public function allowNesting(bool | Closure $condition = true): static
     {
         $this->allowNesting = $condition;

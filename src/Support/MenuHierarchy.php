@@ -38,8 +38,6 @@ final class MenuHierarchy
 
     /**
      * @param  iterable<object{id: int|string, parent_id: int|string|null}>  $items  Items of one menu, ordered by `order`.
-     * @param  int|null  $maxDepth  How deep items may be nested; root items have a depth of 0. `null` for unlimited.
-     * @param  Closure(int|string, int|string|null): bool|null  $canNest  Given an item id and a prospective parent id (`null` for the root), whether the item may be placed there.
      */
     public function __construct(
         iterable $items,
@@ -124,14 +122,10 @@ final class MenuHierarchy
 
     public function canUnindent(int | string $itemId): bool
     {
-        if (! $this->contains($itemId)) {
-            return false;
-        }
+        $key = (string) $itemId;
+        $parent = $this->parents[$key] ?? self::ROOT;
 
-        $parent = $this->parentOf($itemId);
-
-        return $parent !== null
-            && $this->allowsNestingUnder((string) $itemId, $this->parents[(string) $parent]);
+        return $parent !== self::ROOT && $this->allowsNestingUnder($key, $this->parents[$parent]);
     }
 
     /**
@@ -194,13 +188,6 @@ final class MenuHierarchy
     }
 
     /**
-     * Determine whether moving the given items under the given parent is forbidden by the nesting restriction.
-     *
-     * Items that already belong to the parent are only being reordered, so the
-     * restriction is not applied to them. This keeps menus that were built before
-     * a restriction was configured editable, while never letting an item move
-     * under a parent the restriction disallows.
-     *
      * @param  array<int|string>  $itemIds
      */
     public function violatesNestingRestriction(array $itemIds, int | string | null $parentId): bool

@@ -166,7 +166,6 @@ it('resolves the max depth for the menu being edited', function () {
 });
 
 it('resolves the menu item models for the nesting restriction', function () {
-    // Only custom text items (no URL) may have children, and they may never be nested themselves.
     FilamentMenuBuilderPlugin::get()->allowNesting(
         fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || ($parent->url === null && $item->url !== null),
     );

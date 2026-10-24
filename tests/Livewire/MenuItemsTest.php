@@ -226,7 +226,6 @@ it('renders indent actions only where the nesting restriction allows them', func
 });
 
 it('does not render the unindent action when the nesting restriction forbids the new parent', function () {
-    // Links must live inside a group, so a link may not be unindented to the root.
     FilamentMenuBuilderPlugin::get()->allowNesting(
         fn (MenuItem $item, ?MenuItem $parent): bool => $parent !== null || $item->url === null,
     );
