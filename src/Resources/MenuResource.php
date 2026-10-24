@@ -10,6 +10,7 @@ use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\EditMenu;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource\Pages\ListMenus;
 use Datlechin\FilamentMenuBuilder\Support\TranslatableField;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -25,6 +26,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class MenuResource extends Resource
 {
@@ -41,6 +43,16 @@ class MenuResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return __('filament-menu-builder::menu-builder.resource.plural_label');
+    }
+
+    public static function hasRecordTitle(): bool
+    {
+        return true;
+    }
+
+    public static function getRecordTitle(?Model $record): string
+    {
+        return $record?->translated('name') ?? static::getModelLabel();
     }
 
     public static function getNavigationLabel(): string
@@ -115,23 +127,28 @@ class MenuResource extends Resource
                     ->label(__('filament-menu-builder::menu-builder.resource.locations'))
                     ->formatStateUsing(fn (string $state): string => $locations[$state] ?? $state)
                     ->badge()
-                    ->placeholder(__('filament-menu-builder::menu-builder.resource.no_locations')),
+                    ->placeholder(__('filament-menu-builder::menu-builder.resource.no_locations'))
+                    ->visibleFrom('sm'),
                 TextColumn::make('items_count')
                     ->label(__('filament-menu-builder::menu-builder.resource.items'))
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
                 IconColumn::make('is_visible')
                     ->label(__('filament-menu-builder::menu-builder.resource.is_visible'))
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
             ])
             ->recordActions([
                 EditAction::make(),
-                ReplicateAction::make()
-                    ->excludeAttributes(['items_count'])
-                    ->after(fn (Menu $record, Menu $replica) => $record->copyItemsTo($replica))
-                    ->successRedirectUrl(fn (Menu $replica): string => static::getUrl('edit', ['record' => $replica])),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ReplicateAction::make()
+                        ->excludeAttributes(['items_count'])
+                        ->after(fn (Menu $record, Menu $replica) => $record->copyItemsTo($replica))
+                        ->successRedirectUrl(fn (Menu $replica): string => static::getUrl('edit', ['record' => $replica])),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

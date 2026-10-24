@@ -23,11 +23,11 @@ class EditMenu extends EditRecord
     {
         return $schema
             ->components([
-                Grid::make(['default' => 1, 'lg' => 3])
+                Grid::make(['default' => 1, 'xl' => 3])
                     ->schema([
                         Livewire::make('menu-builder-items', ['menu' => $this->getRecord()])
                             ->key('menu-builder-items')
-                            ->columnSpan(['lg' => 2]),
+                            ->columnSpan(['xl' => 2]),
                         Section::make(__('filament-menu-builder::menu-builder.resource.settings'))
                             ->schema([$this->getFormContentComponent()]),
                     ]),

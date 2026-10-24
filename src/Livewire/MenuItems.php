@@ -130,6 +130,8 @@ class MenuItems extends Component implements HasActions, HasSchemas
         return DeleteAction::make('deleteItem')
             ->record(fn (array $arguments): ?MenuItem => $this->findItem($arguments['item'] ?? null))
             ->hidden(fn (?MenuItem $record): bool => $record === null)
+            // Every item renders a delete action, so the default mod+d shortcut would be bound once per item.
+            ->keyBindings(null)
             ->modalDescription(fn (?MenuItem $record): ?string => $record && ($count = count($this->hierarchy->descendantsOf($record->getKey())))
                 ? trans_choice('filament-menu-builder::menu-builder.actions.delete.description', $count, ['count' => $count])
                 : null)

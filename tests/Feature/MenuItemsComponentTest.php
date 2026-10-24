@@ -259,3 +259,20 @@ it('gives the edit button of each item an icon', function () {
 
     menuItems()->assertActionHasIcon(onItem('editItem', $item), 'heroicon-m-pencil-square');
 });
+
+it('does not bind a keyboard shortcut to deleting items', function () {
+    MenuItem::factory()->for($this->menu)->count(2)->create();
+
+    menuItems()->assertDontSeeHtml('x-mousetrap');
+});
+
+it('shows the path of links to the same site', function () {
+    MenuItem::factory()->for($this->menu)->route('pages.show', ['page' => 'about'])->create();
+    MenuItem::factory()->for($this->menu)->route('home')->create();
+    MenuItem::factory()->for($this->menu)->create(['url' => 'https://docs.example.com/start']);
+
+    menuItems()
+        ->assertSeeHtml('<span class="fi-menu-builder-item-url">/pages/about</span>')
+        ->assertSeeHtml('<span class="fi-menu-builder-item-url">/</span>')
+        ->assertSeeHtml('<span class="fi-menu-builder-item-url">https://docs.example.com/start</span>');
+});

@@ -41,10 +41,11 @@ it('creates a menu and opens it for editing', function () {
 });
 
 it('renders the item tree beside the menu settings', function () {
-    $menu = Menu::factory()->create();
+    $menu = Menu::factory()->create(['name' => 'Main navigation']);
 
     $this->get(MenuResource::getUrl('edit', ['record' => $menu]))
         ->assertOk()
+        ->assertSee('Edit Main navigation')
         ->assertSeeLivewire(MenuItems::class);
 });
 

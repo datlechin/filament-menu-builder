@@ -30,12 +30,31 @@
     flex-shrink: 0;
 }
 
-/* The badges and actions keep their size and wrap onto their own row on narrow screens. */
+/* The badges and the actions wrap as two groups, onto their own row when the label leaves no room. */
 .fi-menu-builder-item-header > .fi-fo-repeater-item-header-end-actions {
-    flex-shrink: 0;
+    min-width: 0;
     flex-wrap: wrap;
     justify-content: flex-end;
     row-gap: 0.5rem;
+}
+
+.fi-menu-builder-item-badges {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.fi-menu-builder-item-badges > * {
+    flex-shrink: 0;
+}
+
+.fi-menu-builder-item-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 /* The URL follows the title on the same line, so it is cut off before the title is. */
@@ -56,6 +75,12 @@
 }
 
 .fi-menu-builder-item-children {
-    padding-inline: 1.5rem 0.75rem;
+    padding-inline: 0.75rem 0.5rem;
     padding-bottom: 0.75rem;
+}
+
+@media (min-width: 40rem) {
+    .fi-menu-builder-item-children {
+        padding-inline: 1.5rem 0.75rem;
+    }
 }
