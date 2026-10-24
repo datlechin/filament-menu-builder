@@ -246,3 +246,10 @@ it('exposes the max depth and subtree heights to the drag and drop guard', funct
         ->assertSeeHtml('maxDepth: 2')
         ->assertSeeHtml('data-sortable-height="1"');
 });
+
+it('fills the title from the chosen route', function () {
+    menuItems()
+        ->mountAction(createItem('route'))
+        ->fillForm(['route' => 'pages.show'])
+        ->assertFormSet(['title' => 'Page', 'route_parameters' => ['page' => null]], 'mountedActionSchema0');
+});

@@ -8,6 +8,7 @@
     $key = $item->getKey();
     $type = $this->getItemTypeFor($item);
     $url = $item->getUrl();
+    $isBroken = $url === null && $item->hasDestination();
     $hasChildren = $item->children->isNotEmpty();
 @endphp
 
@@ -66,7 +67,7 @@
                 </x-filament::badge>
             @endif
 
-            @if ($item->isBroken())
+            @if ($isBroken)
                 <x-filament::badge color="danger" icon="heroicon-m-exclamation-triangle">
                     {{ __('filament-menu-builder::menu-builder.items.broken') }}
                 </x-filament::badge>

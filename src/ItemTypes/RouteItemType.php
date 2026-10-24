@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\ItemTypes;
 
 use Closure;
+use Datlechin\FilamentMenuBuilder\MenuBuilder;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Utilities\Get;
@@ -73,8 +74,12 @@ class RouteItemType extends ItemType
                 ->afterStateUpdated(function (?string $state, Get $get, Set $set): void {
                     $set('route_parameters', array_fill_keys(self::getParameterNames($state), null));
 
-                    if ($state && blank($get('title'))) {
-                        $set('title', $this->getRoutes()[$state] ?? null);
+                    $titlePath = in_array('title', MenuBuilder::translatableAttributes('menu_item'), true)
+                        ? 'title.' . MenuBuilder::locales()[0]
+                        : 'title';
+
+                    if ($state && blank($get($titlePath))) {
+                        $set($titlePath, $this->getRoutes()[$state] ?? null);
                     }
                 }),
             KeyValue::make('route_parameters')
