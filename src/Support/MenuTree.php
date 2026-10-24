@@ -84,7 +84,7 @@ final class MenuTree implements Arrayable, Countable, IteratorAggregate, JsonSer
      */
     public function activeTrail(?string $currentUrl = null): array
     {
-        $currentUrl ??= request()->url();
+        $currentUrl ??= request()->fullUrl();
         $trail = [];
         $nodes = $this->nodes;
 

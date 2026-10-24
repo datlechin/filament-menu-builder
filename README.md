@@ -411,7 +411,7 @@ Inertia::share('menu', fn () => Menu::location('header')?->tree());
 
 ### Caching
 
-Trees are cached per menu, locale and domain, and refreshed when the menu, its items, its locations or a linked record changes. Linked records are only tracked when their model uses the `HasMenuItems` trait. Since route URLs are generated when the tree is built, you should clear the cache after changing your routes. You may change the cache store, or disable caching, in the configuration file.
+Trees are cached per menu, locale and domain, and refreshed when the menu, its items, its locations or a linked record changes. Linked records are only tracked when their model uses the `HasMenuItems` trait. Since route URLs are generated when the tree is built, you should clear the cache after changing your routes. You may change the cache store, or disable caching, in the configuration file. The `cache.ttl` option only decides how long entries that are no longer used stay in the cache.
 
 ## Translations
 

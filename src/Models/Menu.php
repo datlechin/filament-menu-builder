@@ -7,6 +7,7 @@ namespace Datlechin\FilamentMenuBuilder\Models;
 use Datlechin\FilamentMenuBuilder\Concerns\HasTranslatableAttributes;
 use Datlechin\FilamentMenuBuilder\Database\Factories\MenuFactory;
 use Datlechin\FilamentMenuBuilder\MenuBuilder;
+use Datlechin\FilamentMenuBuilder\Support\MenuCache;
 use Datlechin\FilamentMenuBuilder\Support\MenuTree;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,18 +56,23 @@ class Menu extends Model
     protected static function booted(): void
     {
         static::saved(fn (self $menu) => $menu->flushCaches());
-        // Locations are removed by a cascading foreign key, so their cache keys must be read before the delete.
-        static::deleting(fn (self $menu) => $menu->flushCaches());
+        static::deleting(function (self $menu): void {
+            $menu->flushCaches();
+
+            // Tables created before 1.0 have no foreign keys to cascade the delete.
+            $menu->items()->delete();
+            $menu->locations()->delete();
+        });
     }
 
     public function items(): HasMany
     {
-        return $this->hasMany(MenuBuilder::menuItemModel())->orderBy('order');
+        return $this->hasMany(MenuBuilder::menuItemModel(), 'menu_id')->orderBy('order');
     }
 
     public function locations(): HasMany
     {
-        return $this->hasMany(MenuBuilder::menuLocationModel());
+        return $this->hasMany(MenuBuilder::menuLocationModel(), 'menu_id');
     }
 
     public function tenant(): BelongsTo
@@ -123,12 +129,8 @@ class Menu extends Model
             })
             ->value('id');
 
-        $cache = MenuBuilder::cache();
-
         // An empty string is cached for "no menu" so a missing location is not looked up on every request.
-        $menuId = $cache
-            ? $cache->rememberForever(static::locationCacheKey($location, $tenant), fn (): int | string => $resolveMenuId() ?? '')
-            : $resolveMenuId();
+        $menuId = MenuCache::remember(static::locationCacheKey($location, $tenant), null, fn (): int | string => $resolveMenuId() ?? '');
 
         if (blank($menuId)) {
             return null;
@@ -140,23 +142,15 @@ class Menu extends Model
     public function tree(?string $locale = null): MenuTree
     {
         $locale ??= app()->getLocale();
-        $cache = MenuBuilder::cache();
-
-        if (! $cache) {
-            return MenuTree::fromItems($this->items()->with('linkable')->get(), $locale);
-        }
 
         // Generated URLs depend on the locale and on the host, which differs per domain in multi-domain apps.
-        $variant = $locale . '|' . url('/');
-        $trees = $cache->get(static::treeCacheKey($this->getKey()), []);
+        $nodes = MenuCache::remember(
+            static::treeCacheKey($this->getKey()),
+            $locale . '.' . hash('xxh3', url('/')),
+            fn (): array => MenuTree::fromItems($this->items()->with('linkable')->get(), $locale)->toCacheArray(),
+        );
 
-        if (! isset($trees[$variant])) {
-            $trees[$variant] = MenuTree::fromItems($this->items()->with('linkable')->get(), $locale)->toCacheArray();
-
-            $cache->forever(static::treeCacheKey($this->getKey()), $trees);
-        }
-
-        return MenuTree::fromCacheArray($trees[$variant]);
+        return MenuTree::fromCacheArray($nodes);
     }
 
     public function flushCaches(): void
@@ -167,12 +161,12 @@ class Menu extends Model
 
         $this->locations()
             ->pluck('location')
-            ->each(fn (string $location) => MenuBuilder::cache()?->forget(static::locationCacheKey($location, $tenant)));
+            ->each(fn (string $location) => MenuCache::forget(static::locationCacheKey($location, $tenant)));
     }
 
     public static function flushTreeCache(int | string $menuId): void
     {
-        MenuBuilder::cache()?->forget(static::treeCacheKey($menuId));
+        MenuCache::forget(static::treeCacheKey($menuId));
     }
 
     public static function locationCacheKey(string $location, Model | int | string | null $tenant = null): string

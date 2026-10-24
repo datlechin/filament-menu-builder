@@ -89,13 +89,27 @@ final class MenuNode implements Arrayable, JsonSerializable
     public function isActive(?string $currentUrl = null): bool
     {
         $path = self::comparablePath($this->url);
+        $currentUrl ??= request()->fullUrl();
 
-        return $path !== null && $path === self::comparablePath($currentUrl ?? request()->url());
+        if ($path === null || $path !== self::comparablePath($currentUrl)) {
+            return false;
+        }
+
+        $currentQuery = self::queryOf($currentUrl);
+
+        // A link with a query, such as /products?category=shoes, is only active when the page has the same values.
+        foreach (self::queryOf($this->url) as $key => $value) {
+            if (($currentQuery[$key] ?? null) != $value) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function isActiveTrail(?string $currentUrl = null): bool
     {
-        $currentUrl ??= request()->url();
+        $currentUrl ??= request()->fullUrl();
 
         if ($this->isActive($currentUrl)) {
             return true;
@@ -148,5 +162,15 @@ final class MenuNode implements Arrayable, JsonSerializable
         }
 
         return strtolower($parts['host'] ?? '') . '/' . trim($parts['path'] ?? '', '/');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function queryOf(string $url): array
+    {
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+        return $query;
     }
 }

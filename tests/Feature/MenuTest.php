@@ -6,6 +6,7 @@ use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Models\MenuLocation;
 use Datlechin\FilamentMenuBuilder\Services\MenuItemService;
+use Datlechin\FilamentMenuBuilder\Tests\Fixtures\MainNavigation;
 use Datlechin\FilamentMenuBuilder\Tests\Fixtures\Page;
 use Illuminate\Support\Facades\DB;
 
@@ -135,4 +136,27 @@ it('caches the tree per locale', function () {
 
     expect($menu->tree('en')->nodes()[0]->title)->toBe('Home')
         ->and($menu->tree('vi')->nodes()[0]->title)->toBe('Trang chủ');
+});
+
+it('works with a custom menu model named differently', function () {
+    config(['filament-menu-builder.models.menu' => MainNavigation::class]);
+
+    $menu = MainNavigation::create(['name' => 'Main', 'is_visible' => true]);
+    MenuItem::factory()->for($menu, 'menu')->create(['title' => 'Home']);
+    $menu->syncLocations(['header']);
+
+    expect(MainNavigation::location('header')?->tree()->nodes()[0]->title)->toBe('Home')
+        ->and($menu->items()->count())->toBe(1);
+});
+
+it('creates translated factory values when translations are enabled', function () {
+    config([
+        'filament-menu-builder.translations.locales' => ['en', 'vi'],
+        'filament-menu-builder.translations.attributes' => ['menu' => ['name'], 'menu_item' => ['title']],
+    ]);
+
+    $item = MenuItem::factory()->create();
+
+    expect($item->translated('title'))->not->toBe('')
+        ->and($item->menu->translated('name'))->not->toBe('');
 });

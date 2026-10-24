@@ -24,10 +24,20 @@ class MenuItemFactory extends Factory
         return [
             'menu_id' => MenuBuilder::menuModel()::factory(),
             'type' => 'link',
-            'title' => fake()->words(2, true),
-            'url' => '/' . fake()->slug(2),
+            'title' => $this->translatable('title', fake()->words(2, true)),
+            'url' => $this->translatable('url', '/' . fake()->slug(2)),
             'order' => 0,
         ];
+    }
+
+    /**
+     * @return string|array<string, string>
+     */
+    protected function translatable(string $attribute, string $value): string | array
+    {
+        return in_array($attribute, MenuBuilder::translatableAttributes('menu_item'), true)
+            ? [MenuBuilder::locales()[0] => $value]
+            : $value;
     }
 
     public function text(): static

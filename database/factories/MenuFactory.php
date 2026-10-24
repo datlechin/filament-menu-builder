@@ -21,7 +21,9 @@ class MenuFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(2, true),
+            'name' => in_array('name', MenuBuilder::translatableAttributes('menu'), true)
+                ? [MenuBuilder::locales()[0] => fake()->words(2, true)]
+                : fake()->words(2, true),
             'is_visible' => true,
         ];
     }

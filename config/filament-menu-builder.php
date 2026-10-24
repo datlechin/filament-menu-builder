@@ -35,5 +35,7 @@ return [
     'cache' => [
         'enabled' => true,
         'store' => null,
+        // Menus are refreshed as soon as they change. The TTL removes entries that are no longer used.
+        'ttl' => 60 * 60 * 24,
     ],
 ];

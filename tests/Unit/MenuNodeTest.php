@@ -23,7 +23,7 @@ function makeNode(?string $url, array $children = []): MenuNode
 
 it('is active when its path matches the current URL', function (string $url) {
     expect(makeNode($url)->isActive('http://localhost/blog'))->toBeTrue();
-})->with(['/blog', '/blog/', 'blog', 'http://localhost/blog', 'http://LOCALHOST/blog?page=2#top']);
+})->with(['/blog', '/blog/', 'blog', 'http://localhost/blog', 'http://LOCALHOST/blog#top']);
 
 it('is not active for another path or host', function (string $url) {
     expect(makeNode($url)->isActive('http://localhost/blog'))->toBeFalse();
@@ -57,4 +57,13 @@ it('serializes the active state of the current request', function () {
 
     expect(makeNode('/blog')->toArray())
         ->toMatchArray(['url' => '/blog', 'is_active' => true, 'is_active_trail' => true, 'children' => []]);
+});
+
+it('only treats a link with a query as active on a page with the same values', function () {
+    $node = makeNode('/products?category=shoes');
+
+    expect($node->isActive('http://localhost/products?category=shoes&page=2'))->toBeTrue()
+        ->and($node->isActive('http://localhost/products?category=hats'))->toBeFalse()
+        ->and($node->isActive('http://localhost/products'))->toBeFalse()
+        ->and(makeNode('/products')->isActive('http://localhost/products?category=hats'))->toBeTrue();
 });

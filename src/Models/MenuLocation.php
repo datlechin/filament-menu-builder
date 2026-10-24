@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Datlechin\FilamentMenuBuilder\Models;
 
 use Datlechin\FilamentMenuBuilder\MenuBuilder;
+use Datlechin\FilamentMenuBuilder\Support\MenuCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -44,6 +45,6 @@ class MenuLocation extends Model
     {
         $tenant = MenuBuilder::isTenantAware() ? $this->getAttribute(MenuBuilder::tenantForeignKey()) : null;
 
-        MenuBuilder::cache()?->forget(MenuBuilder::menuModel()::locationCacheKey($location ?? $this->location, $tenant));
+        MenuCache::forget(MenuBuilder::menuModel()::locationCacheKey($location ?? $this->location, $tenant));
     }
 }
