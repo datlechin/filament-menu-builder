@@ -8,6 +8,8 @@ Please review the [upgrade guide](UPGRADE.md) before upgrading.
 
 ### Added
 - Item types for links, text, named routes and Eloquent records. You may add your own by extending `ItemType`.
+- Item types may be offered to some menus or users only with `visible()`, and their form changed by overriding `getFormSchema()` or `getAdvancedSchema()`.
+- Item type and location labels accept closures, so they are translated in the locale of the request.
 - Route and record URLs are generated when the menu is rendered, so they follow your routes, your records and the current domain.
 - `Menu::tree()` returns the menu as `MenuNode` objects with the translated title, the resolved URL and the active state. Trees may be filtered, used for breadcrumbs with `activeTrail()`, and serialized for Inertia and APIs.
 - The `<x-filament-menu-builder::menu>` Blade component.

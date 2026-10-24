@@ -14,7 +14,6 @@ use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Datlechin\FilamentMenuBuilder\Services\MenuItemService;
 use Datlechin\FilamentMenuBuilder\Support\MenuHierarchy;
 use Datlechin\FilamentMenuBuilder\Support\MenuItemCollection;
-use Datlechin\FilamentMenuBuilder\Support\MenuItemForm;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -88,7 +87,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
             ->modalHeading(fn (array $arguments): string => __('filament-menu-builder::menu-builder.actions.create.heading', ['type' => $this->getItemType($arguments)->getLabel()]))
             ->slideOver()
             ->modalWidth(Width::Large)
-            ->schema(fn (array $arguments): array => $this->getItemType($arguments)->getCreateSchema() ?? MenuItemForm::schema($this->getItemType($arguments)))
+            ->schema(fn (array $arguments): array => $this->getItemType($arguments)->getCreateSchema())
             ->using(function (array $data, array $arguments, CreateAction $action): MenuItem {
                 $parentId = $arguments['parent'] ?? null;
                 $items = $this->getService()->create($this->menu, $this->getItemType($arguments), $data, $parentId);
@@ -105,7 +104,8 @@ class MenuItems extends Component implements HasActions, HasSchemas
 
                 return end($items);
             })
-            ->visible(fn (array $arguments): bool => blank($arguments['parent'] ?? null) || $this->canAddChildTo($arguments['parent']))
+            ->visible(fn (array $arguments): bool => $this->getItemType($arguments)->isVisible($this->menu)
+                && (blank($arguments['parent'] ?? null) || $this->canAddChildTo($arguments['parent'])))
             ->authorize(fn (): bool => $this->canEdit());
     }
 
@@ -118,7 +118,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
             ->modalHeading(fn (?MenuItem $record): ?string => $record?->translated('title'))
             ->slideOver()
             ->modalWidth(Width::Large)
-            ->schema(fn (?MenuItem $record): array => $record ? MenuItemForm::schema($this->getItemTypeFor($record)) : [])
+            ->schema(fn (?MenuItem $record): array => $record ? $this->getItemTypeFor($record)->getFormSchema() : [])
             ->after(fn () => $this->refreshTree())
             ->authorize(fn (?MenuItem $record): bool => $record !== null && $this->canEdit());
     }
@@ -251,6 +251,7 @@ class MenuItems extends Component implements HasActions, HasSchemas
     protected function getCreateActions(int | string | null $parentId = null): array
     {
         return collect(FilamentMenuBuilderPlugin::get()->getItemTypes())
+            ->filter(fn (ItemType $type): bool => $type->isVisible($this->menu))
             ->map(fn (ItemType $type, string $key): Action => ($this->createItemAction)(['type' => $key, 'parent' => $parentId]))
             ->values()
             ->all();

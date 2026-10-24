@@ -14,6 +14,8 @@
 - [Item Types](#item-types)
     - [Linking To Routes](#linking-to-routes)
     - [Linking To Models](#linking-to-models)
+    - [Restricting Item Types](#restricting-item-types)
+    - [Customizing The Item Form](#customizing-the-item-form)
     - [Custom Item Types](#custom-item-types)
 - [Custom Fields](#custom-fields)
 - [Nesting](#nesting)
@@ -88,7 +90,12 @@ FilamentMenuBuilderPlugin::make()
     ])
 ```
 
-Each location shows one menu, which you choose in the menu's form.
+Each location shows one menu, which you choose in the menu's form. The plugin is configured before the request's locale is set, so pass a closure when a label should be translated:
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->addLocation('header', fn () => __('Header'))
+```
 
 ## Item Types
 
@@ -119,11 +126,11 @@ FilamentMenuBuilderPlugin::make()
 | `RouteItemType` | A named route of your application. |
 | `ModelItemType` | An Eloquent record, such as a page or a category. |
 
-You may change the label and icon of any type:
+You may change the label and icon of any type. As with locations, pass a closure when the label should be translated:
 
 ```php
 LinkItemType::make()
-    ->label('External link')
+    ->label(fn () => __('External link'))
     ->icon('heroicon-o-arrow-top-right-on-square')
 ```
 
@@ -175,6 +182,43 @@ ModelItemType::make(Page::class)
     ->modifyQueryUsing(fn (Builder $query) => $query->where('is_published', true))
 ```
 
+### Restricting Item Types
+
+The `visible` method decides which menus offer a type. The closure receives the `$menu` being edited, and may also check the current user:
+
+```php
+TextItemType::make()->visible(fn (Menu $menu): bool => $menu->name !== 'Social'),
+
+LinkItemType::make()->visible(fn (): bool => auth()->user()->isAdmin()),
+```
+
+Existing items of a type that is not offered may still be edited.
+
+### Customizing The Item Form
+
+Each type builds the item form in its `getFormSchema` method. The icon, CSS classes and `rel` fields come from the `getAdvancedSchema` method, so you may remove them by extending the type:
+
+```php
+use Datlechin\FilamentMenuBuilder\ItemTypes\LinkItemType;
+
+class SimpleLinkItemType extends LinkItemType
+{
+    public function getAdvancedSchema(): array
+    {
+        return [];
+    }
+}
+```
+
+Then register your type in place of the original:
+
+```php
+FilamentMenuBuilderPlugin::make()
+    ->itemTypes([
+        SimpleLinkItemType::make(),
+    ])
+```
+
 ### Custom Item Types
 
 You may create your own item type by extending the `ItemType` class. A type defines its name, its label and the fields that decide where the item points to. Those fields should fill the `url`, `route` and `route_parameters`, or `linkable_type` and `linkable_id` columns:
@@ -218,7 +262,7 @@ To add several items from one form, as `ModelItemType` does, override the `getCr
 
 ## Custom Fields
 
-You may add fields to the menu form and to the item form. Item fields may store their values in the item's `data` column, or in columns you add to the table:
+You may add fields to the menu form and to the item form. Name item fields after a key of the `data` column, such as `data.badge`, and their values are included in the [menu tree](#menu-trees):
 
 ```php
 use Filament\Forms\Components\TextInput;

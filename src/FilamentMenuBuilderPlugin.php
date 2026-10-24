@@ -25,7 +25,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     protected string $resource = MenuResource::class;
 
     /**
-     * @var array<string, string>
+     * @var array<string, string|Closure>
      */
     protected array $locations = [];
 
@@ -90,7 +90,7 @@ class FilamentMenuBuilderPlugin implements Plugin
         return $this->resource;
     }
 
-    public function addLocation(string $key, string $label): static
+    public function addLocation(string $key, string | Closure $label): static
     {
         $this->locations[$key] = $label;
 
@@ -98,7 +98,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     }
 
     /**
-     * @param  array<string, string>  $locations
+     * @param  array<string, string|Closure>  $locations
      */
     public function addLocations(array $locations): static
     {
@@ -114,7 +114,7 @@ class FilamentMenuBuilderPlugin implements Plugin
      */
     public function getLocations(): array
     {
-        return $this->locations;
+        return array_map(fn (string | Closure $label): string => $this->evaluate($label), $this->locations);
     }
 
     /**
