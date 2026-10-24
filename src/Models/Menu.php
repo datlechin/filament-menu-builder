@@ -179,11 +179,11 @@ class Menu extends Model
     {
         $tenantKey = $tenant instanceof Model ? $tenant->getKey() : $tenant;
 
-        return 'filament-menu-builder.v3.location.' . ($tenantKey === null ? '' : "{$tenantKey}.") . $location;
+        return 'filament-menu-builder.location.' . ($tenantKey === null ? '' : "{$tenantKey}.") . $location;
     }
 
     public static function treeCacheKey(int | string $menuId): string
     {
-        return "filament-menu-builder.v3.tree.{$menuId}";
+        return "filament-menu-builder.tree.{$menuId}";
     }
 }

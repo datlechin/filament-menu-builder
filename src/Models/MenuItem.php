@@ -81,6 +81,8 @@ class MenuItem extends Model
     protected static function booted(): void
     {
         static::saved(fn (self $item) => MenuBuilder::menuModel()::flushTreeCache($item->menu_id));
+        // Tables created by 1.x set the parent of sub-items to null instead of deleting them.
+        static::deleting(fn (self $item) => $item->children()->get()->each->delete());
         static::deleted(fn (self $item) => MenuBuilder::menuModel()::flushTreeCache($item->menu_id));
     }
 

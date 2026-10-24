@@ -68,3 +68,13 @@ it('copies an item with its sub-items into another menu', function () {
         ->and($copy->children()->pluck('title')->all())->toBe(['Child'])
         ->and($copy->children()->first()->menu_id)->toBe($target->id);
 });
+
+it('deletes its sub-items with it', function () {
+    $parent = MenuItem::factory()->create();
+    $child = MenuItem::factory()->childOf($parent)->create();
+    MenuItem::factory()->childOf($child)->create();
+
+    $parent->delete();
+
+    expect(MenuItem::count())->toBe(0);
+});
