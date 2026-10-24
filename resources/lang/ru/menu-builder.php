@@ -9,7 +9,7 @@ return [
         'name' => 'Название',
         'locations' => 'Расположения',
         'no_locations' => 'Нет',
-        'location_taken' => 'Сейчас показывает :menu',
+        'location_taken' => 'Используется меню «:menu»',
         'items' => 'Пункты',
         'is_visible' => 'Видимое',
         'settings' => 'Настройки',

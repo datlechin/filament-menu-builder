@@ -4,40 +4,45 @@ All notable changes to `filament-menu-builder` will be documented in this file.
 
 ## v2.0.0 - Unreleased
 
-See [UPGRADE.md](UPGRADE.md) for the steps from 1.x.
+Please review the [upgrade guide](UPGRADE.md) before upgrading.
 
 ### Added
-- Item types: links, text, named routes and Eloquent records, plus your own by extending `ItemType`. Route and record URLs are generated when the menu is rendered.
-- `Menu::tree()` returns the rendered menu as `MenuNode`s with resolved titles and URLs, `isActive()` / `isActiveTrail()`, `filter()`, `activeTrail()` for breadcrumbs, and JSON output for Inertia and APIs. The tree is cached and refreshed when the menu or a linked record changes.
-- `<x-filament-menu-builder::menu>` Blade component.
-- Filament tenancy support (closes discussion #143).
-- Filament 4 support.
-- Per item visibility, a `data` column for custom fields, and custom fields on new items as well as edited ones.
-- Item actions: add a sub-item, duplicate, move up and down, indent and outdent, next to drag and drop.
-- Duplicate a menu with its items.
-- Items whose record or route is gone are hidden on the site and flagged in the panel.
+- Item types for links, text, named routes and Eloquent records. You may add your own by extending `ItemType`.
+- Route and record URLs are generated when the menu is rendered, so they follow your routes, your records and the current domain.
+- `Menu::tree()` returns the menu as `MenuNode` objects with the translated title, the resolved URL and the active state. Trees may be filtered, used for breadcrumbs with `activeTrail()`, and serialized for Inertia and APIs.
+- The `<x-filament-menu-builder::menu>` Blade component.
+- Trees are cached, and refreshed when the menu, its items, its locations or a linked record changes.
+- Support for Filament tenancy (closes discussion #143).
+- Support for Filament 4.
+- Items may be hidden without being deleted.
+- Custom item fields are also shown when adding an item, and may be stored in the new `data` column.
+- Items may be duplicated, moved up and down, and given sub-items from their menu. Menus may be duplicated with their items.
+- Items whose route or record no longer exists are hidden from the site and marked as broken in the panel.
 - Locations are assigned in the menu form.
-- Factories for `Menu` and `MenuItem`.
+- Factories for the `Menu` and `MenuItem` models.
 
 ### Changed
-- Models, table names, translations, tenancy and caching are configured in `config/filament-menu-builder.php`, so models work outside a panel.
-- Menu panels are replaced by item types, and `MenuPanelable` by `MenuLinkable`.
-- Items are added from an "Add item" menu above the tree instead of side panels.
-- The stylesheet ships with the plugin; a custom theme is no longer needed.
+- The models, table names, translations, tenancy and cache settings moved to the configuration file, so the models work outside of a panel.
+- Menu panels are replaced by item types, and the `MenuPanelable` interface by `MenuLinkable`.
+- Items are added from an "Add item" menu above the tree instead of panels beside it.
+- The plugin ships its own stylesheet. A custom theme is no longer required.
 - The link target is stored as `_blank` or `null`.
 
 ### Removed
-- `StaticMenuPanel`, `ModelMenuPanel`, `HasMenuPanel`, `LinkTarget`, the custom link and text Livewire components and the locations modal.
-- `showCustomLinkPanel()`, `showCustomTextPanel()`, `enableIndentActions()`, `navigationCountBadge()`, `usingMenuModel()`, `usingMenuItemModel()`, `usingMenuLocationModel()` and the `translatable*()` plugin methods.
+- `StaticMenuPanel`, `ModelMenuPanel`, the `HasMenuPanel` trait and the `LinkTarget` enum.
+- The custom link, custom text and panel Livewire components, and the locations modal.
+- The `showCustomLinkPanel`, `showCustomTextPanel`, `enableIndentActions`, `navigationCountBadge`, `usingMenuModel`, `usingMenuItemModel`, `usingMenuLocationModel` and `translatable*` plugin methods.
+- The deprecated `Menu::clearLocationCache` method.
 
 ### Fixed
-- Item actions only act on items of the menu being edited and check the menu policy.
-- URLs that run scripts (`javascript:`, `data:`) are rejected.
+- Item actions only change items of the menu being edited, and check the menu's policy.
+- URLs that run scripts, such as `javascript:`, are rejected.
 - Text items no longer show link fields (closes #95).
-- A model panel no longer loads every record into the page.
-- The translatable migration keeps menu items on SQLite.
+- Records are searched in the database instead of being loaded into the page.
+- Deleting an item also deletes its sub-items on tables created by 1.x.
+- The translatable migration no longer deletes menu items on SQLite.
 
-## v1.2.0
+## v1.2.0 - 2026-10-24
 
 ### Added
 - `FilamentMenuBuilderPlugin::allowNesting()` to restrict which items may be nested inside which (#178).

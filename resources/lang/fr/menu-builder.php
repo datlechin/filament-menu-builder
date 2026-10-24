@@ -9,7 +9,7 @@ return [
         'name' => 'Nom',
         'locations' => 'Emplacements',
         'no_locations' => 'Aucun',
-        'location_taken' => 'Affiche actuellement :menu',
+        'location_taken' => 'Utilisé par :menu',
         'items' => 'Éléments',
         'is_visible' => 'Visible',
         'settings' => 'Paramètres',

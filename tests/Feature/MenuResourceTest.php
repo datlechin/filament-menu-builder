@@ -55,7 +55,7 @@ it('saves the menu settings and moves a location from another menu', function ()
 
     livewire(EditMenu::class, ['record' => $menu->getRouteKey()])
         ->assertFormFieldExists('locations')
-        ->assertSee('Currently shows Old header')
+        ->assertSee('Used by Old header')
         ->fillForm(['name' => 'New header', 'locations' => ['header'], 'is_visible' => false])
         ->call('save')
         ->assertHasNoFormErrors();

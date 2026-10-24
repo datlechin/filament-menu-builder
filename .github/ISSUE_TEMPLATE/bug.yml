@@ -1,0 +1,60 @@
+name: Bug Report
+description: Report something that does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening a bug report, please search the existing issues and make sure you are on the latest version.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem, and include any error message and stack trace.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How can we reproduce it?
+      description: List the steps, and include the plugin configuration and any model or item type involved.
+      placeholder: |
+        1. Register the plugin with `->itemTypes([...])`
+        2. Add a route item to a menu
+        3. Render the menu with `<x-filament-menu-builder::menu location="header" />`
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      placeholder: 2.0.0
+    validations:
+      required: true
+  - type: input
+    id: filament-version
+    attributes:
+      label: Filament version
+      placeholder: 5.10.3
+    validations:
+      required: true
+  - type: input
+    id: laravel-version
+    attributes:
+      label: Laravel version
+      placeholder: 12.40.0
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: 8.4.12
+    validations:
+      required: true

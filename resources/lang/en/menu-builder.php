@@ -9,7 +9,7 @@ return [
         'name' => 'Name',
         'locations' => 'Locations',
         'no_locations' => 'None',
-        'location_taken' => 'Currently shows :menu',
+        'location_taken' => 'Used by :menu',
         'items' => 'Items',
         'is_visible' => 'Visible',
         'settings' => 'Settings',
@@ -62,7 +62,7 @@ return [
             'title' => 'Duplicated',
         ],
         'move_rejected' => [
-            'title' => 'The menu item cannot go there',
+            'title' => 'This item can\'t be placed there',
             'body' => 'Menu items cannot be nested more than :depth level deep.|Menu items cannot be nested more than :depth levels deep.',
             'nesting' => 'This menu item cannot be nested inside that item.',
         ],

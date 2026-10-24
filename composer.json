@@ -1,10 +1,13 @@
 {
   "name": "datlechin/filament-menu-builder",
-  "description": "Create and manage menus and menu items",
+  "description": "Build nested menus in Filament and render them anywhere in your Laravel app.",
   "keywords": [
-    "datlechin",
     "laravel",
-    "filament-menu-builder"
+    "filament",
+    "filament-plugin",
+    "menu",
+    "menu-builder",
+    "navigation"
   ],
   "homepage": "https://github.com/datlechin/filament-menu-builder",
   "support": {

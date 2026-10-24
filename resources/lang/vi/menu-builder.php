@@ -9,7 +9,7 @@ return [
         'name' => 'Tên',
         'locations' => 'Vị trí',
         'no_locations' => 'Chưa gán',
-        'location_taken' => 'Đang hiển thị :menu',
+        'location_taken' => 'Đang dùng cho :menu',
         'items' => 'Mục',
         'is_visible' => 'Hiển thị',
         'settings' => 'Cài đặt',

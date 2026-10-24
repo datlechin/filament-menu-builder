@@ -100,6 +100,6 @@ describe('in a tenant panel', function () {
         bootTenantPanel($this->acme);
 
         livewire(EditMenu::class, ['record' => $menu->getRouteKey()])
-            ->assertDontSee('Currently shows Globex header');
+            ->assertDontSee('Used by Globex header');
     });
 });

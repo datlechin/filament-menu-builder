@@ -9,7 +9,7 @@ return [
         'name' => 'Naam',
         'locations' => 'Locaties',
         'no_locations' => 'Geen',
-        'location_taken' => 'Toont nu :menu',
+        'location_taken' => 'Gebruikt door :menu',
         'items' => 'Items',
         'is_visible' => 'Zichtbaar',
         'settings' => 'Instellingen',
