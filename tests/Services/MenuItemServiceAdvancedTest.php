@@ -203,6 +203,20 @@ it('does not unindent into a parent the nesting restriction disallows', function
         ->and($child->fresh()->parent_id)->toBe($parent->id);
 });
 
+it('moves already nested items to the root when nesting is disallowed', function () {
+    FilamentMenuBuilderPlugin::get()->allowNesting(false);
+
+    $parent = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Parent', 'order' => 1]);
+    $first = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'First', 'order' => 1, 'parent_id' => $parent->id]);
+    $second = MenuItem::create(['menu_id' => $this->menu->id, 'title' => 'Second', 'order' => 2, 'parent_id' => $parent->id]);
+
+    expect($this->service->unindent($this->menu, $first->id))->toBeTrue()
+        ->and($first->fresh()->parent_id)->toBeNull()
+        ->and($this->service->updateOrder($this->menu, [$parent->id, $first->id, $second->id]))->toBeTrue()
+        ->and($second->fresh()->parent_id)->toBeNull()
+        ->and($this->service->indent($this->menu, $second->id))->toBeFalse();
+});
+
 it('does not move items that belong to another menu', function () {
     $otherMenu = Menu::create(['name' => 'Other Menu']);
     $foreign = MenuItem::create(['menu_id' => $otherMenu->id, 'title' => 'Foreign', 'order' => 1]);

@@ -319,5 +319,5 @@ it('disallows nesting entirely when given false', function () {
 
     expect($plugin->isNestingRestricted())->toBeTrue()
         ->and($plugin->allowsNesting(new MenuItem, new MenuItem, new Menu))->toBeFalse()
-        ->and($plugin->allowsNesting(new MenuItem, null, new Menu))->toBeFalse();
+        ->and($plugin->allowsNesting(new MenuItem, null, new Menu))->toBeTrue();
 });

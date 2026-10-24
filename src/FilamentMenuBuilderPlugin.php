@@ -357,7 +357,7 @@ class FilamentMenuBuilderPlugin implements Plugin
     public function allowsNesting(Model $item, ?Model $parent, Model $menu): bool
     {
         if (is_bool($this->allowNesting)) {
-            return $this->allowNesting;
+            return $this->allowNesting || $parent === null;
         }
 
         return (bool) $this->evaluate(
