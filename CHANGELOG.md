@@ -2,21 +2,73 @@
 
 All notable changes to `filament-menu-builder` will be documented in this file.
 
-## Unreleased
+## v2.0.0 - Unreleased
+
+See [UPGRADE.md](UPGRADE.md) for the steps from 1.x.
 
 ### Added
-- `FilamentMenuBuilderPlugin::maxDepth()` to limit how deep menu items can be nested, as an `int` or a per-menu closure (closes #173). Enforced for indent actions and drag and drop, on the server and in the browser.
+- Item types: links, text, named routes and Eloquent records, plus your own by extending `ItemType`. Route and record URLs are generated when the menu is rendered.
+- `Menu::tree()` returns the rendered menu as `MenuNode`s with resolved titles and URLs, `isActive()` / `isActiveTrail()`, `filter()`, `activeTrail()` for breadcrumbs, and JSON output for Inertia and APIs. The tree is cached and refreshed when the menu or a linked record changes.
+- `<x-filament-menu-builder::menu>` Blade component.
+- Filament tenancy support (closes discussion #143).
+- Filament 4 support.
+- Per item visibility, a `data` column for custom fields, and custom fields on new items as well as edited ones.
+- Item actions: add a sub-item, duplicate, move up and down, indent and outdent, next to drag and drop.
+- Duplicate a menu with its items.
+- Items whose record or route is gone are hidden on the site and flagged in the panel.
+- Locations are assigned in the menu form.
+- Factories for `Menu` and `MenuItem`.
+
+### Changed
+- Models, table names, translations, tenancy and caching are configured in `config/filament-menu-builder.php`, so models work outside a panel.
+- Menu panels are replaced by item types, and `MenuPanelable` by `MenuLinkable`.
+- Items are added from an "Add item" menu above the tree instead of side panels.
+- The stylesheet ships with the plugin; a custom theme is no longer needed.
+- The link target is stored as `_blank` or `null`.
+
+### Removed
+- `StaticMenuPanel`, `ModelMenuPanel`, `HasMenuPanel`, `LinkTarget`, the custom link and text Livewire components and the locations modal.
+- `showCustomLinkPanel()`, `showCustomTextPanel()`, `enableIndentActions()`, `navigationCountBadge()`, `usingMenuModel()`, `usingMenuItemModel()`, `usingMenuLocationModel()` and the `translatable*()` plugin methods.
 
 ### Fixed
-- The menu items list no longer overflows its section on narrow screens or with long titles and URLs (closes #176). Item lists now use Filament's grid, titles and URLs are truncated with an ellipsis (the URL first), and an item's actions wrap onto their own row when the item is too narrow to fit them beside its title. Rebuild your Filament theme after upgrading to pick up the updated stylesheet.
-- Edit and delete buttons are now real Filament actions, so like the indent buttons they have an accessible label and a tooltip.
-- Indent and unindent buttons are now real Filament actions and are hidden when they cannot be applied (e.g. indenting the first item, unindenting a root item).
+- Item actions only act on items of the menu being edited and check the menu policy.
+- URLs that run scripts (`javascript:`, `data:`) are rejected.
+- Text items no longer show link fields (closes #95).
+- A model panel no longer loads every record into the page.
+- The translatable migration keeps menu items on SQLite.
+
+## v1.2.0
+
+### Added
+- `FilamentMenuBuilderPlugin::allowNesting()` to restrict which items may be nested inside which (#178).
+
+## v1.1.1 - 2026-10-18
+
+### Fixed
+- The menu items list no longer overflows its section on narrow screens or with long titles and URLs (closes #176). Rebuild your Filament theme after upgrading to pick up the updated stylesheet.
+- Edit and delete buttons are real Filament actions with an accessible label and a tooltip.
+
+## v1.1.0 - 2026-09-28
+
+### Added
+- `FilamentMenuBuilderPlugin::maxDepth()` to limit how deep menu items can be nested, as an `int` or a per-menu closure (closes #173).
+
+### Fixed
+- Indent and unindent buttons are real Filament actions and are hidden when they cannot be applied.
 - Reordering no longer accepts items from another menu, a parent from another menu, or a parent that is one of the moved item's own descendants.
 - Indenting or unindenting a root item no longer renumbers root items of every other menu.
 
 ### Changed
-- `MenuItemService` hierarchy methods are now scoped to a menu: `indent()`, `unindent()` and `updateOrder()` take the `Menu` as their first argument and return `false` when a move is rejected; `getSiblings()` / `reorderSiblings()` take the menu id.
-- `MenuItemService::getPreviousSibling()`, `canIndent()` and `canUnindent()` were removed in favour of the `MenuHierarchy` snapshot returned by `MenuItemService::hierarchy($menu)` (`previousSiblingOf()`, `canIndent()`, `canUnindent()`, `canMove()`).
+- `MenuItemService::indent()`, `unindent()` and `updateOrder()` take the `Menu` as their first argument and return `false` when a move is rejected.
+- `MenuItemService::getPreviousSibling()`, `canIndent()` and `canUnindent()` were removed in favour of `MenuItemService::hierarchy($menu)`.
+
+## v1.0.4 - 2026-07-21
+
+### Added
+- Russian translation (#171).
+
+### Changed
+- `MenuPanelable` uses `getMenuPanelTitle()` and `getMenuPanelUrl()` instead of `getMenuPanelTitleColumn()` and `getMenuPanelUrlUsing()`, and the `HasMenuPanel` trait provides `getMenuPanelQuery()` (#168).
 
 ## v1.0.3 - 2026-04-30
 

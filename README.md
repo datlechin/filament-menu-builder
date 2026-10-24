@@ -6,188 +6,149 @@
 
 ![Filament Menu Builder](https://github.com/datlechin/filament-menu-builder/raw/main/art/menu-builder.jpg)
 
-A [Filament](https://filamentphp.com) plugin for building menus with drag-and-drop ordering, nesting, custom links, and dynamic panels.
+Build nested menus in [Filament](https://filamentphp.com) and render them anywhere in your app: links, named routes, Eloquent records and headings, with drag and drop, locations, translations and tenancy.
 
 ## Requirements
 
 - PHP 8.3+
-- Filament 5.0+
-- Laravel 12+
-
-## Upgrading
-
-### From v0.7.x (Filament v3) to v1.x (Filament v5)
-
-1. Update your `composer.json`:
-
-```bash
-composer require datlechin/filament-menu-builder:^1.0
-```
-
-2. Publish and run the new migration to add the `panel`, `icon`, and `classes` columns:
-
-```bash
-php artisan vendor:publish --tag="filament-menu-builder-migrations"
-php artisan migrate
-```
-
-The upgrade migration checks for existing columns before adding them, so it's safe on fresh installs too.
-
-3. Re-publish the config file if you published it previously:
-
-```bash
-php artisan vendor:publish --tag="filament-menu-builder-config" --force
-```
+- Filament 4 or 5
 
 ## Installation
 
-Install via Composer:
-
 ```bash
 composer require datlechin/filament-menu-builder
-```
 
-Publish and run the migrations:
-
-```bash
+php artisan vendor:publish --tag="filament-menu-builder-config"
 php artisan vendor:publish --tag="filament-menu-builder-migrations"
 php artisan migrate
 ```
 
-Optionally, publish the config file:
+Set up [translations](#translations) and [tenancy](#tenancy) in the config before you migrate if you need them. The plugin's stylesheet and script are published with Filament's other assets by `php artisan filament:assets`.
 
-```bash
-php artisan vendor:publish --tag="filament-menu-builder-config"
-```
-
-Or use the install command:
-
-```bash
-php artisan filament-menu-builder:install
-```
-
-You will need to set up a Filament [custom theme](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme)
-
-If you don't yet have a custom theme, run the following command:
-
-```bash
-php artisan make:filament-theme
-```
-
-Next, open up the theme.css file for the custom theme and add the following line:
-
-```css
-@import "../../../../vendor/datlechin/filament-menu-builder/resources/css/index.css";
-@source "../../../../vendor/datlechin/filament-menu-builder/resources/**/*.blade.php";
-```
-
-## Usage
-
-Register the plugin in your panel provider:
+Register the plugin in your panel:
 
 ```php
 use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        ->plugins([
-            FilamentMenuBuilderPlugin::make(),
-        ]);
-}
+$panel->plugins([
+    FilamentMenuBuilderPlugin::make()
+        ->addLocations([
+            'header' => 'Header',
+            'footer' => 'Footer',
+        ]),
+]);
 ```
 
-### Locations
+Upgrading from 1.x? See [UPGRADE.md](UPGRADE.md).
 
-Locations define where menus appear in your application:
+## Item types
+
+Every menu item has a type. Each type adds its own form fields and decides where the item points to. Links and text items are available by default; pass the full list to `itemTypes()` to change it:
 
 ```php
+use Datlechin\FilamentMenuBuilder\ItemTypes\LinkItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\ModelItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\RouteItemType;
+use Datlechin\FilamentMenuBuilder\ItemTypes\TextItemType;
+
 FilamentMenuBuilderPlugin::make()
-    ->addLocations([
-        'header' => 'Header',
-        'footer' => 'Footer',
+    ->itemTypes([
+        LinkItemType::make(),
+        TextItemType::make(),
+        RouteItemType::make()->routes([
+            'home' => 'Home',
+            'blog.index' => 'Blog',
+            'products.show' => 'Product',
+        ]),
+        ModelItemType::make(Page::class)->titleAttribute('title'),
+        ModelItemType::make(Category::class)->label('Categories'),
     ])
 ```
 
-### Menu Panels
+| Type | Points to | Notes |
+|---|---|---|
+| `LinkItemType` | A URL | Absolute URLs, paths, `#anchors`, `mailto:` and `tel:`. Script URLs are rejected. |
+| `TextItemType` | Nothing | Headings or group labels. |
+| `RouteItemType` | A named route | The URL is generated when the menu is rendered, so it follows route changes and the current domain. Parameters are filled in the form. |
+| `ModelItemType` | An Eloquent record | The URL comes from the record when the menu is rendered. Several records can be added at once. |
 
-Panels provide item sources for menus, either from Eloquent models or static lists.
+Every type can be renamed with `->label()` and given an `->icon()`.
 
-#### Model Panel
+### Linking to models
 
-Implement `MenuPanelable` on your model:
+Implement `MenuLinkable` on the model and add the `HasMenuItems` trait, which refreshes cached menus when the record changes:
 
 ```php
-use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
+use Datlechin\FilamentMenuBuilder\Concerns\HasMenuItems;
+use Datlechin\FilamentMenuBuilder\Contracts\MenuLinkable;
 
-class Page extends Model implements MenuPanelable
+class Page extends Model implements MenuLinkable
 {
-    public function getMenuPanelTitle(): string
+    use HasMenuItems;
+
+    public function getMenuTitle(): string
     {
         return $this->title;
     }
 
-    public function getMenuPanelUrl(): string
+    public function getMenuUrl(): string
     {
         return route('pages.show', $this);
-    }
-
-    public function getMenuPanelName(): string
-    {
-        return 'Pages';
     }
 }
 ```
 
-Then register it:
+`titleAttribute()` makes the record picker search that column in the database, which you want for large tables. Without it every record is loaded into the picker. Use `modifyQueryUsing()` to limit the records:
 
 ```php
-use Datlechin\FilamentMenuBuilder\MenuPanel\ModelMenuPanel;
-
-FilamentMenuBuilderPlugin::make()
-    ->addMenuPanels([
-        ModelMenuPanel::make()
-            ->model(Page::class),
-    ])
+ModelItemType::make(Page::class)
+    ->titleAttribute('title')
+    ->modifyQueryUsing(fn (Builder $query) => $query->where('is_published', true))
 ```
 
-#### Static Panel
+Items whose record is deleted, soft deleted, or whose route no longer resolves are hidden on your site and flagged as broken in the panel.
+
+### Custom item types
+
+Extend `ItemType` to add your own. A type defines its form fields and the attributes it stores; where the item points to is stored in the standard `url`, `route` and `linkable` columns:
 
 ```php
-use Datlechin\FilamentMenuBuilder\MenuPanel\StaticMenuPanel;
+use Datlechin\FilamentMenuBuilder\ItemTypes\ItemType;
 
-FilamentMenuBuilderPlugin::make()
-    ->addMenuPanels([
-        StaticMenuPanel::make()
-            ->name('pages')
-            ->add('Home', '/')
-            ->add('About', '/about')
-            ->add('Contact', '/contact'),
-    ])
+class ProductCategoryItemType extends ItemType
+{
+    public static function make(): static
+    {
+        return new static;
+    }
+
+    public function getName(): string
+    {
+        return 'product_category';
+    }
+
+    protected function getDefaultLabel(): string
+    {
+        return 'Product filter';
+    }
+
+    public function getDestinationSchema(): array
+    {
+        return [
+            Select::make('url')
+                ->label('Category')
+                ->options(fn () => ProductCategory::pluck('name', 'slug')->mapWithKeys(fn ($name, $slug) => ["/products?category={$slug}" => $name]))
+                ->required(),
+        ];
+    }
+}
 ```
 
-`add()` also accepts `target`, `icon`, and `classes`:
+Override `getCreateSchema()` and `getItemsToCreate()` to add several items from one form, as `ModelItemType` does.
 
-```php
-StaticMenuPanel::make()
-    ->name('social')
-    ->add('GitHub', 'https://github.com', target: '_blank', icon: 'heroicon-o-code-bracket')
-    ->add('Twitter', 'https://twitter.com', target: '_blank', classes: 'text-blue-500')
-```
+## Custom fields
 
-### Custom Link & Custom Text Panels
-
-The custom link panel is shown by default. The custom text panel (for non-link items like headings) is opt-in:
-
-```php
-FilamentMenuBuilderPlugin::make()
-    ->showCustomLinkPanel(true)
-    ->showCustomTextPanel(true)
-```
-
-### Custom Fields
-
-Add extra fields to the menu or menu item forms:
+Add fields to the menu form or the item form. Item fields are stored in the item's `data` column, or in your own columns if you add them:
 
 ```php
 use Filament\Forms\Components\TextInput;
@@ -197,21 +158,165 @@ FilamentMenuBuilderPlugin::make()
         TextInput::make('description'),
     ])
     ->addMenuItemFields([
-        TextInput::make('badge'),
+        TextInput::make('data.badge'),
     ])
 ```
 
-Singular methods work too:
+Pass a closure to vary the fields per item type:
+
+```php
+->addMenuItemFields(fn (ItemType $type): array => $type instanceof TextItemType
+    ? [Toggle::make('data.mega_menu')]
+    : [TextInput::make('data.badge')])
+```
+
+## Nesting
+
+Limit how deep items may be nested. Root items have a depth of `0`, so `maxDepth(0)` keeps a menu flat. A closure receives the `$menu` being edited:
 
 ```php
 FilamentMenuBuilderPlugin::make()
-    ->addMenuField(TextInput::make('description'))
-    ->addMenuItemField(TextInput::make('badge'))
+    ->maxDepth(fn (Menu $menu): int => $menu->locations->contains('location', 'footer') ? 0 : 2)
 ```
 
-Multiple calls are merged, so fields registered from different service providers won't overwrite each other.
+Control which items may be nested inside which with `allowNesting()`. The closure receives the `$item` being placed, its new `$parent` (`null` at the root level) and the `$menu`. This keeps headings at the root with links inside them:
 
-### Customizing Navigation
+```php
+FilamentMenuBuilderPlugin::make()
+    ->allowNesting(fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || ($parent->type === 'text' && $item->type !== 'text'))
+```
+
+Pass `false` to keep every item at the root. Both rules apply to drag and drop, the item actions and new items. Items can always be reordered under their current parent, so existing menus stay editable after a rule is added.
+
+## Rendering menus
+
+### Blade component
+
+```blade
+<x-filament-menu-builder::menu location="header" label="Main" class="main-nav" />
+```
+
+It renders an unstyled `<nav>` with nested lists. The current page gets `aria-current="page"`, and every item has `data-depth`, `data-active` and `data-active-trail` attributes to style against. Publish the views to change the markup:
+
+```bash
+php artisan vendor:publish --tag="filament-menu-builder-views"
+```
+
+### Menu tree
+
+```php
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+
+$tree = Menu::location('header')?->tree();
+
+foreach ($tree as $node) {
+    $node->title;           // Translated for the current locale
+    $node->url;             // null for text items
+    $node->target;          // '_blank' or null
+    $node->rel;
+    $node->icon;
+    $node->classes;
+    $node->type;            // 'link', 'text', 'route', 'model' or your own
+    $node->data;            // Custom field values
+    $node->depth;
+    $node->children;
+    $node->isActive();      // This page
+    $node->isActiveTrail(); // This page, a page below it, or a descendant of it
+}
+```
+
+Only visible items with a working destination are included. The tree is cached and refreshed when the menu, its items, its locations or linked records change.
+
+Filter it, for example to hide items from guests:
+
+```php
+use Datlechin\FilamentMenuBuilder\Support\MenuNode;
+
+$tree = Menu::location('header')?->tree()->filter(fn (MenuNode $node): bool => auth()->check() || ! ($node->data['members_only'] ?? false));
+```
+
+`activeTrail()` returns the nodes from the root to the current page, for breadcrumbs:
+
+```php
+@foreach (Menu::location('header')?->tree()->activeTrail() ?? [] as $node)
+    <a href="{{ $node->url }}">{{ $node->title }}</a>
+@endforeach
+```
+
+### Inertia and JSON
+
+The tree serializes to plain arrays, including `is_active` and `is_active_trail` for the current request:
+
+```php
+Inertia::share('menu', fn () => Menu::location('header')?->tree());
+```
+
+```json
+[
+    {
+        "id": 1,
+        "type": "route",
+        "title": "Home",
+        "url": "https://example.com",
+        "target": null,
+        "rel": null,
+        "icon": null,
+        "classes": null,
+        "data": [],
+        "depth": 0,
+        "children": [],
+        "is_active": true,
+        "is_active_trail": true
+    }
+]
+```
+
+## Translations
+
+List your locales and the attributes to translate in the config, before running the migrations:
+
+```php
+'translations' => [
+    'locales' => ['en', 'vi'],
+    'attributes' => [
+        'menu' => ['name'],
+        'menu_item' => ['title', 'url'],
+    ],
+],
+```
+
+The fields get a tab per locale. Only the first locale is required; the others fall back to it. Values are stored as JSON in the same format as [spatie/laravel-translatable](https://github.com/spatie/laravel-translatable), and a custom model using its `HasTranslations` trait works too.
+
+To translate an existing install, publish and run the migration that converts the columns to JSON. Existing values are kept under `app.locale`:
+
+```bash
+php artisan vendor:publish --tag="filament-menu-builder-translatable-migrations"
+php artisan migrate
+```
+
+## Tenancy
+
+Menus can belong to the tenant of a panel that uses Filament tenancy. Set the tenant model in the config before running the migrations, which then add the foreign key:
+
+```php
+'tenant_model' => App\Models\Team::class,
+```
+
+The resource only lists the menus of the current tenant, and each tenant assigns its own menus to locations. Pass the tenant when rendering:
+
+```php
+Menu::location('header', $team)?->tree();
+```
+
+```blade
+<x-filament-menu-builder::menu location="header" :tenant="$team" />
+```
+
+## Authorization
+
+The resource follows your `Menu` policy. Users who can't `update` a menu see its items but can't change them.
+
+## Customizing
 
 ```php
 FilamentMenuBuilderPlugin::make()
@@ -219,201 +324,20 @@ FilamentMenuBuilderPlugin::make()
     ->navigationGroup('Content')
     ->navigationIcon('heroicon-o-bars-3')
     ->navigationSort(3)
-    ->navigationCountBadge(true)
+    ->usingResource(MenuResource::class)
 ```
 
-### Indent / Unindent
-
-Nesting via indent/unindent actions is enabled by default:
-
-```php
-FilamentMenuBuilderPlugin::make()
-    ->enableIndentActions(true)
-```
-
-### Maximum Depth
-
-By default, menu items can be nested indefinitely. Use `maxDepth()` to limit how deep items may be nested, both through the indent action and drag and drop. Depth is zero-based: root items have a depth of `0`, so `maxDepth(0)` keeps a menu flat and `maxDepth(2)` allows up to three levels.
-
-```php
-FilamentMenuBuilderPlugin::make()
-    ->maxDepth(2)
-```
-
-Pass a closure to use a different limit per menu. The closure receives the `$menu` being edited:
-
-```php
-use Datlechin\FilamentMenuBuilder\Models\Menu;
-
-FilamentMenuBuilderPlugin::make()
-    ->maxDepth(fn (Menu $menu): ?int => $menu->locations()->where('location', 'footer')->exists() ? 0 : 2)
-```
-
-Moving an item also moves its children, so a move is only allowed when the item's deepest descendant stays within the limit. Unindenting is always allowed, and menus that are already deeper than a newly configured limit remain editable: their items can be reordered and moved up, but never deeper.
-
-### Restricting Nesting
-
-Use `allowNesting()` to control which items may be nested inside which, both through the indent actions and drag and drop. The closure receives the `$item` being moved, its new `$parent` (`null` at the root level) and the `$menu` being edited, and returns whether the move is allowed:
-
-```php
-use Datlechin\FilamentMenuBuilder\Models\MenuItem;
-
-FilamentMenuBuilderPlugin::make()
-    ->showCustomTextPanel()
-    ->allowNesting(
-        fn (MenuItem $item, ?MenuItem $parent): bool => $parent === null || ($parent->url === null && $item->url !== null),
-    )
-```
-
-This keeps Custom Text items at the root as group headings, with links nested inside them:
-
-```
-About            ← Custom Text heading
-├── Our story    ← /our-story
-└── The team     ← /the-team
-Contact          ← /contact, links can stay at the root
-```
-
-Pass `false` to keep every item at the root, or `true` to remove the restriction. A move has to pass both `allowNesting()` and `maxDepth()`. Indent buttons are hidden for moves that are not allowed, and invalid drops are rejected with a notification. Items can always be reordered under their current parent, so existing menus stay editable.
-
-### Translatable Menus
-
-Built-in multilingual support with no extra packages required. Translatable fields are stored as JSON with locale tabs in the form UI.
-
-#### Setup
-
-1. Enable translatable with your locales:
-
-```php
-FilamentMenuBuilderPlugin::make()
-    ->translatable(['en', 'nl', 'vi'])
-```
-
-2. Publish and run the migration to convert columns from `string` to `json`:
-
-```bash
-php artisan vendor:publish --tag="filament-menu-builder-translatable-migrations"
-php artisan migrate
-```
-
-Existing string data is wrapped in the default locale (`en`). Edit `$defaultLocale` in the published migration to change this.
-
-#### Configuring Translatable Fields
-
-Only `MenuItem.title` is translatable by default:
-
-```php
-FilamentMenuBuilderPlugin::make()
-    ->translatable(['en', 'nl', 'vi'])
-    ->translatableMenuItemFields(['title'])  // default
-    ->translatableMenuFields(['name'])       // opt-in: make Menu name translatable too
-```
-
-#### Rendering Translated Titles
-
-Use `resolveLocale()` in Blade to display titles in the current locale:
-
-```blade
-@foreach($menu->menuItems as $item)
-    <a href="{{ $item->url }}">
-        {{ $item->resolveLocale($item->title) }}
-    </a>
-@endforeach
-```
-
-`resolveLocale()` returns the translation for `app()->getLocale()`, falls back to the first available translation, or returns the raw string for non-translatable setups.
-
-#### Spatie Translatable Compatibility
-
-The JSON format is compatible with [Spatie Laravel Translatable](https://github.com/spatie/laravel-translatable). If you add `HasTranslations` to a custom model, the plugin detects it and defers to Spatie's mutators.
-
-```php
-use Spatie\Translatable\HasTranslations;
-
-class CustomMenuItem extends MenuItem
-{
-    use HasTranslations;
-
-    public array $translatable = ['title'];
-}
-```
-
-### Custom Models
-
-Replace the default models with your own:
-
-```php
-FilamentMenuBuilderPlugin::make()
-    ->usingMenuModel(CustomMenu::class)
-    ->usingMenuItemModel(CustomMenuItem::class)
-    ->usingMenuLocationModel(CustomMenuLocation::class)
-```
-
-### Rendering Menus
-
-Retrieve a menu by location. Results are cached and automatically busted on changes:
-
-```php
-use Datlechin\FilamentMenuBuilder\Models\Menu;
-
-$menu = Menu::location('header');
-```
-
-Render menu items:
-
-```blade
-@if($menu)
-    <nav>
-        <ul>
-            @foreach($menu->menuItems as $item)
-                <li class="{{ $item->classes }} {{ $item->isActive() ? 'active' : '' }}">
-                    @if($item->url)
-                        <a href="{{ $item->url }}" target="{{ $item->target }}" @if($item->rel) rel="{{ $item->rel }}" @endif>
-                            {{ $item->resolveLocale($item->title) }}
-                        </a>
-                    @else
-                        <span>{{ $item->resolveLocale($item->title) }}</span>
-                    @endif
-
-                    @if($item->children->isNotEmpty())
-                        <ul>
-                            @foreach($item->children as $child)
-                                <li>
-                                    <a href="{{ $child->url }}">{{ $child->resolveLocale($child->title) }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </li>
-            @endforeach
-        </ul>
-    </nav>
-@endif
-```
-
-#### Active State Detection
-
-Check if a menu item matches the current URL:
-
-```php
-$item->isActive();                 // exact URL match
-$item->isActiveOrHasActiveChild(); // matches self or any descendant
-```
-
-### MenuItem Properties
-
-| Property   | Type     | Description                           |
-|------------|----------|---------------------------------------|
-| `title`    | string\|array | The display title (array when translatable) |
-| `url`      | ?string  | The URL (null for text-only items)    |
-| `target`   | string   | Link target (`_self`, `_blank`, etc.) |
-| `icon`     | ?string  | Icon identifier (e.g. `heroicon-o-home`) |
-| `classes`  | ?string  | CSS classes for the item              |
-| `rel`      | ?string  | Link rel attribute (e.g. `nofollow noopener`) |
-| `type`     | string   | Panel name / source type (accessor)   |
-| `children` | Collection | Nested child items                  |
+Swap the models, table names or cache store in `config/filament-menu-builder.php`. Custom models must extend the package models.
 
 ## Testing
+
+Factories are included for your own tests:
+
+```php
+$menu = Menu::factory()->create();
+MenuItem::factory()->for($menu)->route('home')->create();
+MenuItem::factory()->for($menu)->linkedTo($page)->create();
+```
 
 ```bash
 composer test
@@ -421,7 +345,7 @@ composer test
 
 ## Changelog
 
-See [CHANGELOG](CHANGELOG.md) for recent changes.
+See [CHANGELOG](CHANGELOG.md).
 
 ## License
 
