@@ -253,3 +253,9 @@ it('fills the title from the chosen route', function () {
         ->fillForm(['route' => 'pages.show'])
         ->assertFormSet(['title' => 'Page', 'route_parameters' => ['page' => null]], 'mountedActionSchema0');
 });
+
+it('gives the edit button of each item an icon', function () {
+    $item = MenuItem::factory()->for($this->menu)->create();
+
+    menuItems()->assertActionHasIcon(onItem('editItem', $item), 'heroicon-m-pencil-square');
+});

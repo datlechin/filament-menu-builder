@@ -30,6 +30,14 @@
     flex-shrink: 0;
 }
 
+/* The badges and actions keep their size and wrap onto their own row on narrow screens. */
+.fi-menu-builder-item-header > .fi-fo-repeater-item-header-end-actions {
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 0.5rem;
+}
+
 /* The URL follows the title on the same line, so it is cut off before the title is. */
 .fi-menu-builder-item-label-text {
     overflow: hidden;

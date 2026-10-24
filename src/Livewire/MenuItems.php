@@ -114,6 +114,8 @@ class MenuItems extends Component implements HasActions, HasSchemas
         return EditAction::make('editItem')
             ->record(fn (array $arguments): ?MenuItem => $this->findItem($arguments['item'] ?? null))
             ->iconButton()
+            ->icon('heroicon-m-pencil-square')
+            ->color('gray')
             ->size(Size::Small)
             ->modalHeading(fn (?MenuItem $record): ?string => $record?->translated('title'))
             ->slideOver()
