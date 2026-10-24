@@ -10,7 +10,20 @@ return new class extends Migration
     // Existing values are stored under this locale. Defaults to `app.locale`.
     protected ?string $locale = null;
 
+    // SQLite rebuilds a table to change a column, which would cascade to the menu items unless foreign keys are off.
+    public $withinTransaction = false;
+
     public function up(): void
+    {
+        Schema::withoutForeignKeyConstraints(fn () => $this->convert());
+    }
+
+    public function down(): void
+    {
+        Schema::withoutForeignKeyConstraints(fn () => $this->revert());
+    }
+
+    private function convert(): void
     {
         foreach ($this->columns() as [$table, $column]) {
             DB::table($table)->whereNotNull($column)->lazyById()->each(function (object $row) use ($table, $column) {
@@ -27,7 +40,7 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
+    private function revert(): void
     {
         foreach ($this->columns() as [$table, $column]) {
             DB::table($table)->whereNotNull($column)->lazyById()->each(function (object $row) use ($table, $column) {
