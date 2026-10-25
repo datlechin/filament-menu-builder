@@ -6,6 +6,8 @@
 
 <img class="filament-hidden" src="https://github.com/datlechin/filament-menu-builder/raw/main/art/menu-builder.jpg" alt="Filament Menu Builder">
 
+<div class="filament-hidden">
+
 - [Introduction](#introduction)
 - [Installation](#installation)
     - [Configuration](#configuration)
@@ -30,6 +32,8 @@
 - [Authorization](#authorization)
 - [Customizing The Resource](#customizing-the-resource)
 - [Testing](#testing)
+
+</div>
 
 ## Introduction
 
